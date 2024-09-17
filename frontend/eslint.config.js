@@ -3,6 +3,7 @@ import reactPlugin from 'eslint-plugin-react';
 import hooksPlugin from 'eslint-plugin-react-hooks';
 import ts from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
+import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 
 export default [
   {
@@ -51,4 +52,5 @@ export default [
       ...ts.configs['recommended'].rules,
     },
   },
+  eslintPluginPrettierRecommended, // eslint-config-prettier 기능을 포함한다.
 ];
