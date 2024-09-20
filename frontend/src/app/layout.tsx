@@ -1,12 +1,9 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import './globals.css';
 import { Footer } from './_component/footer';
 import Header from './_component/header';
 import Sidebar from './_component/sidebar';
 import TableOfContents from './_component/tableOfContents';
-
-const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Blog',
@@ -24,9 +21,9 @@ export default function RootLayout({
     <html lang="en">
       <body className="grid h-screen grid-rows-[auto_1fr_auto]">
         <Header />
-        <div className="grid grid-cols-[auto_1fr_auto] overflow-hidden">
+        <div className="grid grid-cols-[auto_minmax(auto,_1200px)_auto] overflow-hidden">
           <Sidebar />
-          <main className="overflow-auto p-4">
+          <main className="mx-auto w-full max-w-4xl overflow-auto p-4">
             <div className="flex-grow p-4">{children}</div>
           </main>
           <TableOfContents headings={pageHeadings}></TableOfContents>

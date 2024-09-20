@@ -1,26 +1,45 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
 const posts = [
-  { id: '1', title: 'First Post', excerpt: 'This is the first post.' },
-  { id: '2', title: 'Second Post', excerpt: 'This is the second post.' },
+  {
+    id: '1',
+    title: 'First Post',
+    subtitle: 'An interesting journey begins',
+    thumbnail: '/images/default-thumbnail.png',
+  },
+  {
+    id: '2',
+    title: 'Second Post',
+    subtitle: 'Continuing the adventure',
+    thumbnail: '/images/default-thumbnail.png',
+  },
 ];
 
 export default function Home() {
   return (
     <div>
-      <h1>Blog Posts</h1>
-      <ul>
+      <h1 className="mb-6 text-3xl font-bold">Blog Posts</h1>
+      <div className="space-y-6">
         {posts.map((post) => (
-          <li key={post.id} className="mb-6">
-            <h2 className="mb-2 text-2xl font-semibold">
-              <Link href={`/posts/$(post.id)`} className="text-blue-600 hover:underline">
-                {post.title}
-              </Link>
-            </h2>
-            <p className="text-gray-600">{post.excerpt}</p>
-          </li>
+          <Link href={`/posts/${post.id}`} key={post.id} className="block">
+            <div className="flex h-48 overflow-hidden rounded-lg bg-white shadow-md">
+              <div className="relative w-1/3">
+                <Image
+                  src={post.thumbnail}
+                  alt={`Thumbnail for ${post.title}`}
+                  layout="fill"
+                  objectFit="cover"
+                />
+              </div>
+              <div className="flex w-2/3 flex-col justify-center p-4">
+                <h2 className="mb-2 text-2xl font-semibold">{post.title}</h2>
+                <p className="text-gray-600">{post.subtitle}</p>
+              </div>
+            </div>
+          </Link>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }
