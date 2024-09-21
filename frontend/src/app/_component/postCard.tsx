@@ -20,13 +20,8 @@ const PostCard = ({ post }: PostCardProps) => {
   return (
     <Link href={`/posts/${post.id}`} key={post.id} className="block">
       <div className="flex h-32 overflow-hidden rounded-lg bg-white shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-        <div className="w-1/6 border-r p-4">
-          <Image
-            src={post.thumbnail}
-            alt={`Thumbnail for ${post.title}`}
-            width={100}
-            height={100}
-          />
+        <div className="flex w-1/6 flex-col items-center border-r p-4">
+          <Image src={post.thumbnail} alt={`Thumbnail for ${post.title}`} width={80} height={80} />
         </div>
         <div className="flex w-5/6 flex-col justify-center p-4">
           <div>
