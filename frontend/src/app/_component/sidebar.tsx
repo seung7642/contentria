@@ -13,9 +13,27 @@ const categories: Category[] = [
 
 const Sidebar: React.FC = () => {
   return (
-    <aside className="m-2 flex w-64 flex-col overflow-auto rounded border border-gray-200 bg-gray-100 p-4">
-      <div className="flex-grow">
-        <h2 className="mb-4 text-xl font-bold">카테고리</h2>
+    <aside className="m-2 flex w-80 flex-col overflow-auto rounded border border-gray-200 bg-gray-100 p-4">
+      {/* 프로필 박스 */}
+      <div className="mb-6 rounded-lg bg-white p-4 shadow">
+        <div className="flex flex-col items-center">
+          <div className="mb-4 flex h-56 w-56 items-center justify-center rounded-lg bg-gray-300">
+            <Image
+              src={`/images/default-profile.png`}
+              alt="profile"
+              width={250}
+              height={250}
+              className="rounded-lg"
+            />
+          </div>
+          <h2 className="mb-2 text-lg">이승호</h2>
+          <p className="text-center text-sm text-gray-600">반갑습니다.</p>
+        </div>
+      </div>
+
+      {/* 카테고리 박스 */}
+      <div className="mb-6 rounded-lg bg-white p-4 shadow">
+        <h2 className="mb-4 text-center text-xl font-bold">글 분류</h2>
         <ul>
           {categories.map((category) => (
             <li key={category.id} className="mb-2">
@@ -26,17 +44,19 @@ const Sidebar: React.FC = () => {
           ))}
         </ul>
       </div>
+
+      {/* 아이콘 박스 */}
       <div className="mt-auto border-t border-gray-200 pt-4">
         <div className="flex justify-around">
           <a
-            href="https://github.com/yourusername"
+            href="https://github.com/seung7642"
             target="_blank"
             rel="noopener noreferrer"
             className="text-gray-600 hover:text-gray-900"
           >
             <Image src="/icons/github.svg" alt="GitHub" width={24} height={24} />
           </a>
-          <a href="mailto:your.email@example.com" className="text-gray-600 hover:text-gray-900">
+          <a href="mailto:seung7642@gmail.com" className="text-gray-600 hover:text-gray-900">
             <Image src="/icons/gmail.svg" alt="Email" width={24} height={24} />
           </a>
           <a
