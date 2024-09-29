@@ -1,14 +1,39 @@
-import Link from 'next/link';
 import Image from 'next/image';
+import CategoryItem from './CategoryItem';
 
-type Category = {
+export type Category = {
   id: string;
   name: string;
+  children?: Category[];
 };
 
 const categories: Category[] = [
-  { id: '프로젝트', name: '프로젝트' },
-  { id: '생활', name: '생활' },
+  {
+    id: '프로젝트',
+    name: '프로젝트',
+    children: [
+      {
+        id: 'web',
+        name: '웹 개발',
+        children: [
+          { id: 'frontend', name: '프론트엔드' },
+          { id: 'backend', name: '백엔드' },
+        ],
+      },
+      {
+        id: 'mobile',
+        name: '모바일 앱',
+      },
+    ],
+  },
+  {
+    id: '생활',
+    name: '생활',
+    children: [
+      { id: 'daily', name: '일상' },
+      { id: 'travel', name: '여행' },
+    ],
+  },
 ];
 
 const Sidebar: React.FC = () => {
@@ -36,11 +61,12 @@ const Sidebar: React.FC = () => {
         <h2 className="mb-4 text-center text-xl font-bold">글 분류</h2>
         <ul>
           {categories.map((category) => (
-            <li key={category.id} className="mb-2">
-              <Link href={`/category/${category.id}`} className="text-blue-300 hover:underline">
-                {category.name}
-              </Link>
-            </li>
+            // <li key={category.id} className="mb-2">
+            //   <Link href={`/category/${category.id}`} className="text-blue-300 hover:underline">
+            //     {category.name}
+            //   </Link>
+            // </li>
+            <CategoryItem key={category.id} category={category} />
           ))}
         </ul>
       </div>
