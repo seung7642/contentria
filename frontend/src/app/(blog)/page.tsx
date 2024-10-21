@@ -1,4 +1,4 @@
-import PostCard from './_component/postCard';
+import PostCard from '@/app/_component/postCard';
 
 const posts = [
   {
