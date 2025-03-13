@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import '@/app/globals.css';
-import { Footer } from '@/app/_components/footer';
-import Header from '@/app/_components/header';
-import Sidebar from '@/app/_components/sidebar';
-import TableOfContents from '@/app/_components/tableOfContents';
+import { Footer } from '@/components/footer';
+import Header from '@/components/header';
+import Sidebar from '@/components/sidebar';
+import TableOfContents from '@/components/tableOfContents';
 import localFont from 'next/font/local';
 
 const pretendard = localFont({
