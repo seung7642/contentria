@@ -1,6 +1,6 @@
 import React from 'react';
 
-type InputFieldProprs = {
+type InputFieldProps = {
   id: string;
   name: string;
   type: string;
@@ -55,6 +55,7 @@ export const InputField: React.FC<InputFieldProps> = ({
           placeholder={placeholder}
           value={value}
           onChange={onChange}
+          disabled
         />
       </div>
     </div>

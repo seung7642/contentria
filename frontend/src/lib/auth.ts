@@ -1,29 +1,5 @@
-export const signInWithGoogle = () => {
-  // CSRF 방지를 위한 state 생성
-  const state = generateRandomString(32);
-  sessionStorage.setItem('oauth_state', state);
-
-  // Google OAuth URL 구성
-  const googleAuthUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
-  googleAuthUrl.searchParams.append(
-    'client_id',
-    process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID as string
-  );
-  googleAuthUrl.searchParams.append(
-    'redirect_uri',
-    `${process.env.NEXT_PUBLIC_API_URL}/api/auth/google/callback`
-  );
-  googleAuthUrl.searchParams.append('response_type', 'code');
-  googleAuthUrl.searchParams.append('scope', 'email profile');
-  googleAuthUrl.searchParams.append('prompt', 'select_account');
-  googleAuthUrl.searchParams.append('state', state);
-
-  // Google 로그인 페이지로 리디렉션
-  window.location.href = googleAuthUrl.toString();
-};
-
 // JWT 관련 함수들
-export const saveToken = (token: string) => {
+export const saveToken = (token: string): void => {
   localStorage.setItem('auth_token', token);
 };
 
@@ -38,11 +14,16 @@ export const isAuthenticated = (): boolean => {
   return !!getToken();
 };
 
-export const logout = () => {
+export const logout = (): void => {
+  // Google Identity Services 로그아웃
+  if (typeof window !== 'undefined' && window.google?.accounts?.id) {
+    window.google.accounts.id.disableAutoSelect();
+  }
   localStorage.removeItem('auth_token');
   window.location.href = '/';
 };
 
+// 유틸리티 함수 (필요시 활용)
 export const generateRandomString = (length: number): string => {
   const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let text = '';

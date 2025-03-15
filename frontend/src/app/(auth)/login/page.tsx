@@ -2,19 +2,17 @@
 
 import React, { useState } from 'react';
 import { Mail, Lock } from 'lucide-react';
-import { signInWithGoogle } from '@/lib/auth';
-import InputField from '@/components/ui/InputField';
-import Divider from '@/components/ui/Divider';
-import GoogleLoginButton from '@/components/auth/GoogleLoginButton';
+import InputField from '@/components/ui/inputField';
+import Divider from '@/components/ui/divider';
+import GoogleLoginButton from '@/components/auth/googleLoginButton';
 
 const LoginPage = () => {
   // 상태 관리
-  const [isLogin, setIsLogin] = useState(true);
+  const [isSignInPage, setIsSignInPage] = useState(true);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
-  const [isLoading, setIsLoading] = useState(false);
 
   // 이벤트 핸들러
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -24,18 +22,8 @@ const LoginPage = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(isLogin ? 'Logging in...' : 'Signing up...', formData);
+    console.log(isSignInPage ? 'Logging in...' : 'Signing up...', formData);
     // 여기에 로그인 또는 회원가입 API 호출을 구현
-  };
-
-  const handleGoogleLogin = () => {
-    setIsLoading(true);
-    try {
-      signInWithGoogle();
-    } catch (error) {
-      console.log('Google login error', error);
-      setIsLoading(false);
-    }
   };
 
   return (
@@ -44,7 +32,7 @@ const LoginPage = () => {
         {/* 헤더 */}
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            {isLogin ? 'Sign in to your account' : 'Create a new account'}
+            {isSignInPage ? 'Sign in to your account' : 'Create a new account'}
           </h2>
         </div>
 
@@ -80,7 +68,7 @@ const LoginPage = () => {
               type="submit"
               className="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-500 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             >
-              {isLogin ? 'Sign in' : 'Sign up'}
+              {isSignInPage ? 'Sign in' : 'Sign up'}
             </button>
           </div>
 
@@ -98,7 +86,7 @@ const LoginPage = () => {
               </label>
             </div>
 
-            {isLogin && (
+            {isSignInPage && (
               <div className="text-sm">
                 <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">
                   Forgot your password?
@@ -112,20 +100,20 @@ const LoginPage = () => {
         <div className="mt-6">
           <Divider text="Or continue with" />
           <div className="mt-6">
-            <GoogleLoginButton onClick={handleGoogleLogin} isLoading={isLoading} />
+            <GoogleLoginButton />
           </div>
         </div>
 
         {/* 계정 전환 */}
         <div className="mt-4 text-center">
           <p className="text-sm text-gray-600">
-            {isLogin ? "Don't have an account?" : 'Already have an account?'}
+            {isSignInPage ? "Don't have an account?" : 'Already have an account?'}
             <button
               type="button"
               className="ml-1 font-medium text-indigo-600 transition duration-150 ease-in-out hover:text-indigo-500 focus:underline focus:outline-none"
-              onClick={() => setIsLogin(!isLogin)}
+              onClick={() => setIsSignInPage(!isSignInPage)}
             >
-              {isLogin ? 'Sign up' : 'Sign in'}
+              {isSignInPage ? 'Sign up' : 'Sign in'}
             </button>
           </p>
         </div>
