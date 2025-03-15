@@ -14,7 +14,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
-import org.springframework.web.reactive.function.client.WebClient
 
 @Configuration
 @EnableWebSecurity
@@ -58,7 +57,4 @@ class SecurityConfig(
     fun authenticationManager(authenticationConfiguration: AuthenticationConfiguration): AuthenticationManager {
         return authenticationConfiguration.authenticationManager
     }
-
-    @Bean
-    fun webClient(): WebClient.Builder = WebClient.builder()
 }

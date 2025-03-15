@@ -1,25 +1,19 @@
 package com.demo.blog.service
 
+import com.auth0.jwt.JWT
+import com.auth0.jwt.interfaces.DecodedJWT
 import com.demo.blog.dto.AuthResponse
 import com.demo.blog.dto.GoogleTokenRequest
 import com.demo.blog.dto.GoogleUserInfo
 import com.demo.blog.security.JwtService
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.http.HttpHeaders
-import org.springframework.http.MediaType
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Service
-import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.bodyToMono
 
 @Service
 class GoogleAuthService(
     private val userService: UserService,
     private val jwtService: JwtService,
-    private val webClient: WebClient.Builder
 ) {
-
-    private val googleUserInfoUrl = "https://www.googleapis.com/oauth2/v3/userinfo"
 
     fun authenticateGoogleUser(tokenRequest: GoogleTokenRequest): AuthResponse {
         // Google ID 토큰을 사용하여 사용자 정보 가져오기
@@ -41,13 +35,19 @@ class GoogleAuthService(
     }
 
     private fun getUserInfoFromGoogle(idToken: String): GoogleUserInfo {
-        return webClient.build()
-            .get()
-            .uri(googleUserInfoUrl)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer $idToken")
-            .accept(MediaType.APPLICATION_JSON)
-            .retrieve()
-            .bodyToMono<GoogleUserInfo>()
-            .block() ?: throw RuntimeException("Failed to retrieve user info from Google")
+        try {
+            // ID 토큰 디코딩 (서명 검증 없이)
+            val jwt: DecodedJWT = JWT.decode(idToken)
+
+            // 페이로드에서 사용자 정보 추출
+            return GoogleUserInfo(
+                id = jwt.subject,
+                email = jwt.getClaim("email").asString(),
+                name = jwt.getClaim("name").asString(),
+                picture = jwt.getClaim("picture").asString()
+            )
+        } catch (e: Exception) {
+            throw RuntimeException("Invalid ID token", e)
+        }
     }
 }

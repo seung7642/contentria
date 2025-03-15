@@ -29,6 +29,7 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-api:0.12.3")
     implementation("io.jsonwebtoken:jjwt-impl:0.12.3")
     implementation("io.jsonwebtoken:jjwt-jackson:0.12.3")
+    implementation("com.auth0:java-jwt:4.4.0")
 
     // OAuth2 클라이언트
     implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
