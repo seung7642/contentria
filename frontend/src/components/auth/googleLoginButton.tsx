@@ -132,10 +132,26 @@ const GoogleLoginButton: React.FC = () => {
       });
 
       if (response.ok) {
-        const data: { token: string } = await response.json();
-        // JWT 토큰 저장 및 리디렉션
+        // 백엔드에서 반환하는 데이터 형식 정의
+        const data: {
+          token: string;
+          userId: number;
+          name: string;
+          email: string;
+        } = await response.json();
+
+        // JWT 토큰 저장
         localStorage.setItem('auth_token', data.token);
-        window.location.href = '/dashboard'; // 로그인 후 리디렉션 페이지
+
+        // 사용자 정보 저장
+        const userData = {
+          id: data.userId,
+          name: data.name,
+          email: data.email,
+        };
+        localStorage.setItem('userData', JSON.stringify(userData));
+
+        window.location.href = '/'; // 로그인 후 리디렉션 페이지
       } else {
         console.error('Login failed');
       }
