@@ -1,4 +1,4 @@
-package com.demo.blog.security
+package com.demo.blog.common.security
 
 import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts

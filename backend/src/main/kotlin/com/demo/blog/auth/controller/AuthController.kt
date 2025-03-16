@@ -1,8 +1,8 @@
-package com.demo.blog.controller
+package com.demo.blog.auth.controller
 
-import com.demo.blog.dto.AuthResponse
-import com.demo.blog.dto.GoogleTokenRequest
-import com.demo.blog.service.GoogleAuthService
+import com.demo.blog.auth.dto.AuthResponse
+import com.demo.blog.auth.dto.GoogleTokenRequest
+import com.demo.blog.auth.service.GoogleAuthService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody

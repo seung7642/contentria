@@ -1,7 +1,6 @@
-package com.demo.blog.security
+package com.demo.blog.common.security
 
-import com.demo.blog.security.JwtService
-import com.demo.blog.service.UserService
+import com.demo.blog.user.service.CustomerUserDetailsService
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -15,7 +14,7 @@ import org.springframework.web.filter.OncePerRequestFilter
 @Component
 class JwtAuthenticationFilter(
     private val jwtService: JwtService,
-    private val userService: UserService
+    private val customerUserDetailsService: CustomerUserDetailsService
 ) : OncePerRequestFilter() {
 
     override fun doFilterInternal(
@@ -28,7 +27,7 @@ class JwtAuthenticationFilter(
 
             if (StringUtils.hasText(jwt) && jwtService.validateToken(jwt)) {
                 val username = jwtService.getUsernameFromJWT(jwt)
-                val userDetails = userService.loadUserByUsername(username)
+                val userDetails = customerUserDetailsService.loadUserByUsername(username)
 
                 val authentication = UsernamePasswordAuthenticationToken(
                     userDetails, null, userDetails.authorities

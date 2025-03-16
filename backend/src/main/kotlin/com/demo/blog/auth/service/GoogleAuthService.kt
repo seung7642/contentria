@@ -1,17 +1,20 @@
-package com.demo.blog.service
+package com.demo.blog.auth.service
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.interfaces.DecodedJWT
-import com.demo.blog.dto.AuthResponse
-import com.demo.blog.dto.GoogleTokenRequest
-import com.demo.blog.dto.GoogleUserInfo
-import com.demo.blog.security.JwtService
+import com.demo.blog.auth.dto.AuthResponse
+import com.demo.blog.auth.dto.GoogleTokenRequest
+import com.demo.blog.auth.dto.GoogleUserInfo
+import com.demo.blog.common.security.JwtService
+import com.demo.blog.user.service.CustomerUserDetailsService
+import com.demo.blog.user.service.UserService
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Service
 
 @Service
 class GoogleAuthService(
     private val userService: UserService,
+    private val customerUserDetailsService: CustomerUserDetailsService,
     private val jwtService: JwtService,
 ) {
 
@@ -23,14 +26,14 @@ class GoogleAuthService(
         val user = userService.createOrUpdateGoogleUser(userInfo)
 
         // JWT 토큰 생성
-        val userDetails: UserDetails = userService.loadUserByUsername(userInfo.email)
+        val userDetails: UserDetails = customerUserDetailsService.loadUserByUsername(userInfo.email)
         val jwtToken = jwtService.generateToken(userDetails)
 
         return AuthResponse(
             token = jwtToken,
-            userId = user.id ?: 0,
+            userId = user.id,
             email = user.email,
-            name = user.name
+            name = user.username
         )
     }
 
