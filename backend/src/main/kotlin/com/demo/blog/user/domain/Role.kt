@@ -2,16 +2,17 @@ package com.demo.blog.user.domain
 
 import jakarta.persistence.*
 import org.springframework.security.core.GrantedAuthority
+import java.util.*
 
 @Entity
 @Table(name = "roles")
 class Role(
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null,
+    @Column(length = 36)
+    val id: String = UUID.randomUUID().toString(),
 
     @Column(nullable = false, unique = true, length = 50)
-    private val name: String,
+    val name: String,
 
     @Column(length = 255)
     val description: String? = null,

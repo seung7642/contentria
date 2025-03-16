@@ -41,6 +41,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+    implementation("io.github.oshai:kotlin-logging-jvm:7.0.3")
 
     // 데이터베이스
     runtimeOnly("com.h2database:h2") // 개발용, 필요시 변경

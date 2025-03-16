@@ -1,5 +1,6 @@
-package com.demo.blog.common.security
+package com.demo.blog.common.config
 
+import com.demo.blog.common.security.JwtAuthenticationFilter
 import com.demo.blog.user.service.UserService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

@@ -34,12 +34,6 @@ class User(
 
     val updatedAt: ZonedDateTime = ZonedDateTime.now()
 ) {
-    init {
-        if (userRoles.isEmpty()) {
-            addRole(Role.user())
-        }
-    }
-
     fun addRole(role: Role, createdBy: String? = null): UserRole {
         val userRole = UserRole(user = this, role = role, createdBy = createdBy)
         userRoles.add(userRole)
