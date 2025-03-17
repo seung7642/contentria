@@ -71,21 +71,21 @@ const Header = () => {
   }
 
   return (
-    <header className="flex items-center justify-between border-b px-6 py-5">
+    <header className="flex items-center justify-between border-b px-6 py-3">
       <div className="w-24"></div>
       <h1 className="text-2xl font-bold">
         <Link href="/">Blog</Link>
       </h1>
-      <div className="text-right">
+      <div className="flex items-center justify-between text-right">
         <Link
           href="/subscribe"
-          className="mx-2 my-2 rounded-lg bg-indigo-500 px-4 py-3 text-sm text-white hover:bg-indigo-600"
+          className="mx-2 rounded-lg bg-indigo-500 px-4 py-3 text-sm text-white hover:bg-indigo-600"
         >
           Subscribe
         </Link>
 
         {user ? (
-          <div className="relative inline-flex items-center" ref={dropdownRef}>
+          <div ref={dropdownRef} className="relative">
             {/* 프로필 버튼 */}
             <button
               onClick={toggleDropdown}
@@ -99,14 +99,14 @@ const Header = () => {
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-gray-200">
-                  <User size={20} className="text-gray-600" />
+                  <User size={24} className="text-gray-600" />
                 </div>
               )}
             </button>
 
             {/* 드롭다운 메뉴 */}
             {isDropdownOpen && (
-              <div className="absolute right-0 top-full z-10 mt-2 w-64 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+              <div className="absolute right-0 z-10 mt-2 w-64 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                 {/* 첫 번째 영역: 프로필 정보 */}
                 <div className="border-b border-gray-100 px-4 py-3">
                   <div className="flex items-center">
