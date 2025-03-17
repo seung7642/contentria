@@ -71,25 +71,25 @@ const Header = () => {
   }
 
   return (
-    <header className="flex items-center justify-between border-b px-6 py-5">
-      <div className="w-24"></div>
+    <header className="flex items-center justify-between border-b px-6 py-2">
+      <div className="w-24">LOGO</div>
       <h1 className="text-2xl font-bold">
         <Link href="/">Blog</Link>
       </h1>
-      <div className="text-right">
+      <div className="flex gap-1 text-right">
         <Link
           href="/subscribe"
-          className="mx-2 my-2 rounded-lg bg-indigo-500 px-4 py-3 text-sm text-white hover:bg-indigo-600"
+          className="my-2 rounded-lg bg-indigo-500 px-4 py-3 text-sm text-white hover:bg-indigo-600"
         >
           Subscribe
         </Link>
 
         {user ? (
-          <div className="relative inline-flex items-center" ref={dropdownRef}>
+          <div ref={dropdownRef}>
             {/* 프로필 버튼 */}
             <button
               onClick={toggleDropdown}
-              className="mx-2 flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border-2 border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="overflow-hidden rounded-full border-2 border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
               {user.profileImage ? (
                 <img
@@ -98,7 +98,7 @@ const Header = () => {
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center bg-gray-200">
+                <div className="bg-gray-200">
                   <User size={20} className="text-gray-600" />
                 </div>
               )}
