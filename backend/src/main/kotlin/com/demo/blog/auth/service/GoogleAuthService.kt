@@ -33,7 +33,8 @@ class GoogleAuthService(
             token = jwtToken,
             userId = user.id,
             email = user.email,
-            name = user.username
+            name = user.username,
+            profileImage = user.pictureUrl
         )
     }
 

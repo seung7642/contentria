@@ -138,6 +138,7 @@ const GoogleLoginButton: React.FC = () => {
           userId: number;
           name: string;
           email: string;
+          profileImage: string;
         } = await response.json();
 
         // JWT 토큰 저장
@@ -148,6 +149,7 @@ const GoogleLoginButton: React.FC = () => {
           id: data.userId,
           name: data.name,
           email: data.email,
+          profileImage: data.profileImage,
         };
         localStorage.setItem('userData', JSON.stringify(userData));
 

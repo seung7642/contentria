@@ -1,102 +1,176 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  BarChart2,
-  TrendingUp,
-  Users,
-  Eye,
-  FileText,
-  MessageSquare,
-  ThumbsUp,
-  ArrowRight,
-} from 'lucide-react';
 import Link from 'next/link';
+import { FileText, Eye, MessageSquare, ThumbsUp, ArrowRight, BarChart2, Users } from 'lucide-react';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
 
-// 통계 카드 컴포넌트
-const StatCard = ({ icon, title, value, trend, trendUp }) => (
-  <div className="rounded-lg bg-white p-5 shadow-sm">
-    <div className="flex items-start justify-between">
-      <div>
-        <p className="text-sm font-medium text-gray-500">{title}</p>
-        <p className="mt-1 text-2xl font-bold text-gray-800">{value}</p>
-      </div>
-      <div className="rounded-full bg-indigo-50 p-3 text-indigo-600">{icon}</div>
-    </div>
-    <div
-      className={`mt-3 flex items-center text-sm ${trendUp ? 'text-green-600' : 'text-red-600'}`}
-    >
-      <TrendingUp size={16} className="mr-1" />
-      <span>{trend}</span>
-    </div>
-  </div>
-);
+// 컴포넌트 분리
+import StatCard from '@/components/dashboard/statCard';
+import PopularPostList from '@/components/dashboard/popularPostList';
+import RevenueList from '@/components/dashboard/revenueList';
+import QuickActions from '@/components/dashboard/quickActions';
 
-// 트래픽 차트 컴포넌트 (간단한 막대 그래프)
-const TrafficChart = () => {
-  const data = [35, 55, 41, 67, 22, 43, 21, 33, 45, 31, 87, 65, 35];
-  const maxValue = Math.max(...data);
+// 타입 정의
+type TimeRange = '2weeks' | '30days' | '90days';
+type ChartData = {
+  date: string;
+  visitors: number;
+};
+
+type ChartDataMap = {
+  [key in TimeRange]: ChartData[];
+};
+
+// 차트 컴포넌트 타입 정의
+interface TrafficChartProps {
+  timeRange: TimeRange;
+}
+
+// 트래픽 차트 컴포넌트 (꺾은선 그래프)
+const TrafficChart: React.FC<TrafficChartProps> = ({ timeRange = '2weeks' }) => {
+  // 차트 데이터
+  const chartData: ChartDataMap = {
+    '2weeks': [
+      { date: '03/01', visitors: 35 },
+      { date: '03/02', visitors: 55 },
+      { date: '03/03', visitors: 41 },
+      { date: '03/04', visitors: 67 },
+      { date: '03/05', visitors: 22 },
+      { date: '03/06', visitors: 43 },
+      { date: '03/07', visitors: 21 },
+      { date: '03/08', visitors: 33 },
+      { date: '03/09', visitors: 45 },
+      { date: '03/10', visitors: 31 },
+      { date: '03/11', visitors: 87 },
+      { date: '03/12', visitors: 65 },
+      { date: '03/13', visitors: 35 },
+      { date: '03/14', visitors: 48 },
+    ],
+    '30days': Array(30)
+      .fill(null)
+      .map((_, i) => ({
+        date: `03/${String(i + 1).padStart(2, '0')}`,
+        visitors: Math.floor(Math.random() * 100) + 20,
+      })),
+    '90days': Array(12)
+      .fill(null)
+      .map((_, i) => ({
+        date: `2024/${String(i + 1).padStart(2, '0')}`,
+        visitors: Math.floor(Math.random() * 200) + 50,
+      })),
+  };
 
   return (
-    <div className="h-64 w-full">
-      <div className="flex h-[90%] items-end space-x-1">
-        {data.map((value, index) => (
-          <div
-            key={index}
-            className="relative flex-1 self-end"
-            style={{ height: `${(value / maxValue) * 100}%` }}
-          >
-            <div
-              className="absolute inset-x-0 bottom-0 rounded-t bg-indigo-500 hover:bg-indigo-600"
-              style={{ height: '100%' }}
-            />
-          </div>
-        ))}
-      </div>
-      <div className="mt-2 flex justify-between text-xs text-gray-500">
-        <span>3월 1일</span>
-        <span>3월 15일</span>
-      </div>
-    </div>
+    <ResponsiveContainer width="100%" height={250}>
+      <LineChart data={chartData[timeRange]} margin={{ top: 10, right: 10, left: 0, bottom: 10 }}>
+        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+        <XAxis dataKey="date" tick={{ fontSize: 12 }} tickCount={5} />
+        <YAxis tick={{ fontSize: 12 }} />
+        <Tooltip />
+        <Line
+          type="monotone"
+          dataKey="visitors"
+          stroke="#4f46e5"
+          strokeWidth={2.5}
+          dot={{ r: 3 }}
+          activeDot={{ r: 5 }}
+        />
+      </LineChart>
+    </ResponsiveContainer>
   );
 };
 
-// 인기 게시물 아이템
-const PopularPostItem = ({ title, views, badge }) => (
-  <div className="flex items-center border-b border-gray-100 py-3">
-    <div className="mr-2 flex-shrink-0">
-      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
-        {badge}
-      </div>
-    </div>
-    <div className="flex-1 truncate">
-      <p className="truncate font-medium">{title}</p>
-      <p className="text-xs text-gray-500">{views} 조회</p>
-    </div>
-  </div>
-);
+// 대시보드 페이지 타입 정의
+interface Stats {
+  totalPosts: number;
+  totalViews: number;
+  totalComments: number;
+  totalLikes: number;
+}
 
-// 최근 수익 아이템
-const RecentRevenueItem = ({ source, amount, date }) => (
-  <div className="flex justify-between border-b border-gray-100 py-3">
-    <div>
-      <p className="font-medium">{source}</p>
-      <p className="text-xs text-gray-500">{date}</p>
-    </div>
-    <p className="font-semibold text-green-600">{amount}</p>
-  </div>
-);
+interface PopularPost {
+  id: number;
+  title: string;
+  views: number;
+  badge: string;
+}
 
-export default function DashboardPage() {
-  const [userName] = useState('관리자');
+interface RevenueItem {
+  source: string;
+  amount: string;
+  date: string;
+}
 
-  // 실제 구현에서는 이 부분이 데이터 fetching으로 대체됩니다
-  const stats = {
+interface QuickAction {
+  id: number;
+  title: string;
+  href: string;
+  icon: React.ReactNode;
+  color: string;
+}
+
+const DashboardPage = () => {
+  const [timeRange, setTimeRange] = useState<TimeRange>('2weeks');
+
+  // 테스트 데이터 (실제로는 API에서 가져옴)
+  const stats: Stats = {
     totalPosts: 24,
     totalViews: 3824,
     totalComments: 128,
     totalLikes: 256,
   };
+
+  const popularPosts: PopularPost[] = [
+    { id: 1, title: 'Next.js 14와 React Server Components', views: 152, badge: '1' },
+    { id: 2, title: '효율적인 상태 관리 전략', views: 128, badge: '2' },
+    { id: 3, title: '모바일 최적화를 위한 디자인 팁', views: 98, badge: '3' },
+  ];
+
+  const revenueData: RevenueItem[] = [
+    { source: 'Google AdSense', amount: '₩15,200', date: '2024-03-15' },
+    { source: '제휴 마케팅', amount: '₩8,500', date: '2024-03-10' },
+    { source: '후원', amount: '₩5,000', date: '2024-03-08' },
+  ];
+
+  const quickActions: QuickAction[] = [
+    {
+      id: 1,
+      title: '새 글 작성',
+      href: '/dashboard/posts/create',
+      icon: <FileText size={18} />,
+      color: 'bg-indigo-100 text-indigo-600',
+    },
+    {
+      id: 2,
+      title: '광고 관리',
+      href: '/dashboard/ads',
+      icon: <BarChart2 size={18} />,
+      color: 'bg-green-100 text-green-600',
+    },
+    {
+      id: 3,
+      title: '게시글 관리',
+      href: '/dashboard/posts',
+      icon: <Eye size={18} />,
+      color: 'bg-blue-100 text-blue-600',
+    },
+    {
+      id: 4,
+      title: '수익 분석',
+      href: '/dashboard/revenue',
+      icon: <Users size={18} />,
+      color: 'bg-purple-100 text-purple-600',
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -105,7 +179,7 @@ export default function DashboardPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-800">대시보드</h1>
           <p className="mt-1 text-sm text-gray-500">
-            안녕하세요, {userName}님! 오늘의 블로그 현황입니다.
+            안녕하세요, 관리자님! 오늘의 블로그 현황입니다.
           </p>
         </div>
         <Link
@@ -154,13 +228,17 @@ export default function DashboardPage() {
         <div className="rounded-lg bg-white p-5 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold">트래픽 현황</h2>
-            <select className="rounded-md border border-gray-300 px-2 py-1 text-sm">
-              <option>지난 2주</option>
-              <option>지난 30일</option>
-              <option>지난 90일</option>
+            <select
+              className="rounded-md border border-gray-300 px-2 py-1 text-sm"
+              value={timeRange}
+              onChange={(e) => setTimeRange(e.target.value as TimeRange)}
+            >
+              <option value="2weeks">지난 2주</option>
+              <option value="30days">지난 30일</option>
+              <option value="90days">지난 90일</option>
             </select>
           </div>
-          <TrafficChart />
+          <TrafficChart timeRange={timeRange} />
         </div>
 
         {/* 인기 글 */}
@@ -171,11 +249,7 @@ export default function DashboardPage() {
               전체보기
             </Link>
           </div>
-          <div className="space-y-1">
-            <PopularPostItem title="Next.js 14와 React Server Components" views="152" badge="1" />
-            <PopularPostItem title="효율적인 상태 관리 전략" views="128" badge="2" />
-            <PopularPostItem title="모바일 최적화를 위한 디자인 팁" views="98" badge="3" />
-          </div>
+          <PopularPostList posts={popularPosts} />
           <Link
             href="/dashboard/posts"
             className="mt-4 flex items-center justify-center text-sm text-indigo-600 hover:text-indigo-800"
@@ -195,11 +269,7 @@ export default function DashboardPage() {
               수익 관리
             </Link>
           </div>
-          <div>
-            <RecentRevenueItem source="Google AdSense" amount="₩15,200" date="2024-03-15" />
-            <RecentRevenueItem source="제휴 마케팅" amount="₩8,500" date="2024-03-10" />
-            <RecentRevenueItem source="후원" amount="₩5,000" date="2024-03-08" />
-          </div>
+          <RevenueList items={revenueData} />
           <div className="mt-4 flex justify-between">
             <span className="font-medium">이번 달 총액</span>
             <span className="font-semibold text-green-600">₩28,700</span>
@@ -209,46 +279,11 @@ export default function DashboardPage() {
         {/* 빠른 작업 */}
         <div className="rounded-lg bg-white p-5 shadow-sm">
           <h2 className="mb-4 text-lg font-semibold">빠른 작업</h2>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <Link
-              href="/dashboard/posts/create"
-              className="flex items-center rounded-lg border border-gray-200 p-3 transition hover:bg-gray-50"
-            >
-              <div className="mr-3 rounded-full bg-indigo-100 p-2 text-indigo-600">
-                <FileText size={18} />
-              </div>
-              <span>새 글 작성</span>
-            </Link>
-            <Link
-              href="/dashboard/ads"
-              className="flex items-center rounded-lg border border-gray-200 p-3 transition hover:bg-gray-50"
-            >
-              <div className="mr-3 rounded-full bg-green-100 p-2 text-green-600">
-                <BarChart2 size={18} />
-              </div>
-              <span>광고 관리</span>
-            </Link>
-            <Link
-              href="/dashboard/posts"
-              className="flex items-center rounded-lg border border-gray-200 p-3 transition hover:bg-gray-50"
-            >
-              <div className="mr-3 rounded-full bg-blue-100 p-2 text-blue-600">
-                <Eye size={18} />
-              </div>
-              <span>게시글 관리</span>
-            </Link>
-            <Link
-              href="/dashboard/revenue"
-              className="flex items-center rounded-lg border border-gray-200 p-3 transition hover:bg-gray-50"
-            >
-              <div className="mr-3 rounded-full bg-purple-100 p-2 text-purple-600">
-                <Users size={18} />
-              </div>
-              <span>수익 분석</span>
-            </Link>
-          </div>
+          <QuickActions actions={quickActions} />
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default DashboardPage;
