@@ -2,7 +2,9 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Search, Bell, LogOut, User, Home, Settings } from 'lucide-react';
+import { User as UserType } from '../header/types';
 
 const DashboardHeader = () => {
   const [isSearchVisible, setIsSearchVisible] = useState(false);
@@ -10,13 +12,7 @@ const DashboardHeader = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const notificationRef = useRef(null);
   const profileRef = useRef(null);
-
-  // 가상의 사용자 데이터 - 실제로는 서버에서 가져오거나 context에서 관리할 것
-  const user = {
-    name: '홍길동',
-    email: 'user@example.com',
-    profileImage: null, // 프로필 이미지가 없는 경우
-  };
+  const [user, setUser] = useState<UserType>();
 
   // 알림 목록 - 실제로는 API에서 가져올 것
   const notifications = [
@@ -27,6 +23,13 @@ const DashboardHeader = () => {
 
   // 외부 클릭 감지
   useEffect(() => {
+    try {
+      const userData = localStorage.getItem('userData');
+      setUser(userData ? JSON.parse(userData) : null);
+    } catch (error) {
+      console.error('Failed to parse user data:', error);
+    }
+
     const handleClickOutside = (event) => {
       if (notificationRef.current && !notificationRef.current.contains(event.target)) {
         setIsNotificationOpen(false);
@@ -122,13 +125,15 @@ const DashboardHeader = () => {
           <div className="relative" ref={profileRef}>
             <button
               onClick={() => setIsProfileOpen(!isProfileOpen)}
-              className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border-2 border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border-2 border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
-              {user.profileImage ? (
-                <img
+              {user?.profileImage ? (
+                <Image
                   src={user.profileImage}
                   alt={user.name}
-                  className="h-full w-full object-cover"
+                  fill
+                  className="rounded-full object-cover"
+                  sizes="20px"
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-gray-200">
@@ -142,12 +147,14 @@ const DashboardHeader = () => {
                 {/* 프로필 정보 */}
                 <div className="border-b border-gray-100 px-4 py-3">
                   <div className="flex items-center">
-                    <div className="h-10 w-10 overflow-hidden rounded-full border border-gray-200">
-                      {user.profileImage ? (
-                        <img
+                    <div className="relative h-10 w-10 overflow-hidden rounded-full border border-gray-200">
+                      {user?.profileImage ? (
+                        <Image
                           src={user.profileImage}
                           alt={user.name}
-                          className="h-full w-full object-cover"
+                          fill
+                          className="rounded-full object-cover"
+                          sizes="20px"
                         />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center bg-gray-200">
@@ -156,8 +163,8 @@ const DashboardHeader = () => {
                       )}
                     </div>
                     <div className="ml-3 text-left">
-                      <div className="text-sm font-medium text-gray-800">{user.name}</div>
-                      <div className="text-xs text-gray-500">{user.email}</div>
+                      <div className="text-sm font-medium text-gray-800">{user?.name}</div>
+                      <div className="text-xs text-gray-500">{user?.email}</div>
                     </div>
                   </div>
                 </div>
