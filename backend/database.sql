@@ -1,169 +1,126 @@
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-```sql
--- 사용자 테이블
 CREATE TABLE users (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     email VARCHAR(255) UNIQUE NOT NULL,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
-    display_name VARCHAR(100),
-    bio TEXT,
-    profile_image VARCHAR(255),
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    is_active BOOLEAN NOT NULL DEFAULT TRUE
+    username VARCHAR(100) UNIQUE, -- 사용자 별명 (닉네임)
+    real_username VARCHAR(100),
+    password VARCHAR(255),
+    picture_url TEXT,
+    provider VARCHAR(50) NOT NULL, -- 'EMAIL', 'GOOGLE'
+    provider_user_id TEXT, -- 해당 Provider에서의 사용자 ID
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
 );
 
--- 역할 테이블
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_username ON users(username);
+
 CREATE TABLE roles (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name VARCHAR(50) UNIQUE NOT NULL,
-    description TEXT,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE, -- 'ROLE_ADMIN', 'ROLE_USER'
+    description VARCHAR(255)
 );
 
--- 사용자-역할 매핑 테이블
-CREATE TABLE user_role (
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    role_id UUID NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (user_id, role_id)
+INSERT INTO roles (name) VALUES ('ROLE_ADMIN'), ('ROLE_USER') ON CONFLICT (name) DO NOTHING;
+
+CREATE TABLE user_roles (
+    user_id UUID NOT NULL,
+    role_id INTEGER NOT NULL,
+
+    PRIMARY KEY (user_id, role_id),
+    CONSTRAINT fk_user_roles_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_user_roles_role FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
 );
 
--- 블로그 테이블
+CREATE INDEX idx_user_roles_user_id ON user_roles(user_id);
+CREATE INDEX idx_user_roles_role_id ON user_roles(role_id);
+
 CREATE TABLE blogs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    name VARCHAR(100) NOT NULL,
-    subdomain VARCHAR(50) UNIQUE,
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL,
+    slug VARCHAR(100) NOT NULL UNIQUE,
+    title VARCHAR(255) NOT NULL,
     description TEXT,
-    logo VARCHAR(255),
-    theme VARCHAR(50) DEFAULT 'default',
-    custom_css TEXT,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    is_active BOOLEAN NOT NULL DEFAULT TRUE
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_blogs_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT
 );
 
--- 카테고리 테이블 (최대 3-depth 지원)
-CREATE TABLE categories (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    blog_id UUID NOT NULL REFERENCES blogs(id) ON DELETE CASCADE,
-    parent_id UUID REFERENCES categories(id) ON DELETE CASCADE,
-    name VARCHAR(100) NOT NULL,
-    slug VARCHAR(100) NOT NULL,
-    description TEXT,
-    order_position INTEGER DEFAULT 0,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (blog_id, slug)
-);
+CREATE INDEX idx_blogs_slug ON blogs(slug);
+CREATE INDEX idx_blogs_user_id ON blogs(user_id);
 
--- 게시글 테이블
 CREATE TABLE posts (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    blog_id UUID NOT NULL REFERENCES blogs(id) ON DELETE CASCADE,
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    blog_id UUID NOT NULL,
+    slug VARCHAR(255) NOT NULL, 
     title VARCHAR(255) NOT NULL,
-    slug VARCHAR(255) NOT NULL,
-    excerpt TEXT,
-    content TEXT NOT NULL,
-    status VARCHAR(20) NOT NULL CHECK (status IN ('draft', 'published', 'archived')),
-    published_at TIMESTAMP,
-    featured_image VARCHAR(255),
-    view_count INTEGER DEFAULT 0,
-    allow_comments BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (blog_id, slug)
+    content_markdown TEXT,
+    content_html TEXT,
+    meta_title VARCHAR(255),
+    meta_description VARCHAR(500),
+    featured_image_url TEXT,
+    status VARCHAR(20) NOT NULL DEFAULT 'draft',
+    published_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT uq_posts_blog_slug UNIQUE (blog_id, slug), -- 복합 유니크 제약조건
+    CONSTRAINT fk_posts_blog FOREIGN KEY (blog_id) REFERENCES blogs(id) ON DELETE CASCADE,
 );
 
--- 게시글-카테고리 매핑 테이블
-CREATE TABLE post_categories (
-    post_id UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
-    category_id UUID NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (post_id, category_id)
-);
-
--- 태그 테이블
-CREATE TABLE tags (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    blog_id UUID NOT NULL REFERENCES blogs(id) ON DELETE CASCADE,
-    name VARCHAR(50) NOT NULL,
-    slug VARCHAR(50) NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (blog_id, slug)
-);
-
--- 게시글-태그 매핑 테이블
-CREATE TABLE post_tags (
-    post_id UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
-    tag_id UUID NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (post_id, tag_id)
-);
-
--- 댓글 테이블
-CREATE TABLE comments (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    post_id UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
-    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
-    parent_id UUID REFERENCES comments(id) ON DELETE CASCADE,
-    author_name VARCHAR(100),
-    author_email VARCHAR(255),
-    content TEXT NOT NULL,
-    is_approved BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
--- 통계 데이터 테이블
-CREATE TABLE analytics (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    blog_id UUID NOT NULL REFERENCES blogs(id) ON DELETE CASCADE,
-    post_id UUID REFERENCES posts(id) ON DELETE CASCADE,
-    page_path VARCHAR(255),
-    views INTEGER NOT NULL DEFAULT 0,
-    unique_visitors INTEGER NOT NULL DEFAULT 0,
-    avg_time_on_page FLOAT,
-    date DATE NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (blog_id, post_id, page_path, date)
-);
-
--- 구독자 테이블
-CREATE TABLE subscribers (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    blog_id UUID NOT NULL REFERENCES blogs(id) ON DELETE CASCADE,
-    email VARCHAR(255) NOT NULL,
-    name VARCHAR(100),
-    status VARCHAR(20) NOT NULL CHECK (status IN ('active', 'unsubscribed')),
-    confirmation_token VARCHAR(100),
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (blog_id, email)
-);
-
--- 게시글 수정 이력 테이블
-CREATE TABLE post_revisions (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    post_id UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
-    content TEXT NOT NULL,
-    title VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    created_by UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE
-);
-
--- 인덱스 생성
-CREATE INDEX idx_posts_blog_id ON posts(blog_id);
-CREATE INDEX idx_posts_user_id ON posts(user_id);
+CREATE INDEX idx_posts_blog_id_status_published_at ON posts(blog_id, status, published_at);
+CREATE INDEX idx_posts_blog_id_slug ON posts(blog_id, slug);
 CREATE INDEX idx_posts_status ON posts(status);
-CREATE INDEX idx_categories_blog_id ON categories(blog_id);
-CREATE INDEX idx_categories_parent_id ON categories(parent_id);
-CREATE INDEX idx_comments_post_id ON comments(post_id);
-CREATE INDEX idx_comments_parent_id ON comments(parent_id);
-CREATE INDEX idx_analytics_blog_id ON analytics(blog_id);
-CREATE INDEX idx_analytics_post_id ON analytics(post_id);
-CREATE INDEX idx_analytics_date ON analytics(date);
-```
+
+CREATE TABLE subscriptions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL,
+    blog_id UUID NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT uq_subscriptions_user_blog UNIQUE (user_id, blog_id),
+    CONSTRAINT fk_subscriptions_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_subscriptions_blog FOREIGN KEY (blog_id) REFERENCES blogs(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_subscriptions_user_id ON subscriptions(user_id);
+CREATE INDEX idx_subscriptions_blog_id ON subscriptions(blog_id);
+
+CREATE TABLE comments (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    post_id UUID NOT NULL,
+    user_id UUID, -- Nullable for deleted users
+    parent_comment_id UUID, -- Nullable for top-level comments
+    content TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP WITH TIME ZONE,
+
+    CONSTRAINT fk_comments_post FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+    CONSTRAINT fk_comments_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+    CONSTRAINT fk_comments_parent FOREIGN KEY (parent_comment_id) REFERENCES comments(id) ON DELETE SET NULL -- 부모 삭제 시 연결만 끊음
+);
+
+CREATE INDEX idx_comments_post_id_created_at ON comments(post_id, created_at ASC);
+CREATE INDEX idx_comments_parent_comment_id ON comments(parent_comment_id);
+CREATE INDEX idx_comments_user_id ON comments(user_id);
+
+CREATE TABLE notifications (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    recipient_user_id UUID NOT NULL,
+    type VARCHAR(50) NOT NULL, -- 어떤 종류의 이벤트로 인해 알림이 발생했는지 구분하기 위함. 'new_post', 'new_comment', 'new_reply', 'new_subscriber'
+    related_entity_id UUID, -- 해당 알림과 가장 직접적으로 관련된 데이터의 고유 ID를 명시한다.
+    related_entity_type VARCHAR(50), -- 해당 알림과 가장 직접적으로 관련된 데이터가 어떤 테이블의 것인지를 명시한다. 예) type이 'new_post'이면 'post'
+    message TEXT,
+    is_read BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_notifications_recipient FOREIGN KEY (recipient_user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_notifications_recipient_user_id_created_at ON notifications(recipient_user_id, created_at DESC);
+CREATE INDEX idx_notifications_recipient_user_id_is_read ON notifications(recipient_user_id, is_read);
