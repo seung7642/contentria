@@ -15,6 +15,8 @@ class User(
     @Column(nullable = false, unique = true)
     val email: String,
 
+    val realUsername: String? = null,
+
     val username: String? = null,
 
     val password: String? = null,
@@ -60,9 +62,10 @@ class User(
             )
         }
 
-        fun createGoogleUser(email: String, username: String, pictureUrl: String?, providerId: String): User {
+        fun createGoogleUser(email: String, realUsername: String, username: String, pictureUrl: String?, providerId: String): User {
             return User(
                 email = email,
+                realUsername = realUsername,
                 username = username,
                 pictureUrl = pictureUrl,
                 provider = AuthProvider.GOOGLE,

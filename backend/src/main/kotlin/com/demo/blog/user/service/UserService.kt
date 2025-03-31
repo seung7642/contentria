@@ -27,6 +27,7 @@ class UserService(
             // 새 사용자 생성
             val newUser = User.createGoogleUser(
                 email = googleUserInfo.email,
+                realUsername = googleUserInfo.name,
                 username = googleUserInfo.name,
                 pictureUrl = googleUserInfo.picture,
                 providerId = googleUserInfo.id
