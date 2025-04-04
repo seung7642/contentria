@@ -3,9 +3,9 @@ import fs from 'fs';
 import path from 'path';
 import rehypeHighlight from 'rehype-highlight';
 
-export default async function Post({ params }: { params: { id: string } }) {
-  const { id } = params;
-  const postContent = await getPostContent(id);
+export default async function Post({ params }: { params: { slug: string } }) {
+  const { id: slug } = params;
+  const postContent = await getPostContent(slug);
 
   return (
     <div>
@@ -24,7 +24,7 @@ export default async function Post({ params }: { params: { id: string } }) {
 }
 
 async function getPostContent(id: string): Promise<string> {
-  const filePath = path.join(process.cwd(), 'src', 'posts', `${id}.mdx`);
+  const filePath = path.join(process.cwd(), 'src', 'posts', `${slug}.mdx`);
   const fileContent = await fs.promises.readFile(filePath, 'utf8');
   return fileContent;
 }
