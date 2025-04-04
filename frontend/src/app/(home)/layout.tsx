@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import '@/app/globals.css'; // 전역 스타일
-import Header from '@/components/header'; // 헤더 컴포넌트 경로 확인 필요
-import { Footer } from '@/components/footer'; // 푸터 컴포넌트 경로 확인 필요
+import { Footer } from '@/components/blog/footer';
+import Header from '@/components/home/homeHeader';
 
 // Pretendard 폰트 설정
 const pretendard = localFont({

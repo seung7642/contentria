@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Search, Bell, LogOut, User, Home, Settings } from 'lucide-react';
-import { User as UserType } from '../header/types';
+import { User as UserType } from '../blog/header/types';
 
 const DashboardHeader = () => {
   const [isSearchVisible, setIsSearchVisible] = useState(false);

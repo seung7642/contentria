@@ -1,13 +1,13 @@
 import type { Metadata } from 'next';
 import '@/app/globals.css';
-import { Footer } from '@/components/footer';
-import Header from '@/components/header';
-import Sidebar from '@/components/sidebar';
-import TableOfContents from '@/components/tableOfContents';
+import { Footer } from '@/components/blog/footer';
+import Header from '@/components/blog/header';
+import Sidebar from '@/components/blog/sidebar';
+import TableOfContents from '@/components/blog/tableOfContents';
 import localFont from 'next/font/local';
 
 const pretendard = localFont({
-  src: '../../../public/fonts/PretendardVariable.woff2',
+  src: '../../../../public/fonts/PretendardVariable.woff2',
   display: 'swap',
   weight: '45 920',
 });

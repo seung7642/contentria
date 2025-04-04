@@ -32,31 +32,39 @@ body {
   }
 }
 
-/* "이야기" 텍스트 펄스 애니메이션 Keyframes */
-@keyframes pulse-indigo {
+/* 웨이브 애니메이션 Keyframes: 점프 후 복귀 및 색상 변경 */
+@keyframes wave-jump-return {
   0% {
-    transform: scale(1); /* 기본 크기 */
-    /* 시작 색상 (기본 텍스트 색상과 유사하게) - 필요시 조정 */
-    color: #1f2937; /* 예: text-gray-800 */
-    opacity: 0.8;
+    transform: translateY(0); /* 시작: 제자리 */
   }
   50% {
-    transform: scale(1.15); /* 약간 확대 */
-    color: #4f46e5; /* 최종 Indigo 색상 (text-indigo-600) */
-    opacity: 1;
-    text-shadow: 0 0 8px rgba(79, 70, 229, 0.5); /* 약간의 네온 효과 */
+    transform: translateY(-0.6em); /* 중간: 점프 최고점 */
+    /* 최고점에서는 아직 색상 변경 전 또는 중간 단계일 수 있음 */
+    /* color: #3730a3; */ /* 예: indigo-800 (선택 사항) */
+  }
+  80% {
+    color: #4f46e5;
   }
   100% {
-    transform: scale(1); /* 원래 크기로 복귀 */
-    color: #4f46e5; /* 최종 Indigo 색상 유지 */
-    opacity: 1;
-    text-shadow: none; /* 네온 효과 제거 */
+    transform: translateY(0); /* 종료: 제자리 복귀 */
+    color: #4f46e5; /* 종료 색상 (text-indigo-600) */
   }
 }
 
-/* 애니메이션을 적용할 클래스 */
-.animate-pulse-indigo {
-  display: inline-block; /* transform 적용을 위해 */
-  /* 애니메이션 적용: 이름, 지속시간, 타이밍함수, 종료상태 */
-  animation: pulse-indigo 0.7s ease-out forwards;
+/* 개별 문자 기본 스타일 */
+.wave-char {
+  display: inline-block; /* transform 적용 */
+  /* 초기 색상 설정 (애니메이션 지연 동안 보일 색상) */
+  color: #1f2937;
+}
+
+/* 부모 요소에 .animate-wave 클래스가 추가되었을 때 애니메이션 적용 */
+.animate-wave .wave-char {
+  animation-name: wave-jump-return; /* 정의된 keyframes 이름 */
+  animation-duration: 0.6s; /* 애니메이션 총 지속 시간 (점프+복귀) */
+  animation-timing-function: ease-in-out; /* 부드러운 시작과 종료 */
+  animation-fill-mode: forwards; /* 애니메이션 종료 후 100% 상태 유지 */
+  animation-delay: calc(
+    var(--i) * 0.08s
+  ); /* 각 문자별 애니메이션 시작 지연 (더 부드러운 웨이브를 위해 0.08s로 조정) */
 }
