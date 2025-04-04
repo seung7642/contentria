@@ -1,7 +1,8 @@
 'use client'; // 클라이언트 컴포넌트로 전환
 
 import Link from 'next/link';
-import { Feather, Edit3, Share2 } from 'lucide-react';
+// Rss 아이콘 추가, Share2 제거
+import { Feather, Edit3, Rss } from 'lucide-react';
 import { TypeAnimation } from 'react-type-animation'; // 라이브러리 import
 import { memo } from 'react'; // memo import
 
@@ -18,42 +19,27 @@ export default function HomePage() {
           <h1 className="mb-5 whitespace-nowrap text-4xl font-extrabold tracking-tight text-gray-900 md:text-6xl">
             <MemoizedTypeAnimation
               sequence={[
-                // 첫 번째 문구 타이핑
-                '당신의 이야기를 세상에 펼쳐보세요.',
-                1500, // 1.5초 대기
-                // 첫 번째 문구 지우고 두 번째 문구 타이핑 (속도 약간 느리게)
-                () => document.querySelector('.type-animation-cursor')?.remove(), // 커서 깜빡임 방지용 임시 제거
-                '', // 내용 지우기 (빠르게 지워짐)
-                '쉽고 빠르게 시작할 수 있습니다.',
-                1500, // 1.5초 대기
-                // 두 번째 문구 지우고 첫 번째 문구 다시 타이핑 (이번엔 스타일 적용)
-                () => document.querySelector('.type-animation-cursor')?.remove(), // 커서 깜빡임 방지용 임시 제거
-                '', // 내용 지우기
-                '당신의 이야기를 세상에 펼쳐보세요.', // 스타일 없이 먼저 타이핑 완료
+                1000, // 1. 초기 1초 대기
+                '당신의 이야기를 세상에 펼쳐보세요.', // 2. 스타일 없이 문구 타이핑
                 (element) => {
-                  // 타이핑 완료 후 콜백 실행: "이야기" 부분 스타일 적용
+                  // 3. 타이핑 완료 후 콜백 실행: "이야기" 부분에 애니메이션 클래스 적용
                   if (element) {
+                    // "이야기"를 감싸고 애니메이션 클래스 추가, text-indigo-600 제거
                     element.innerHTML =
-                      '당신의 <span class="text-indigo-600">이야기</span>를 세상에 펼쳐보세요.';
-                    // 커서를 다시 생성 (라이브러리가 자동으로 관리해주기도 함)
-                    const cursor = document.createElement('span');
-                    cursor.className = 'type-animation-cursor';
-                    cursor.innerHTML = '|'; // 또는 다른 커서 모양
-                    // element.appendChild(cursor); // 필요시 커서 수동 추가
+                      '당신의 <span class="animate-pulse-indigo">이야기</span>를 세상에 펼쳐보세요.';
                   }
                 },
-                5000, // 마지막 문구를 5초간 보여줌
+                5000, // 4. 애니메이션 적용된 최종 문구를 5초간 보여줌 (애니메이션 시간 포함)
               ]}
               wrapper="span"
               cursor={true}
               repeat={0} // 반복 안 함
-              speed={60} // 타이핑 속도 약간 느리게 (기존 50 -> 60)
-              deletionSpeed={80} // 지우는 속도
+              speed={300} // 타이핑 속도 (이전과 동일)
               className="inline-block" // 스타일 적용 및 레이아웃 안정성 위해
             />
           </h1>
           <p className="mb-10 text-lg text-gray-600 md:text-xl">
-            간편하게 시작하는 나만의 블로그. 지금 바로 시작하세요.
+            복잡함 없이, 나만의 개성을 담아. 당신의 생각과 경험을 공유할 수 있는 가장 쉬운 방법.
           </p>
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
@@ -93,14 +79,14 @@ export default function HomePage() {
                 다양한 테마와 커스텀 도메인으로 개성있는 블로그를 만들어보세요. (곧 제공 예정)
               </p>
             </div>
-            {/* Feature 3: Easy Sharing */}
+            {/* Feature 3: Blog Subscription */}
             <div className="transform rounded-xl border border-gray-100 bg-white p-8 text-center shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg">
-              <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full bg-sky-100 text-sky-600">
-                <Share2 size={32} strokeWidth={1.5} />
+              <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full bg-orange-100 text-orange-600">
+                <Rss size={32} strokeWidth={1.5} />
               </div>
-              <h3 className="mb-3 text-xl font-semibold text-gray-900">손쉬운 공유</h3>
+              <h3 className="mb-3 text-xl font-semibold text-gray-900">블로그 구독</h3>
               <p className="text-gray-600">
-                클릭 한 번으로 소셜 미디어에 글을 공유하고 더 많은 독자와 만나보세요.
+                독자들이 새 글 알림을 받을 수 있도록 이메일 구독 기능을 제공합니다. (추후 제공 예정)
               </p>
             </div>
           </div>

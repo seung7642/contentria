@@ -31,3 +31,32 @@ body {
     text-wrap: balance;
   }
 }
+
+/* "이야기" 텍스트 펄스 애니메이션 Keyframes */
+@keyframes pulse-indigo {
+  0% {
+    transform: scale(1); /* 기본 크기 */
+    /* 시작 색상 (기본 텍스트 색상과 유사하게) - 필요시 조정 */
+    color: #1f2937; /* 예: text-gray-800 */
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.15); /* 약간 확대 */
+    color: #4f46e5; /* 최종 Indigo 색상 (text-indigo-600) */
+    opacity: 1;
+    text-shadow: 0 0 8px rgba(79, 70, 229, 0.5); /* 약간의 네온 효과 */
+  }
+  100% {
+    transform: scale(1); /* 원래 크기로 복귀 */
+    color: #4f46e5; /* 최종 Indigo 색상 유지 */
+    opacity: 1;
+    text-shadow: none; /* 네온 효과 제거 */
+  }
+}
+
+/* 애니메이션을 적용할 클래스 */
+.animate-pulse-indigo {
+  display: inline-block; /* transform 적용을 위해 */
+  /* 애니메이션 적용: 이름, 지속시간, 타이밍함수, 종료상태 */
+  animation: pulse-indigo 0.7s ease-out forwards;
+}
