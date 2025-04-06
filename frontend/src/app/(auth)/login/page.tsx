@@ -1,125 +1,444 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Mail, Lock } from 'lucide-react';
+import { Mail, Lock, ArrowLeft } from 'lucide-react';
 import InputField from '@/components/ui/inputField';
 import Divider from '@/components/ui/divider';
 import GoogleLoginButton from '@/components/auth/googleLoginButton';
+import CodeInput from '@/components/auth/codeInput'; // 새로 만들 컴포넌트
+
+// 단계 정의
+type AuthStep = 'email' | 'password' | 'code' | 'signup-details';
+// 인증 모드 정의
+type AuthMode = 'signin' | 'signup';
 
 const LoginPage = () => {
-  // 상태 관리
-  const [isSignInPage, setIsSignInPage] = useState(true);
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
+  const [authMode, setAuthMode] = useState<AuthMode>('signin');
+  const [step, setStep] = useState<AuthStep>('email');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState(''); // 회원가입용
+  const [code, setCode] = useState('');
+  const [isLoading, setIsLoading] = useState(false); // API 로딩 상태 (선택적)
+  const [error, setError] = useState<string | null>(null); // 에러 메시지 표시용
 
-  // 이벤트 핸들러
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+  // --- 이벤트 핸들러 ---
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleEmailSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(isSignInPage ? 'Logging in...' : 'Signing up...', formData);
-    // 여기에 로그인 또는 회원가입 API 호출을 구현
+    setError(null); // 이전 에러 초기화
+
+    // TODO: 이메일 유효성 검사 추가
+    if (!email) {
+      setError('Please enter your email address.');
+      return;
+    }
+    setIsLoading(true); // 로딩 시작
+
+    // 실제 API 호출 예시 (백엔드에서 이메일 존재 여부 확인 등)
+    // fakeApiCall().then(() => {
+    //   if (authMode === 'signin') {
+    //     // TODO: 백엔드 응답에 따라 이메일이 존재하면 비밀번호 단계로
+    //     setStep('password');
+    //   } else {
+    //      // 회원가입 시 상세 정보 단계로
+    //      setStep('signup-details');
+    //   }
+    // }).catch(err => setError(err.message)).finally(() => setIsLoading(false));
+
+    // 임시 로직: 바로 다음 단계로 이동
+    setTimeout(() => {
+      if (authMode === 'signin') {
+        setStep('password');
+      } else {
+        setStep('signup-details');
+      }
+      setIsLoading(false);
+    }, 500); // 네트워크 지연 시뮬레이션
   };
 
-  return (
-    <div className="flex min-h-screen items-start justify-center bg-gray-50 px-4 pt-48 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8">
-        {/* 헤더 */}
+  const handlePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    // TODO: 비밀번호 유효성 검사 추가
+    if (!password) {
+      setError('Please enter your password.');
+      return;
+    }
+    setIsLoading(true);
+    console.log('Attempting sign in with:', email, password);
+    // TODO: 여기에 이메일/비밀번호 로그인 API 호출 구현
+    // fakeApiCall({ email, password }).then(user => { /* 로그인 성공 처리 */ }).catch(err => setError(err.message)).finally(() => setIsLoading(false));
+
+    // 임시 성공 처리
+    setTimeout(() => {
+      alert('Sign in successful (simulation)');
+      setIsLoading(false);
+      // 로그인 성공 후 리디렉션 등
+    }, 1000);
+  };
+
+  const handleCodeSubmit = () => {
+    setError(null);
+
+    setIsLoading(true);
+    console.log('Attempting sign in with email code:', email, code);
+
+    // TODO: 여기에 이메일/코드 로그인 API 호출 구현
+    // fakeApiCall({ email, code }).then(user => { /* 로그인 성공 처리 */ }).catch(err => setError(err.message)).finally(() => setIsLoading(false));
+
+    // 임시 성공 처리
+    setTimeout(() => {
+      alert('Sign in with code successful (simulation)');
+      setIsLoading(false);
+      // 로그인 성공 후 리디렉션 등
+    }, 1000);
+  };
+
+  const handleSignUpSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+    if (!password) {
+      setError('Please enter a password.');
+      return;
+    }
+    // TODO: 비밀번호 정책 검사 추가 (길이, 특수문자 등)
+
+    setIsLoading(true);
+    console.log('Attempting sign up with:', email, password);
+    // TODO: 여기에 회원가입 API 호출 구현
+    // fakeApiCall({ email, password }).then(newUser => { /* 회원가입 성공 처리 */ }).catch(err => setError(err.message)).finally(() => setIsLoading(false));
+
+    // 임시 성공 처리
+    setTimeout(() => {
+      alert('Sign up successful (simulation)! Please sign in.');
+      // 회원가입 성공 후 로그인 페이지 초기 상태로 전환
+      setAuthMode('signin');
+      setStep('email');
+      setEmail(''); // 이메일 필드 초기화 또는 유지 선택
+      setPassword('');
+      setConfirmPassword('');
+      setIsLoading(false);
+    }, 1000);
+  };
+
+  const requestEmailCode = () => {
+    setError(null);
+    setIsLoading(true);
+    console.log('Requesting email sign-in code for:', email);
+    // TODO: 여기에 이메일 인증 코드 발송 API 호출 구현
+    // fakeApiCall({ email, type: 'send_code' }).then(() => setStep('code')).catch(err => setError(err.message)).finally(() => setIsLoading(false));
+
+    // 임시 처리
+    setTimeout(() => {
+      setStep('code');
+      setIsLoading(false);
+    }, 500);
+  };
+
+  const goBack = () => {
+    setError(null); // 에러 초기화
+    if (step === 'password') {
+      setStep('email');
+      setPassword('');
+      setCode('');
+    } else if (step === 'code') {
+      setStep('password');
+      setCode('');
+    } else if (step === 'signup-details') {
+      setStep('email'); // 회원가입 상세에서 이메일 단계로
+      setPassword('');
+      setConfirmPassword('');
+    }
+  };
+
+  const renderBackButton = () => (
+    <button
+      type="button"
+      onClick={goBack}
+      className="absolute left-4 top-4 text-gray-500 hover:text-gray-700"
+      aria-label="Go back"
+    >
+      <ArrowLeft size={20} />
+    </button>
+  );
+
+  // --- 렌더링 로직 ---
+
+  const renderEmailStep = () => (
+    <>
+      <form className="mt-8 space-y-6" onSubmit={handleEmailSubmit}>
+        <InputField
+          id="email"
+          name="email"
+          type="email"
+          icon={Mail}
+          placeholder="Your email address"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          autoComplete="email"
+          isRounded="both"
+          label="Email"
+          required
+        />
+        {error && <p className="text-center text-sm text-red-600">{error}</p>}
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            {isSignInPage ? 'Sign in to your account' : 'Create a new account'}
-          </h2>
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+          >
+            {isLoading ? 'Processing...' : 'Continue'}
+          </button>
         </div>
+      </form>
 
-        {/* 폼 */}
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-px">
-            <InputField
-              id="email-address"
-              name="email"
-              type="email"
-              icon={Mail}
-              placeholder="Email address"
-              value={formData.email}
-              onChange={handleInputChange}
-              autoComplete="email"
-              isRounded="top"
-            />
-            <InputField
-              id="password"
-              name="password"
-              type="password"
-              icon={Lock}
-              placeholder="Password"
-              value={formData.password}
-              onChange={handleInputChange}
-              autoComplete="current-password"
-              isRounded="bottom"
-            />
-          </div>
-
-          <div>
-            <button
-              type="submit"
-              className="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-500 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-            >
-              {isSignInPage ? 'Sign in' : 'Sign up'}
-            </button>
-          </div>
-
-          {/* 추가 옵션 */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <input
-                id="remember-me"
-                name="remember-me"
-                type="checkbox"
-                className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-              />
-              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                Remember me
-              </label>
-            </div>
-
-            {isSignInPage && (
-              <div className="text-sm">
-                <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">
-                  Forgot your password?
-                </a>
-              </div>
-            )}
-          </div>
-        </form>
-
-        {/* Google 로그인 */}
+      <div className="mt-6">
+        <Divider text="OR" />
         <div className="mt-6">
-          <Divider text="Or continue with" />
-          <div className="mt-6">
-            <GoogleLoginButton />
-          </div>
-        </div>
-
-        {/* 계정 전환 */}
-        <div className="mt-4 text-center">
-          <p className="text-sm text-gray-600">
-            {isSignInPage ? "Don't have an account?" : 'Already have an account?'}
-            <button
-              type="button"
-              className="ml-1 font-medium text-indigo-600 transition duration-150 ease-in-out hover:text-indigo-500 focus:underline focus:outline-none"
-              onClick={() => setIsSignInPage(!isSignInPage)}
-            >
-              {isSignInPage ? 'Sign up' : 'Sign in'}
-            </button>
-          </p>
+          <GoogleLoginButton />
         </div>
       </div>
+
+      <div className="mt-4 text-center">
+        <p className="text-sm text-gray-600">
+          {authMode === 'signin' ? "Don't have an account?" : 'Already have an account?'}
+          <button
+            type="button"
+            className="ml-1 font-medium text-indigo-600 transition duration-150 ease-in-out hover:text-indigo-500 focus:underline focus:outline-none"
+            onClick={() => {
+              setAuthMode(authMode === 'signin' ? 'signup' : 'signin');
+              setStep('email'); // 모드 전환 시 항상 이메일 단계부터 시작
+              setError(null);
+              setEmail(''); // 이메일 필드 초기화
+            }}
+          >
+            {authMode === 'signin' ? 'Sign up' : 'Sign in'}
+          </button>
+        </p>
+      </div>
+    </>
+  );
+
+  const renderPasswordStep = () => (
+    <>
+      {renderBackButton()}
+      {/* 이메일 표시 및 변경 옵션 */}
+      <form className="mt-8" onSubmit={handlePasswordSubmit}>
+        <InputField
+          id="email"
+          label="Email"
+          disabled={true}
+          value={email}
+          name="email"
+          type="email"
+          placeholder="Email address"
+        />
+
+        {/* Password 라벨과 Forgot password 링크 */}
+        <div className="mb-1 mt-6 flex items-center justify-between">
+          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            Password
+          </label>
+          <a href="#" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+            Forgot your password?
+          </a>
+        </div>
+        <InputField
+          id="password"
+          name="password"
+          type="password"
+          icon={Lock}
+          placeholder="Enter your password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          autoComplete="current-password"
+          isRounded="both"
+          required
+        />
+        {error && <p className="text-center text-sm text-red-600">{error}</p>}
+        <div className="mt-8">
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+          >
+            {isLoading ? 'Signing in...' : 'Sign in'}
+          </button>
+        </div>
+      </form>
+
+      {/* 이메일 코드로 로그인 옵션 */}
+      <div className="mt-6">
+        <Divider text={'OR'} />
+        <div className="mt-6">
+          <button
+            type="button"
+            onClick={requestEmailCode}
+            disabled={isLoading}
+            className="group relative flex w-full items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+          >
+            <Mail className="mr-2 h-4 w-4" />
+            {isLoading ? 'Sending...' : 'Email sign-in code'}
+          </button>
+        </div>
+      </div>
+    </>
+  );
+
+  const renderCodeStep = () => (
+    <>
+      {renderBackButton()}
+      <div className="mt-4 pl-8 text-sm text-gray-600">
+        <p>Enter the code sent to</p>
+        <span className="font-medium text-gray-900">{email}</span>
+      </div>
+      <form className="mt-4 space-y-6" onSubmit={handleCodeSubmit}>
+        <CodeInput
+          length={6}
+          onChange={setCode}
+          onComplete={(code) => {
+            setCode(code);
+            if (code.length === 6) {
+              handleCodeSubmit();
+            } else {
+              setError('Please enter the 6-digit code.');
+            }
+          }}
+        />
+        {error && <p className="text-center text-sm text-red-600">{error}</p>}
+      </form>
+    </>
+  );
+
+  const renderSignUpDetailsStep = () => (
+    <>
+      {renderBackButton()}
+      <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+        Create your password
+      </h2>
+      <div className="mt-4 text-center text-sm text-gray-600">
+        Signing up with <span className="font-medium text-gray-900">{email}</span>
+        <button
+          type="button"
+          className="ml-1 font-medium text-indigo-600 transition duration-150 ease-in-out hover:text-indigo-500 focus:underline focus:outline-none"
+          onClick={goBack}
+        >
+          (Change)
+        </button>
+      </div>
+      <form className="mt-8 space-y-6" onSubmit={handleSignUpSubmit}>
+        <InputField
+          id="password"
+          name="password"
+          type="password"
+          icon={Lock}
+          placeholder="Create a password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          autoComplete="new-password"
+          isRounded="top" // 위쪽만 둥글게
+          required
+        />
+        <InputField
+          id="confirm-password"
+          name="confirmPassword"
+          type="password"
+          icon={Lock}
+          placeholder="Confirm password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          autoComplete="new-password"
+          isRounded="bottom" // 아래쪽만 둥글게
+          required
+        />
+        {error && <p className="text-center text-sm text-red-600">{error}</p>}
+        <div>
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+          >
+            {isLoading ? 'Creating account...' : 'Create Account'}
+          </button>
+        </div>
+      </form>
+      {/* 로그인 페이지로 돌아가기 */}
+      <div className="mt-4 text-center">
+        <p className="text-sm text-gray-600">
+          Already have an account?
+          <button
+            type="button"
+            className="ml-1 font-medium text-indigo-600 transition duration-150 ease-in-out hover:text-indigo-500 focus:underline focus:outline-none"
+            onClick={() => {
+              setAuthMode('signin');
+              setStep('email');
+              setError(null);
+              // 필드 초기화
+              setEmail('');
+              setPassword('');
+              setConfirmPassword('');
+            }}
+          >
+            Sign in
+          </button>
+        </p>
+      </div>
+    </>
+  );
+
+  return (
+    // pt-48은 콘텐츠 양에 따라 조정 필요
+    <div className="flex min-h-screen items-start justify-center bg-gray-50 px-4 pt-64 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-8">
+        <h2 className="text-center text-3xl font-extrabold text-gray-900">
+          {authMode === 'signin' ? (step === 'code' ? 'Verify your email' : 'Sign in') : 'Sign up'}
+        </h2>
+        {/* 카드 스타일 Wrapper 추가 */}
+        <div className="relative rounded-lg bg-white p-8 shadow-md">
+          {/* 조건부 렌더링 */}
+          {step === 'email' && renderEmailStep()}
+          {step === 'password' && authMode === 'signin' && renderPasswordStep()}
+          {step === 'code' && authMode === 'signin' && renderCodeStep()}
+          {step === 'signup-details' && authMode === 'signup' && renderSignUpDetailsStep()}
+        </div>
+      </div>
+      {authMode === 'signin' && (
+        <div className="fixed bottom-12 left-0 right-0 text-center text-sm text-gray-500">
+          By continuing, you agree to our{' '}
+          <a href="/policy?tab=privacy" className="text-indigo-600 hover:text-indigo-500">
+            Privacy Policy
+          </a>{' '}
+          and{' '}
+          <a href="/policy?tab=terms" className="text-indigo-600 hover:text-indigo-500">
+            Terms of Service
+          </a>
+        </div>
+      )}
     </div>
   );
 };
 
 export default LoginPage;
+
+// --- 가상 API 호출 함수 (테스트용) ---
+// 실제로는 fetch 또는 axios 등을 사용하여 백엔드와 통신해야 합니다.
+// function fakeApiCall(data?: any): Promise<any> {
+//   return new Promise((resolve, reject) => {
+//     console.log('API call with:', data);
+//     setTimeout(() => {
+//       // 예시: 특정 이메일은 실패하도록 설정
+//       if (data?.email === 'fail@example.com') {
+//          reject(new Error('Simulated API error: Invalid credentials.'));
+//       } else if (data?.code === '000000') {
+//          reject(new Error('Simulated API error: Invalid code.'));
+//       } else {
+//          resolve({ success: true, user: { id: '123', email: data?.email || 'test@example.com' } });
+//       }
+//     }, 800); // 800ms 지연
+//   });
+// }

@@ -1,10 +1,10 @@
 'use client'; // 클라이언트 컴포넌트로 전환
 
 import Link from 'next/link';
-// LayoutDashboard 아이콘 추가, Feather 제거
 import { Edit3, LayoutDashboard, Rss } from 'lucide-react';
-import { TypeAnimation } from 'react-type-animation'; // 라이브러리 import
-import { memo, useRef } from 'react'; // useRef 추가
+import { TypeAnimation } from 'react-type-animation';
+import { memo, useRef } from 'react';
+import Footer from '@/components/home/footer';
 
 // TypeAnimation 컴포넌트를 memo로 감싸서 불필요한 리렌더링 방지 (선택 사항)
 const MemoizedTypeAnimation = memo(TypeAnimation);
@@ -13,8 +13,10 @@ export default function HomePage() {
   const h1Ref = useRef<HTMLHeadingElement>(null); // h1 요소 참조
 
   const triggerWaveAnimation = (element: HTMLSpanElement | null) => {
-    if (!element) return;
-    // ... (이전과 동일한 triggerWaveAnimation 함수 내용) ...
+    if (!element) {
+      return;
+    }
+
     const wordToAnimate = '이야기';
     const textBefore = '당신의 ';
     const textAfter = '를 세상에 펼쳐보세요.';
@@ -23,18 +25,18 @@ export default function HomePage() {
       .map((char, index) => `<span style="--i: ${index};" class="wave-char">${char}</span>`)
       .join('');
     element.innerHTML = `${textBefore}${wordSpans}${textAfter}`;
+
     const headingElement = h1Ref.current;
     if (headingElement) {
       headingElement.classList.remove('animate-wave');
       setTimeout(() => {
         headingElement.classList.add('animate-wave');
       }, 10);
-      // 클래스 제거 로직 없음 (이전 최종본과 동일)
     }
   };
 
   return (
-    <div className="flex flex-col">
+    <div className="flex min-h-screen flex-col">
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-indigo-50 via-white to-white py-24 text-center md:py-32">
         <div className="container mx-auto max-w-4xl px-6">
@@ -42,7 +44,6 @@ export default function HomePage() {
             ref={h1Ref}
             className="mb-5 whitespace-nowrap text-4xl font-extrabold tracking-tight text-gray-900 md:text-6xl"
           >
-            {/* TypeAnimation 부분은 변경 없음 */}
             <MemoizedTypeAnimation
               sequence={[
                 1000,

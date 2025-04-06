@@ -6,7 +6,6 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
 import ProfileDropdown from './ProfileDropdown';
-import SubscribeModal from './SubscribeModal';
 import UserAvatar from './UserAvatar';
 import { User } from './types';
 
@@ -30,8 +29,14 @@ const HomeHeader = () => {
       if (token && userData) {
         try {
           setUser(JSON.parse(userData));
-        } catch (e) {
-          console.error('Failed to parse user data');
+        } catch (e: unknown) {
+          if (e instanceof SyntaxError) {
+            console.error(`JSON 파싱 오류 Failed to parse user data: ${e.message}`);
+          } else if (e instanceof Error) {
+            console.error(`사용자 데이터를 불러오는 중 오류 발생: ${e.message}`);
+          } else {
+            console.error(`알 수 없는 오류 발생: ${e}`);
+          }
         }
       }
     };
@@ -63,22 +68,6 @@ const HomeHeader = () => {
     router.push('/');
   };
 
-  // 클라이언트 사이드 마운트 전에는 초기 UI 반환
-  if (!mounted) {
-    return (
-      <header className="flex items-center justify-between border-b px-6 py-5">
-        <div className="w-24"></div>
-        <h1 className="text-2xl font-bold">Blog</h1>
-        <div className="text-right">
-          <span className="mx-2 my-2 rounded-lg bg-indigo-500 px-4 py-3 text-sm text-white">
-            Subscribe
-          </span>
-          <span className="my-2 rounded-lg bg-white px-4 py-3 text-sm text-gray-800">Sign in</span>
-        </div>
-      </header>
-    );
-  }
-
   return (
     <header className="border-b shadow-sm">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
@@ -104,7 +93,7 @@ const HomeHeader = () => {
             ) : (
               <Link
                 href="/login"
-                className="my-2 ml-2 rounded-lg bg-white px-4 py-3 text-sm text-gray-800 hover:bg-gray-200"
+                className="my-2 ml-2 rounded-lg bg-indigo-500 px-4 py-3 text-sm font-medium text-white shadow-sm hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors duration-200"
               >
                 Sign in
               </Link>

@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import '@/app/globals.css'; // 전역 스타일
-import { Footer } from '@/components/blog/footer';
-import Header from '@/components/home/homeHeader';
+import Footer from '@/components/home/footer';
+import HomeHeader from '@/components/home/homeHeader';
 
 // Pretendard 폰트 설정
 const pretendard = localFont({
@@ -30,7 +30,7 @@ export default function HomeLayout({
       <body className="font-pretendard grid min-h-screen grid-rows-[auto_1fr_auto] bg-white antialiased">
         {' '}
         {/* body에 기본 폰트 적용 및 안티앨리어싱 */}
-        <Header /> {/* 헤더 렌더링 */}
+        <HomeHeader /> {/* 헤더 렌더링 */}
         {/* 👇 main 태그에 bg-white 클래스 추가 */}
         <main className="w-full overflow-auto bg-white">
           {children} {/* 페이지 콘텐츠 렌더링 */}
