@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { Edit3, LayoutDashboard, Rss } from 'lucide-react';
 import { TypeAnimation } from 'react-type-animation';
 import { memo, useRef } from 'react';
-import Footer from '@/components/home/footer';
 
 // TypeAnimation 컴포넌트를 memo로 감싸서 불필요한 리렌더링 방지 (선택 사항)
 const MemoizedTypeAnimation = memo(TypeAnimation);

@@ -161,8 +161,8 @@ export default function PolicyPage() {
                   보호책임자를 지정하고 있습니다.
                 </p>
                 <ul className="mt-4 list-disc pl-6 text-gray-700">
-                  <li>개인정보 보호책임자: 홍길동</li>
-                  <li>연락처: privacy@example.com</li>
+                  <li>개인정보 보호책임자: 이승호</li>
+                  <li>연락처: seung7642@gmail.com</li>
                 </ul>
               </section>
 
