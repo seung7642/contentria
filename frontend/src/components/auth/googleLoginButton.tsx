@@ -1,173 +1,58 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
-
-// Google 계정 타입 정의
-interface GoogleCredentialResponse {
-  credential: string;
-  select_by: string;
-  client_id: string;
-}
-
-// 버튼 렌더링 옵션 타입
-interface GoogleButtonOptions {
-  type: 'standard' | 'icon';
-  theme?: 'outline' | 'filled_blue' | 'filled_black';
-  size?: 'large' | 'medium' | 'small';
-  text?: 'signin_with' | 'signup_with' | 'continue_with' | 'signin';
-  shape?: 'rectangular' | 'pill' | 'circle' | 'square';
-  logo_alignment?: 'left' | 'center';
-  width?: string | number;
-  locale?: string;
-}
-
-// Google 객체 타입 정의
-interface GoogleAccountsType {
-  id: {
-    initialize: (config: {
-      client_id: string;
-      callback: (response: GoogleCredentialResponse) => void;
-      auto_select?: boolean;
-      cancel_on_tap_outside?: boolean;
-    }) => void;
-    renderButton: (element: HTMLElement, options: GoogleButtonOptions) => void;
-    prompt: () => void;
-    disableAutoSelect: () => void;
-    cancel: () => void;
-  };
-}
-
-// Window 인터페이스에 Google 속성 추가
-declare global {
-  interface Window {
-    google?: {
-      accounts: GoogleAccountsType;
-    };
-  }
-}
+import React from 'react';
 
 const GoogleLoginButton: React.FC = () => {
-  const googleButtonRef = useRef<HTMLDivElement>(null);
+  const handleGoogleLoginClick = () => {
+    const client_id = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    const redirect_uri = process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI; // 백엔드 콜백 URL
+    const response_type = 'code';
+    const scope = 'openid email profile';
 
-  useEffect(() => {
-    // Google Identity Services 스크립트 로드
-    const loadGoogleScript = () => {
-      if (typeof window !== 'undefined' && !window.google) {
-        const script = document.createElement('script');
-        script.src = 'https://accounts.google.com/gsi/client';
-        script.async = true;
-        script.defer = true;
-        document.head.appendChild(script);
+    const params = new URLSearchParams({
+      client_id: client_id || '',
+      redirect_uri: redirect_uri || '',
+      response_type: response_type,
+      scope: scope,
+      // state: 'your_random_state_string', // CSRF 보호를 위해 state 파라미터 사용 권장
+    });
 
-        script.onload = initializeGoogleButton;
-        return () => {
-          document.head.removeChild(script);
-        };
-      } else if (window.google) {
-        initializeGoogleButton();
-      }
-    };
-
-    // Google 버튼 초기화
-    const initializeGoogleButton = () => {
-      if (window.google && googleButtonRef.current) {
-        window.google.accounts.id.initialize({
-          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
-          callback: handleCredentialResponse,
-          auto_select: false,
-          cancel_on_tap_outside: true,
-        });
-
-        window.google.accounts.id.renderButton(googleButtonRef.current, {
-          type: 'standard',
-          theme: 'outline',
-          size: 'large',
-          text: 'signin_with',
-          shape: 'rectangular',
-          logo_alignment: 'left',
-          width: googleButtonRef.current.clientWidth,
-        });
-      }
-    };
-
-    loadGoogleScript();
-
-    // 컴포넌트 언마운트 시 Google Identity 정리
-    return () => {
-      if (window.google) {
-        window.google.accounts.id.cancel();
-      }
-    };
-  }, []);
-
-  // Google에서 응답 처리
-  const handleCredentialResponse = async (response: GoogleCredentialResponse) => {
-    // // 디버깅용 콘솔 출력
-    console.log('Google 응답 전체:', response);
-    console.log('Google 인증 토큰(JWT):', response.credential);
-
-    // JWT 디코딩하여 페이로드 확인 (선택 사항)
-    try {
-      const payload = JSON.parse(atob(response.credential.split('.')[1]));
-      console.log('JWT 페이로드 (디코딩):', payload);
-    } catch (error) {
-      console.error('JWT 디코딩 오류:', error);
-    }
-
-    if (response.credential) {
-      // 백엔드로 ID 토큰 전송
-      await sendTokenToBackend(response.credential);
-    }
-  };
-
-  // 백엔드로 토큰 전송
-  const sendTokenToBackend = async (credential: string): Promise<void> => {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/google/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ credential }),
-      });
-
-      if (response.ok) {
-        // 백엔드에서 반환하는 데이터 형식 정의
-        const data: {
-          token: string;
-          userId: number;
-          name: string;
-          email: string;
-          profileImage: string;
-        } = await response.json();
-
-        // JWT 토큰 저장
-        localStorage.setItem('auth_token', data.token);
-
-        // 사용자 정보 저장
-        const userData = {
-          id: data.userId,
-          name: data.name,
-          email: data.email,
-          profileImage: data.profileImage,
-        };
-        localStorage.setItem('userData', JSON.stringify(userData));
-
-        window.location.href = '/'; // 로그인 후 리디렉션 페이지
-      } else {
-        console.error('Login failed');
-      }
-    } catch (error) {
-      console.error('Error during authentication', error);
-    }
+    const googleLoginUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+    window.location.href = googleLoginUrl;
   };
 
   return (
-    <div
-      ref={googleButtonRef}
-      className="flex w-full justify-center"
-      data-auto-select="false"
-    ></div>
+    <button
+      onClick={handleGoogleLoginClick}
+      className="/* 높이 조정: py-2.5에서 py-2로 변경 */ /* 텍스트 크기 조정: text-base에서 text-sm으로 변경 */ flex w-full cursor-pointer items-center justify-center rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors duration-150 ease-in-out hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+      style={{ minHeight: '36px' }} // 높이 조정: 40px에서 36px로 변경
+    >
+      {/* 구글 공식 로고 SVG */}
+      <svg
+        className="mr-2 h-4 w-4" // 크기 조정: mr-3 h-5 w-5에서 mr-2 h-4 w-4로 변경
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+          fill="#4285F4"
+        />
+        <path
+          d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+          fill="#34A853"
+        />
+        <path
+          d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+          fill="#FBBC05"
+        />
+        <path
+          d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+          fill="#EA4335"
+        />
+      </svg>
+      {/* 버튼 텍스트 */}
+      <span>Sign in with Google</span>
+    </button>
   );
 };
 
