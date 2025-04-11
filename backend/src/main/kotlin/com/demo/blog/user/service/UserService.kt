@@ -1,7 +1,7 @@
 package com.demo.blog.user.service
 
 import com.demo.blog.user.domain.User
-import com.demo.blog.auth.dto.GoogleUserInfo
+import com.demo.blog.user.security.GoogleUserInfo
 import com.demo.blog.user.repository.RoleRepository
 import com.demo.blog.user.repository.UserRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -16,7 +16,7 @@ class UserService(
     private val logger = KotlinLogging.logger {}
 
     @Transactional
-    fun createOrUpdateGoogleUser(googleUserInfo: GoogleUserInfo): User {
+    fun upsertGoogleUser(googleUserInfo: GoogleUserInfo): User {
         return userRepository.findByEmail(googleUserInfo.email)?.let { existingUser ->
             // 기존 사용자가 있는 경우, 필요시 정보 업데이트
             existingUser

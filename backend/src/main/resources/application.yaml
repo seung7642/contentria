@@ -3,6 +3,7 @@ server:
   servlet:
     context-path: /api
 
+
 spring:
   application:
     name: backend
@@ -18,7 +19,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: update # 운영 환경에서는 validate 설정 필요. (Flyway 또는 Liquibase 같은 데이터베이스 마이그레이션 도구도 고려)
     show-sql: false
     properties:
       hibernate:
@@ -31,11 +32,11 @@ spring:
           google:
             client-id: ${GOOGLE_CLIENT_ID}
             client-secret: ${GOOGLE_CLIENT_SECRET}
-            redirect-uri: "{baseUrl}/auth/google/callback"
             scope:
               - openid
               - email
               - profile
+            redirect-uri: "{baseUrl}/api/login/oauth2/code/{registrationId}"
 
 app:
   auth:
@@ -44,3 +45,7 @@ app:
       expiration-ms: 86400000  # 24시간
     cors:
       allowed-origins: http://localhost:3000
+
+logging:
+  level:
+    root: info

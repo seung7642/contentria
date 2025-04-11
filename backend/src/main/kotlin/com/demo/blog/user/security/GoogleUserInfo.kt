@@ -1,4 +1,4 @@
-package com.demo.blog.auth.dto
+package com.demo.blog.user.security
 
 data class GoogleUserInfo(
     val id: String,
