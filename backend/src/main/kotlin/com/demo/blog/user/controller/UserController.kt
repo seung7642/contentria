@@ -21,7 +21,7 @@ class UserController {
         val response = UserInfoResponse(
             userId = userDetails.getUserId(),
             email = userDetails.getEmail(),
-            name = userDetails.getUsername(),
+            name = userDetails.getDisplayName(),
             profileImage = userDetails.getProfileImageUrl()
         )
 
