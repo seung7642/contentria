@@ -36,7 +36,7 @@ spring:
               - openid
               - email
               - profile
-            redirect-uri: "{baseUrl}/api/login/oauth2/code/{registrationId}"
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
 
 app:
   auth:

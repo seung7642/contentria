@@ -77,7 +77,7 @@ class CustomeAuthenticationSuccessHandler(
             // 7. 성공 처리 및 리디렉션
             // Spring Security가 사용한 임시 세션 데이터 정리
             clearAuthenticationAttributes(request)
-            val redirectUrl = "/dashboard"
+            val redirectUrl = "http://localhost:3000/dashboard"
             redirectStrategy.sendRedirect(request, response, redirectUrl)
             logger.info {"Successfully generated JWT and redirected user ${user.email}"}
         } catch (e: Exception) {
