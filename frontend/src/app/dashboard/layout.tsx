@@ -1,91 +1,76 @@
+// src/app/dashboard/layout.tsx
+
 'use client';
 
-import { useEffect, useState } from 'react';
-import type { Metadata } from 'next';
-import localFont from 'next/font/local';
-import '@/app/globals.css';
-import DashboardSidebar from '@/components/dashboard/dashboardSidebar';
-import DashboardHeader from '@/components/dashboard/dashboardHeader';
-import AccessDenied from '@/components/dashboard/accessDenied';
+import React from 'react'; // React import 추가
+// UserProvider와 useUser 훅 import
+import { UserProvider, useUser } from '@/context/UserContext'; // 실제 경로로 수정
 
-const pretendard = localFont({
-  src: '../../../public/fonts/PretendardVariable.woff2',
-  display: 'swap',
-  weight: '45 920',
-});
+// 가정: DashboardHeader, DashboardSidebar, AccessDenied 컴포넌트가 존재함
+import DashboardHeader from '@/components/dashboard/DashboardHeader'; // 실제 경로로 수정
+import DashboardSidebar from '@/components/dashboard/DashboardSidebar'; // 실제 경로로 수정
+import { pretendard } from '@/styles/fonts'; // 폰트 설정 가정
 
-// export const metadata: Metadata = {
-//   title: '블로그 관리',
-//   description: '블로그 관리 대시보드',
-// };
+// 내부 컨텐츠 렌더링을 담당할 컴포넌트
+function DashboardInternalContent({ children }: { children: React.ReactNode }) {
+  // 이 컴포넌트는 UserProvider 내부에 렌더링되므로 useUser() 사용 가능
+  const { user, isLoading, error } = useUser();
 
+  if (isLoading) {
+    return (
+      <div className="flex h-48 w-full items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent"></div>
+        <span className="ml-3">사용자 정보 로딩 중...</span>
+      </div>
+    );
+  }
+
+  if (error || !user) {
+    // 에러 발생 또는 사용자 정보 로드 실패 시
+    return (
+      <div className="w-full px-4 py-6 text-center">
+        <p className="text-red-600">
+          {error?.message === 'Unauthorized'
+            ? '로그인이 필요하거나 세션이 만료되었습니다.'
+            : '사용자 정보를 불러오는 중 오류가 발생했습니다.'}
+        </p>
+        {/* 필요시 로그인 버튼 등 추가 */}
+      </div>
+    );
+  }
+
+  // 로딩 완료 및 사용자 정보 로드 성공 시
+  return (
+    <div className="flex flex-col justify-center md:flex-row">
+      <DashboardSidebar /> {/* 필요시 user 정보 전달 */}
+      <div className="max-w-5xl flex-1 px-4 py-6 md:px-6">{children}</div>
+    </div>
+  );
+}
+
+// DashboardLayout 정의
 export default function DashboardLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [isAuthorized, setIsAuthorized] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [userEmail, setUserEmail] = useState<string>('');
-
-  useEffect(() => {
-    // 사용자 권한 확인
-    const checkAuthorization = () => {
-      try {
-        const userData = localStorage.getItem('userData');
-
-        if (userData) {
-          const { email } = JSON.parse(userData);
-          setUserEmail(email);
-          console.log(`이메일: ${userEmail}`);
-          console.log(email === 'seung7642@gmail.com');
-
-          // 특정 이메일 사용자에게만 권한 부여
-          setIsAuthorized(email === 'seung7642@gmail.com');
-        } else {
-          setUserEmail('로그인되지 않은 사용자');
-          setIsAuthorized(false);
-        }
-      } catch (error) {
-        console.error('사용자 정보 로드 실패:', error);
-        setUserEmail('오류 발생');
-        setIsAuthorized(false);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    // CSR에서만 실행
-    if (typeof window !== 'undefined') {
-      checkAuthorization();
-    }
-  }, []);
+  // DashboardLayout 자체에서는 useUser()를 직접 호출하지 않습니다.
+  // 상태 관리 및 로직은 UserProvider에 위임합니다.
 
   return (
-    <html lang="ko">
-      <body className={`${pretendard.className} bg-gray-50`}>
-        <div className="flex min-h-screen flex-col">
-          <DashboardHeader />
-          <div className="mx-auto mt-10 w-full max-w-7xl flex-1">
-            {isLoading ? (
-              <div className="flex h-48 w-full items-center justify-center">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent"></div>
-                <span className="ml-3">로딩 중...</span>
-              </div>
-            ) : isAuthorized ? (
-              <div className="flex flex-col justify-center md:flex-row">
-                <DashboardSidebar />
-                <div className="max-w-5xl flex-1 px-4 py-6 md:px-6">{children}</div>
-              </div>
-            ) : (
-              // 권한이 없는 경우 접근 거부 화면 표시
-              <div className="w-full px-4 py-6">
-                <AccessDenied userEmail={userEmail} />
-              </div>
-            )}
-          </div>
+    // UserProvider가 최상위에서 실제 컨텐츠 렌더링 로직을 감쌉니다.
+    <UserProvider>
+      {/* <html>, <body>는 루트 레이아웃에만 위치해야 합니다. */}
+      <div className={`flex min-h-screen flex-col ${pretendard.className} bg-gray-50`}>
+        {/* Header는 Provider 내부 또는 외부에 위치 가능 */}
+        {/* Provider 내부에 위치시키면 Header에서도 useUser() 사용 가능 */}
+        <DashboardHeader />
+        <div className="mx-auto mt-10 w-full max-w-7xl flex-1">
+          {/* 실제 컨텐츠는 UserProvider 내부에서 렌더링되는 DashboardInternalContent가 처리 */}
+          <DashboardInternalContent>{children}</DashboardInternalContent>
         </div>
-      </body>
-    </html>
+        {/* Footer 등 */}
+      </div>
+    </UserProvider>
   );
 }
