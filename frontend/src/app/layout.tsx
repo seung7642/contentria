@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html land="ko">
+    <html lang="ko">
       <body className={pretendard.className}>{children}</body>
     </html>
   );
