@@ -4,7 +4,8 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Search, Bell, LogOut, User, Home, Settings } from 'lucide-react';
-import { User as UserType } from '../blog/header/types';
+import { useAuthStore, User as UserType } from '@/store/authStore';
+import { useRouter } from 'next/navigation'; // 로그아웃 후 리디렉션을 위해 추가
 
 const DashboardHeader = () => {
   const [isSearchVisible, setIsSearchVisible] = useState(false);
@@ -12,7 +13,13 @@ const DashboardHeader = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const notificationRef = useRef(null);
   const profileRef = useRef(null);
-  const [user, setUser] = useState<UserType>();
+  const router = useRouter();
+
+  // Zustand 스토어에서 사용자 정보 가져오기. (isLoading 상태도 필요하다면 가져올 수 있음)
+  const user = useAuthStore((state) => state.user);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  // Zustand 스토어의 액션 접근 (로그아웃 시 사용)
+  const clearUser = useAuthStore((state) => state.setUser);
 
   // 알림 목록 - 실제로는 API에서 가져올 것
   const notifications = [
@@ -23,18 +30,17 @@ const DashboardHeader = () => {
 
   // 외부 클릭 감지
   useEffect(() => {
-    try {
-      const userData = localStorage.getItem('userData');
-      setUser(userData ? JSON.parse(userData) : null);
-    } catch (error) {
-      console.error('Failed to parse user data:', error);
-    }
-
     const handleClickOutside = (event) => {
-      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+      if (
+        notificationRef.current &&
+        !(notificationRef.current as HTMLElement).contains(event.target as Node)
+      ) {
         setIsNotificationOpen(false);
       }
-      if (profileRef.current && !profileRef.current.contains(event.target)) {
+      if (
+        profileRef.current &&
+        !(profileRef.current as HTMLElement).contains(event.target as Node)
+      ) {
         setIsProfileOpen(false);
       }
     };
@@ -44,6 +50,29 @@ const DashboardHeader = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  const handleLogout = async () => {
+    setIsProfileOpen(false);
+    try {
+      // 1. 백엔드 API 호출 (쿠키 제거 등)
+      // TODO: 실제 API 엔드포인트로 변경 필요
+      const response = await fetch('http://localhost:8080/api/user/logout', { method: 'POST' });
+      if (!response.ok) {
+        console.error('Logout failed on server');
+      }
+
+      // 2. 클라이언트 상태 초기화 (Zustand 스토어 업데이트)
+      clearUser(null);
+
+      // 3. 로그인 페이지 또는 홈으로 리디렉션
+      router.push('/login');
+    } catch (e) {
+      console.error('Logout error:', e);
+    }
+  };
+
+  // 헤더 렌더링 (user 사용 부분을 Zustand 스토어에서 가져온 user로 사용
+  // 만약 user가 로드되기 전 다른 UI를 보여주고 싶다면 조건부 렌더링 추가 가능
 
   return (
     <header className="sticky top-0 z-10 w-full border-b bg-white shadow-sm">
@@ -192,10 +221,7 @@ const DashboardHeader = () => {
                 {/* 로그아웃 */}
                 <div>
                   <button
-                    onClick={() => {
-                      // 로그아웃 로직
-                      setIsProfileOpen(false);
-                    }}
+                    onClick={handleLogout}
                     className="flex w-full items-center px-4 py-2 text-sm text-gray-600 hover:bg-gray-100"
                   >
                     <LogOut size={16} className="mr-3 text-gray-500" />
