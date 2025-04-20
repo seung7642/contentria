@@ -1,5 +1,6 @@
 package com.demo.blog.common.security
 
+import com.demo.blog.common.properties.AppProperties
 import com.demo.blog.user.service.UserService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -20,10 +21,13 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 @Configuration
 @EnableWebSecurity
 class SecurityConfig(
-    private val userService: UserService,
     private val jwtAuthenticationFilter: JwtAuthenticationFilter,
-    private val customAuthenticationSuccessHandler: AuthenticationSuccessHandler
+    private val customAuthenticationSuccessHandler: AuthenticationSuccessHandler,
+    private val appProperties: AppProperties
 ) {
+
+    private val accessTokenName: String = appProperties.auth.cookie.accessTokenName
+    private val refreshTokenName: String = appProperties.auth.cookie.refreshTokenName
 
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
@@ -45,7 +49,8 @@ class SecurityConfig(
             .logout { logout ->
                 logout
                     .logoutUrl("/auth/logout")
-                    .deleteCookies("auth_token")
+                    .deleteCookies(accessTokenName)
+                    .deleteCookies(refreshTokenName)
                     .logoutSuccessHandler(HttpStatusReturningLogoutSuccessHandler(HttpStatus.OK))
             }
 
@@ -55,7 +60,7 @@ class SecurityConfig(
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
         val configuration = CorsConfiguration()
-        configuration.allowedOrigins = listOf("http://localhost:3000")
+        configuration.allowedOrigins = appProperties.cors.allowedOrigins
         configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
         configuration.allowedHeaders = listOf("*")
         configuration.allowCredentials = true
@@ -63,10 +68,5 @@ class SecurityConfig(
         val source = UrlBasedCorsConfigurationSource()
         source.registerCorsConfiguration("/**", configuration)
         return source
-    }
-
-    @Bean
-    fun authenticationManager(authenticationConfiguration: AuthenticationConfiguration): AuthenticationManager {
-        return authenticationConfiguration.authenticationManager
     }
 }

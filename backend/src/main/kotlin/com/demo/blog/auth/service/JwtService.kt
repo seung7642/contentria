@@ -1,35 +1,42 @@
-package com.demo.blog.common.security
+package com.demo.blog.auth.service
 
+import com.demo.blog.common.properties.AppProperties
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.io.Decoders
 import io.jsonwebtoken.security.Keys
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Service
 import java.util.*
 import javax.crypto.SecretKey
 
+private val logger = KotlinLogging.logger {}
+
 @Service
-class JwtService {
-
-    @Value("\${app.auth.jwt.secret}")
-    private lateinit var jwtSecret: String
-
-    @Value("\${app.auth.jwt.expiration-ms}")
-    private var jwtExpirationMs: Long = 0
-
+class JwtService(
+    private val appProperties: AppProperties
+) {
     private val secretKey: SecretKey by lazy {
-        val keyBytes = Decoders.BASE64.decode(jwtSecret)
-        Keys.hmacShaKeyFor(keyBytes)
+        try {
+            val keyBytes = Decoders.BASE64.decode(appProperties.auth.jwt.secret)
+            Keys.hmacShaKeyFor(keyBytes)
+        } catch (e: IllegalArgumentException) {
+            logger.error(e) { "Invalid JWT secret key from properties: ${e.message}" }
+            throw RuntimeException("Invalid JWT secret key configuration", e)
+        }
     }
 
-    fun generateToken(userDetails: UserDetails): String {
+    fun generateAccessToken(userDetails: UserDetails): String {
+        return generateToken(userDetails.username, appProperties.auth.jwt.accessTokenExpirationMs)
+    }
+
+    private fun generateToken(subject: String, expirationMs: Long): String {
         val now = Date()
-        val expiryDate = Date(now.time + jwtExpirationMs)
+        val expiryDate = Date(now.time + expirationMs)
 
         return Jwts.builder()
-            .subject(userDetails.username)
+            .subject(subject)
             .issuedAt(now)
             .expiration(expiryDate)
             .signWith(secretKey) // 알고리즘 자동 선택 (HS256)
@@ -54,6 +61,7 @@ class JwtService {
                 .parseSignedClaims(token)
             return true
         } catch (ex: JwtException) {
+            logger.debug(ex) { "JWT validation failed: ${ex.message}" }
             return false
         }
     }

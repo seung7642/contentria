@@ -1,45 +1,72 @@
 package com.demo.blog.common.exception
 
+import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
-import org.springframework.web.context.request.WebRequest
-import java.time.LocalDateTime
+import org.springframework.web.bind.annotation.RestControllerAdvice
+import java.time.ZonedDateTime
 
-@ControllerAdvice
+private val logger = KotlinLogging.logger {}
+
+@RestControllerAdvice
 class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception::class)
-    fun handleGlobalException(ex: Exception, request: WebRequest): ResponseEntity<ErrorResponse> {
+    fun handleGlobalException(ex: Exception, request: HttpServletRequest): ResponseEntity<ErrorResponse> {
+        logger.error(ex) { "Unhandled exception occurred for request path ${request.requestURI}: ${ex.message}" }
+
         val errorResponse = ErrorResponse(
-            timestamp = LocalDateTime.now().toString(),
             status = HttpStatus.INTERNAL_SERVER_ERROR.value(),
-            error = "Internal Server Error",
-            message = ex.message ?: "An unexpected error occurred",
-            path = request.getDescription(false).substring(4)
+            error = HttpStatus.INTERNAL_SERVER_ERROR.reasonPhrase,
+            message = "An internal server error occurred. Please try again later.",
+            path = request.requestURI
         )
-        return ResponseEntity(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR)
+        return ResponseEntity
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(errorResponse)
     }
 
-    // JWT 관련 예외 처리
     @ExceptionHandler(io.jsonwebtoken.JwtException::class)
-    fun handleJwtException(ex: io.jsonwebtoken.JwtException, request: WebRequest): ResponseEntity<ErrorResponse> {
+    fun handleJwtException(ex: io.jsonwebtoken.JwtException, request: HttpServletRequest): ResponseEntity<ErrorResponse> {
+        logger.error(ex) { "JWT processing error for path ${request.requestURI}: ${ex.message}" }
+
         val errorResponse = ErrorResponse(
-            timestamp = LocalDateTime.now().toString(),
             status = HttpStatus.UNAUTHORIZED.value(),
-            error = "Unauthorized",
-            message = "Invalid JWT token: ${ex.message}",
-            path = request.getDescription(false).substring(4)
+            error = HttpStatus.UNAUTHORIZED.reasonPhrase,
+            message = "Access denied: Invalid or expired token.",
+            path = request.requestURI
         )
-        return ResponseEntity(errorResponse, HttpStatus.UNAUTHORIZED)
+        return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
+            .body(errorResponse)
+    }
+
+    @ExceptionHandler(OidcAuthenticationProcessingException::class)
+    fun handleOidcAuthenticationException(
+        ex: OidcAuthenticationProcessingException,
+        request: HttpServletRequest,
+    ): ResponseEntity<ErrorResponse> {
+        logger.error(ex) { "OIDC post-authentication error for path ${request.requestURI}: ${ex.message}" }
+
+        val errorResponse = ErrorResponse(
+            status = HttpStatus.INTERNAL_SERVER_ERROR.value(),
+            error = HttpStatus.INTERNAL_SERVER_ERROR.reasonPhrase,
+            message = "An internal server error occurred during OIDC authentication. Please try again later.",
+            path = request.requestURI
+        )
+
+        return ResponseEntity
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(errorResponse)
     }
 }
 
 data class ErrorResponse(
-    val timestamp: String,
+    val timestamp: ZonedDateTime = ZonedDateTime.now(),
     val status: Int,
     val error: String,
-    val message: String,
-    val path: String
+    val message: String?,
+    val path: String? = null
 )

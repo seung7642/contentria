@@ -1,6 +1,8 @@
 package com.demo.blog.common.security
 
+import com.demo.blog.auth.service.JwtService
 import com.demo.blog.user.security.CustomUserDetailsService
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
@@ -12,6 +14,8 @@ import org.springframework.stereotype.Component
 import org.springframework.util.StringUtils
 import org.springframework.web.filter.OncePerRequestFilter
 import org.springframework.web.util.WebUtils
+
+private val logger = KotlinLogging.logger {}
 
 @Component
 class JwtAuthenticationFilter(
