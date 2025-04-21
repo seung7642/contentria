@@ -34,7 +34,7 @@ async function getUserData(): Promise<User | null> {
 
   try {
     const response = await fetch('http://localhost:8080/api/users/me', {
-      headers: { Authorization: `Bearer #{token}` },
+      headers: { Authorization: `Bearer ${token}` },
       cache: 'no-store',
     });
     if (response.ok) {
@@ -50,6 +50,7 @@ async function getUserData(): Promise<User | null> {
 export default async function RootLayout({ children }: { children: ReactNode }) {
   // 서버 렌더링 시 사용자 정보 조회 시도
   const initialUser = await getUserData();
+  console.log('RootLayout: Initial user data:', initialUser);
 
   return (
     <html lang="ko">

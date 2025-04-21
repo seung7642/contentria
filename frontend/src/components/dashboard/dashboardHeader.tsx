@@ -56,7 +56,7 @@ const DashboardHeader = () => {
     try {
       // 1. 백엔드 API 호출 (쿠키 제거 등)
       // TODO: 실제 API 엔드포인트로 변경 필요
-      const response = await fetch('http://localhost:8080/api/user/logout', { method: 'POST' });
+      const response = await fetch('http://localhost:8080/api/auth/logout', { method: 'POST' });
       if (!response.ok) {
         console.error('Logout failed on server');
       }
