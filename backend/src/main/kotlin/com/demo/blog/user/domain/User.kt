@@ -13,29 +13,34 @@ class User(
     val id: String = UUID.randomUUID().toString(),
 
     @Column(nullable = false, unique = true)
-    val email: String,
+    var email: String,
 
-    val realUsername: String? = null,
+    var realUsername: String? = null,
 
-    val username: String? = null,
+    var username: String? = null,
 
-    val password: String? = null,
+    var password: String? = null,
 
-    val pictureUrl: String? = null,
+    var pictureUrl: String? = null,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    val provider: AuthProvider = AuthProvider.EMAIL,
+    var provider: AuthProvider = AuthProvider.EMAIL,
 
-    val providerId: String? = null,
+    var providerId: String? = null,
 
     @OneToMany(mappedBy = "user", cascade = [(CascadeType.ALL)], orphanRemoval = true)
-    val userRoles: MutableSet<UserRole> = mutableSetOf(),
+    var userRoles: MutableSet<UserRole> = mutableSetOf(),
 
-    val createdAt: ZonedDateTime = ZonedDateTime.now(),
+    var createdAt: ZonedDateTime = ZonedDateTime.now(),
 
-    val updatedAt: ZonedDateTime = ZonedDateTime.now()
+    var updatedAt: ZonedDateTime = ZonedDateTime.now()
 ) {
+    @PreUpdate
+    fun preUpdate() {
+        updatedAt = ZonedDateTime.now()
+    }
+
     fun addRole(role: Role, createdBy: String? = null): UserRole {
         val userRole = UserRole(user = this, role = role, createdBy = createdBy)
         userRoles.add(userRole)

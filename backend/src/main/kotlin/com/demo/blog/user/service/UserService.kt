@@ -8,23 +8,37 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
+private val logger = KotlinLogging.logger {}
+
 @Service
 class UserService(
     private val userRepository: UserRepository,
     private val roleRepository: RoleRepository
 ) {
-    private val logger = KotlinLogging.logger {}
 
     @Transactional
     fun upsertGoogleUser(googleUserInfo: GoogleUserInfo): User {
         return userRepository.findByEmail(googleUserInfo.email)?.let { existingUser ->
-            // 기존 사용자가 있는 경우, 필요시 정보 업데이트
+            var updated = false
+            if (existingUser.realUsername != googleUserInfo.name) {
+                existingUser.realUsername = googleUserInfo.name
+                updated = true
+            }
+            if (existingUser.pictureUrl != googleUserInfo.picture) {
+                existingUser.pictureUrl = googleUserInfo.picture
+                updated = true
+            }
+            if (updated) {
+                logger.info { "Updating existing user info for email [${existingUser.email}]" }
+            } else{
+                logger.debug { "Existing user found for email [${existingUser.email}]. No updates needed." }
+            }
             existingUser
         } ?: run {
+            logger.info { "Creating a new user for Google account email [${googleUserInfo.email}]" }
             val userRole = roleRepository.findByName("ROLE_USER")
-                ?: throw IllegalArgumentException("ROLE_USER 역할이 데이터베이스에 존재하지 않습니다.")
+                ?: throw IllegalArgumentException("Required role 'ROLE_USER' not found in the database. Please ensure it is initialized.")
 
-            // 새 사용자 생성
             val newUser = User.createGoogleUser(
                 email = googleUserInfo.email,
                 realUsername = googleUserInfo.name,
@@ -37,10 +51,12 @@ class UserService(
             newUser.addRole(userRole)
 
             try {
-                userRepository.save(newUser)
+                val savedUser = userRepository.save(newUser)
+                logger.info { "Successfully saved new user with email [${newUser.email}]" }
+                savedUser
             } catch (e: Exception) {
-                logger.error(e) { "failed UserService createOrUpdateGoogleUser: ${e.message}" }
-                throw RuntimeException("failed UserService createOrUpdateGoogleUser", e)
+                logger.error(e) { "Failed to save new Google user with email [${googleUserInfo.email}]: ${e.message}" }
+                throw RuntimeException("Failed to save new Google user with email [${googleUserInfo.email}]", e)
             }
         }
     }
