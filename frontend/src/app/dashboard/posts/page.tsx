@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import Link from 'next/link';
 import { Search, Filter, Plus, Edit, Eye, Trash, AlertCircle } from 'lucide-react';

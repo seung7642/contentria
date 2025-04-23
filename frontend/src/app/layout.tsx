@@ -5,6 +5,7 @@ import './globals.css';
 import AuthInitializer from '@/components/common/AuthInitializer';
 import { User } from '@/store/authStore';
 import { cookies } from 'next/headers';
+import { AUTH_COOKIE_NAME } from '@/constants/auth';
 
 const pretendard = localFont({
   src: '../../public/fonts/PretendardVariable.woff2',
@@ -24,22 +25,36 @@ export const metadata: Metadata = {
 };
 
 async function getUserData(): Promise<User | null> {
-  const AUTH_COOKIE_NAME = 'auth_token';
   const cookieStore = cookies();
   const token = cookieStore.get(AUTH_COOKIE_NAME)?.value;
 
   if (!token) {
+    console.log('RootLayout: No auth token found in cookies.');
     return null;
   }
 
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+  if (!apiBaseUrl) {
+    console.error('RootLayout: API_BASE_URL environment variable is not set.');
+    return null;
+  }
+  const url = `${apiBaseUrl}/api/users/me`;
+  console.log(`RootLayout: Fetching user data from ${url}`);
+
   try {
-    const response = await fetch('http://localhost:8080/api/users/me', {
+    const response = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
-      cache: 'no-store',
+      cache: 'no-store', // 인증 상태는 항상 최신이어야 하므로 캐시 비활성화
     });
+    console.log(`RootLayout: User data fetch response status: ${response.status}`);
+
     if (response.ok) {
-      return await response.json();
+      const user = await response.json();
+      console.log(`RootLayout: User data fetched successfully:`, user);
+      return user;
     }
+
+    console.log(`RootLayout: Failed to fetch user data. Status: ${response.status}`);
     return null;
   } catch (e) {
     console.error('RootLayout: Error fetching user data:', e);
