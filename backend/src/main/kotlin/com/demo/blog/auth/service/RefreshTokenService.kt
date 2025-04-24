@@ -63,9 +63,10 @@ class RefreshTokenService(
     }
 
     @Transactional
-    fun deleteRefreshTokenByUser(user: User): Int {
-        val deletedCount = refreshTokenRepository.deleteByUser(user)
-        logger.info { "Deleted $deletedCount refresh token(s) for user: ${user.email}" }
+    fun deleteRefreshTokenByToken(token: String): Int {
+        val deletedCount = refreshTokenRepository.deleteByToken(token)
+        logger.info { "Deleted refresh token(s): ${token}" }
         return deletedCount
     }
+
 }

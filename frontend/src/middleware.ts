@@ -2,12 +2,13 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
-const AUTH_COOKIE_NAME = 'auth_token';
+const ACCESS_TOKEN_COOKIE_NAME = 'auth_token';
+const REFRESH_TOKEN_COOKIE_NAME = 'refresh_token';
 const DEFAULT_LOGGED_IN_REDIRECT = '/dashboard';
 const LOGIN_PATH = '/login';
 
-async function validateSession(request: NextRequest): Promise<boolean> {
-  const authTokenCookie = request.cookies.get(AUTH_COOKIE_NAME);
+async function validateAccessToken(request: NextRequest): Promise<boolean> {
+  const authTokenCookie = request.cookies.get(ACCESS_TOKEN_COOKIE_NAME);
   if (!authTokenCookie) {
     return false;
   }
@@ -15,47 +16,88 @@ async function validateSession(request: NextRequest): Promise<boolean> {
   try {
     const response = await fetch(`${BACKEND_API_URL}/api/users/me`, {
       headers: {
-        Cookie: `${AUTH_COOKIE_NAME}=${authTokenCookie.value}`,
+        Cookie: `${ACCESS_TOKEN_COOKIE_NAME}=${authTokenCookie.value}`,
       },
       redirect: 'manual', // 백엔드 리디렉션 방지
     });
-
-    // 200 OK 응답이면 세션 유효 (JWT 유효)
     return response.ok;
   } catch (e) {
-    console.error('[Middleware] Error validating session:', e);
+    console.error('[Middleware] Error validating access token:', e);
     return false;
+  }
+}
+
+async function attemptRefreshSession(request: NextRequest): Promise<NextResponse | null> {
+  const refreshTokenCookie = request.cookies.get(REFRESH_TOKEN_COOKIE_NAME);
+  if (!refreshTokenCookie) {
+    return null;
+  }
+
+  console.log('[Middleware] Access token invalid/missing. Attempting refresh with refresh token.');
+  try {
+    const refreshResponse = await fetch(`${BACKEND_API_URL}/api/auth/refresh`, {
+      method: 'POST',
+      headers: {
+        Cookie: `${REFRESH_TOKEN_COOKIE_NAME}=${refreshTokenCookie.value}`,
+      },
+    });
+
+    if (refreshResponse.ok) {
+      console.log('[Middleware] Refresh successful. Redirecting to dashboard.');
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = DEFAULT_LOGGED_IN_REDIRECT;
+      redirectUrl.search = '';
+      const response = NextResponse.redirect(redirectUrl);
+      return response;
+    } else {
+      console.log('[Middleware] Refresh failed.');
+      return null;
+    }
+  } catch (e) {
+    console.error('[Middleware] Error during refresh attempt:', e);
+    return null;
   }
 }
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const authTokenCookie = request.cookies.get(AUTH_COOKIE_NAME);
+  const authTokenCookie = request.cookies.get(ACCESS_TOKEN_COOKIE_NAME);
+  const refreshTokenCookie = request.cookies.get(REFRESH_TOKEN_COOKIE_NAME);
 
   if (pathname.startsWith(LOGIN_PATH)) {
+    console.log('[Middleware] Accessing login page:', pathname);
+
     if (authTokenCookie) {
-      const isValid = await validateSession(request);
-      if (isValid) {
+      const isAccessTokenValid = await validateAccessToken(request);
+      if (isAccessTokenValid) {
         console.log(
-          `[Middleware] Valid session found. Redirecting from ${LOGIN_PATH} to ${DEFAULT_LOGGED_IN_REDIRECT}`
+          `[Middleware] Valid access token found. Redirecting to ${DEFAULT_LOGGED_IN_REDIRECT}`
         );
         const url = request.nextUrl.clone();
         url.pathname = DEFAULT_LOGGED_IN_REDIRECT;
         return NextResponse.redirect(url);
-      } else {
-        console.log(
-          `[Middleware] Invalid/Expired session found on ${LOGIN_PATH}. Allowing access and clearing cookie.`
-        );
-        const response = NextResponse.next();
-        response.cookies.set(AUTH_COOKIE_NAME, '', { maxAge: -1, path: '/' });
-        return response;
       }
     }
+
+    if (refreshTokenCookie) {
+      const refreshResultResponse = await attemptRefreshSession(request);
+      if (refreshResultResponse) {
+        return refreshResultResponse;
+      }
+    }
+
+    console.log(
+      `[Middleware] No valid session found or refresh failed. Allowing access to ${LOGIN_PATH} and clearing cookies.`
+    );
+    const response = NextResponse.next();
+    response.cookies.set(ACCESS_TOKEN_COOKIE_NAME, '', { maxAge: -1, path: '/' });
+    response.cookies.set(REFRESH_TOKEN_COOKIE_NAME, '', { maxAge: -1, path: '/api/auth/refresh' });
+    return response;
   }
 
   if (pathname.startsWith('/dashboard')) {
     if (authTokenCookie) {
-      const isValid = await validateSession(request);
+      const isValid = await validateAccessToken(request);
       if (isValid) {
         console.log(`[Middleware] Valid session. Allowing access to ${pathname}`);
         return NextResponse.next();
@@ -66,7 +108,7 @@ export async function middleware(request: NextRequest) {
         const loginUrl = new URL(LOGIN_PATH, request.url);
         loginUrl.searchParams.set('redirectedFrom', pathname);
         const response = NextResponse.redirect(loginUrl);
-        response.cookies.set(AUTH_COOKIE_NAME, '', { maxAge: -1, path: '/' });
+        response.cookies.set(ACCESS_TOKEN_COOKIE_NAME, '', { maxAge: -1, path: '/' });
         return response;
       }
     } else {

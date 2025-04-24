@@ -14,6 +14,7 @@ import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler
+import org.springframework.security.web.authentication.logout.LogoutHandler
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
@@ -23,6 +24,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 class SecurityConfig(
     private val jwtAuthenticationFilter: JwtAuthenticationFilter,
     private val customAuthenticationSuccessHandler: AuthenticationSuccessHandler,
+    private val customLogoutHandler: LogoutHandler,
     private val appProperties: AppProperties
 ) {
 
@@ -36,7 +38,7 @@ class SecurityConfig(
             .csrf { csrf -> csrf.disable() }
             .authorizeHttpRequests { auth ->
                 auth
-                    .requestMatchers("/", "/login/**", "/error").permitAll()
+                    .requestMatchers("/", "/login/**", "/error", "/api/auth/refresh").permitAll()
                     .anyRequest().authenticated()
             }
             .oauth2Login { oauth2 ->
@@ -49,8 +51,8 @@ class SecurityConfig(
             .logout { logout ->
                 logout
                     .logoutUrl("/auth/logout")
-                    .deleteCookies(accessTokenName)
-                    .deleteCookies(refreshTokenName)
+                    .addLogoutHandler(customLogoutHandler)
+                    .deleteCookies(accessTokenName, refreshTokenName)
                     .logoutSuccessHandler(HttpStatusReturningLogoutSuccessHandler(HttpStatus.OK))
             }
 

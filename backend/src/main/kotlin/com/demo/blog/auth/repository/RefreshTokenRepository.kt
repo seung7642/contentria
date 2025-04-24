@@ -12,5 +12,5 @@ interface RefreshTokenRepository : JpaRepository<RefreshToken, Long> {
 
     fun findByUser(user: User): RefreshToken?
 
-    fun deleteByUser(user: User): Int
+    fun deleteByToken(token: String): Int
 }
