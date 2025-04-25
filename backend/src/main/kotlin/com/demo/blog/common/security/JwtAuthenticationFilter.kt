@@ -1,6 +1,7 @@
 package com.demo.blog.common.security
 
 import com.demo.blog.auth.service.JwtService
+import com.demo.blog.common.properties.AppProperties
 import com.demo.blog.user.security.CustomUserDetailsService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.FilterChain
@@ -20,10 +21,16 @@ private val logger = KotlinLogging.logger {}
 @Component
 class JwtAuthenticationFilter(
     private val jwtService: JwtService,
-    private val customUserDetailsService: CustomUserDetailsService
+    private val customUserDetailsService: CustomUserDetailsService,
+    private val appProperties: AppProperties
 ) : OncePerRequestFilter() {
 
-    private val jwtCookieName = "auth_token"
+    private val accessTokenCookieName = appProperties.auth.cookie.accessTokenName
+
+    companion object {
+        private const val AUTHORIZATION_HEADER = "Authorization"
+        private const val BEARER_PREFIX = "Bearer "
+    }
 
     override fun doFilterInternal(
         request: HttpServletRequest,
@@ -31,23 +38,17 @@ class JwtAuthenticationFilter(
         filterChain: FilterChain
     ) {
         try {
-            val jwt: String? = getJwtFromRequest(request)
-
-            if (!jwt.isNullOrBlank() && jwtService.validateToken(jwt)) {
-                val username = jwtService.getUsernameFromJWT(jwt)
-                val userDetails = customUserDetailsService.loadUserByUsername(username)
-
-                val authentication = UsernamePasswordAuthenticationToken(
-                    userDetails, null, userDetails.authorities
-                )
-                // 부가 정보 설정 (IP 등)
-                authentication.details = WebAuthenticationDetailsSource().buildDetails(request)
-
-                SecurityContextHolder.getContext().authentication = authentication
-                logger.debug {"Successfully authenticated user '$username' from JWT."}
-            } else {
-                if (!jwt.isNullOrBlank()) {
-                    logger.debug {"Invalid or expired JWT received."}
+            getAccessToken(request)?.takeIf { it.isNotBlank() }?.let { token ->
+                if (jwtService.validateToken(token)) {
+                    val username = jwtService.getUsernameFromJWT(token)
+                    val userDetails = customUserDetailsService.loadUserByUsername(username)
+                    val authentication = UsernamePasswordAuthenticationToken(userDetails, null, userDetails.authorities).apply {
+                        details = WebAuthenticationDetailsSource().buildDetails(request)
+                    }
+                    SecurityContextHolder.getContext().authentication = authentication
+                    logger.debug {"Successfully authenticated user '$username' from JWT."}
+                } else {
+                    logger.debug { "Invalid or expired JWT received." }
                 }
             }
         } catch (ex: Exception) {
@@ -57,18 +58,19 @@ class JwtAuthenticationFilter(
         filterChain.doFilter(request, response)
     }
 
-    private fun getJwtFromRequest(request: HttpServletRequest): String? {
-        // 1. 쿠키에서 JWT 토큰 찾기 (우선 순위)
-        val cookie: Cookie? = WebUtils.getCookie(request, jwtCookieName)
-        if (cookie != null && StringUtils.hasText(cookie.value)) {
-            return cookie.value
-        }
+    private fun getAccessToken(request: HttpServletRequest): String? {
+        // 1. Find access token from cookies
+        WebUtils.getCookie(request, accessTokenCookieName)
+            ?.value
+            ?.takeIf { it.isNotBlank() }
+            ?.let { return it }
 
-        // 2. Authorization 헤더에서 Bearer 토큰 찾기 (당장은 쿠키 방식만 사용 예정)
-        val bearerToken = request.getHeader("Authorization")
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7)
-        }
+        // 2. Find Bearer token from the Authorization header
+        request.getHeader(AUTHORIZATION_HEADER)
+            ?.takeIf { it.startsWith(BEARER_PREFIX) }
+            ?.drop(7)
+            ?.takeIf { it.isNotBlank() }
+            ?.let { return it }
 
         return null
     }
