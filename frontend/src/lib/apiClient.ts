@@ -62,8 +62,8 @@ const parseResponse = async <T>(response: Response, url: string): Promise<T> => 
 };
 
 async function apiClient<T>(url: string, options: RequestInit = {}): Promise<T> {
-  // 클라이언트 측 fetch는 브라우저가 자동으로 쿠키(HttpOnly 포함)를 첨부하므로,
-  // 기본적으로 Authorization 헤더를 명시적으로 설정할 필요는 없다.
+  // For Client-side fetch, the browser automatically attaches cookies (including HttpOnly)
+  // So, we don't need to explicitly set the Authorization header by default.
 
   let response = await makeRequest(url, options);
 
