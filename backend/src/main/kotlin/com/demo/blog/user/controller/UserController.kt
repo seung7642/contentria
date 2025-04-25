@@ -19,10 +19,10 @@ class UserController {
             ?: throw IllegalStateException("User details not found in authentication principal")
 
         val response = UserInfoResponse(
-            userId = userDetails.getUserId(),
-            email = userDetails.getEmail(),
-            name = userDetails.getDisplayName(),
-            profileImage = userDetails.getProfileImageUrl()
+            userId = userDetails.userId,
+            email = userDetails.email,
+            name = userDetails.displayName,
+            profileImage = userDetails.profileImageUrl
         )
 
         return ResponseEntity.ok(response)

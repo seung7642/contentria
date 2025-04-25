@@ -9,15 +9,15 @@ data class CustomUserDetails(
     private val user: User
 ) : UserDetails {
 
-    fun getUserId(): String = user.id
-    fun getEmail(): String = user.email
-    fun getProfileImageUrl(): String? = user.pictureUrl
-    fun getDisplayName(): String? = user.username
-    fun getRealUsername(): String? = user.realUsername
-    fun getProvider(): AuthProvider = user.provider
+    val userId: String get() = user.id
+    val email: String get() = user.email
+    val profileImageUrl: String? get() = user.pictureUrl
+    val displayName: String? get() = user.username
+    val realUsername: String? get() = user.realUsername
+    val provider: AuthProvider get() = user.provider
 
-    override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
-        return user.getAuthorities().toMutableSet()
+    override fun getAuthorities(): Collection<GrantedAuthority> {
+        return user.getAuthorities().toSet()
     }
 
     override fun getPassword(): String? {

@@ -25,16 +25,14 @@ class CustomLogoutHandler(
         response: HttpServletResponse,
         authentication: Authentication?
     ) {
-        val refreshTokenCookie = WebUtils.getCookie(request, refreshTokenCookieName)
-
-        if (refreshTokenCookie?.value != null) {
+        WebUtils.getCookie(request, refreshTokenCookieName)?.value?.let { tokenValue ->
             try {
-                refreshTokenService.deleteRefreshTokenByToken(refreshTokenCookie.value)
+                refreshTokenService.deleteRefreshTokenByToken(tokenValue)
                 logger.info { "Successfully deleted refresh token from DB during logout." }
             } catch (e: Exception) {
                 logger.error(e){ "Error deleting refresh token from DB during logout." }
             }
-        }  else {
+        } ?: run {
             logger.warn { "Refresh token cookie not found during logout." }
         }
     }

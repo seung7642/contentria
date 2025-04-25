@@ -56,46 +56,61 @@ class AuthController(
             val newOpaqueRefreshTokenValue = refreshTokenService.createOrUpdateOpaqueRefreshToken(user.id)
 
             // 5. 새 Access Token 쿠키 생성 및 설정
-            val accessTokenCookie = Cookie(accessTokenCookieName, newAccessToken).apply {
-                isHttpOnly = true
-                secure = request.isSecure
-                path = accessTokenPath
-                maxAge = accessTokenCookieMaxAge
-            }
-            response.addCookie(accessTokenCookie)
+            response.addCookie(
+                createCookie(
+                    name = accessTokenCookieName,
+                    value = newAccessToken,
+                    path = accessTokenPath,
+                    maxAge = accessTokenCookieMaxAge,
+                    request = request
+                )
+            )
 
             // 6. 새로 생성된 Refresh Token 쿠키 생성 및 설정
-            val newRefreshTokenCookie = Cookie(refreshTokenCookieName, newOpaqueRefreshTokenValue).apply {
-                isHttpOnly = true
-                secure = request.isSecure
-                path = refreshTokenPath
-                maxAge = refreshTokenCookieMaxAge
-            }
-            response.addCookie(newRefreshTokenCookie)
+            response.addCookie(
+                createCookie(
+                    name = refreshTokenCookieName,
+                    value = newOpaqueRefreshTokenValue,
+                    path = refreshTokenPath,
+                    maxAge = refreshTokenCookieMaxAge,
+                    request = request
+                )
+            )
 
             logger.info { "Successfully refreshed token for user: ${user.email}" }
             return ResponseEntity.ok().body(mapOf("message" to "Token refreshed successfully"))
         } catch (e: UsernameNotFoundException) {
             logger.error(e) { "User associated with refresh token not found: ${e.message}" }
-            clearTokens(response)
+            clearTokens(response, request)
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found")
         } catch(e: Exception) {
             logger.error(e) { "Unexpected error during token refresh" }
-            clearTokens(response)
+            clearTokens(response, request)
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Internal server error")
         }
     }
 
-    private fun clearTokens(response: HttpServletResponse) {
-        val accessCookie = Cookie(accessTokenCookieName, null).apply {
-            maxAge = 0;
-            path = accessTokenPath
+    private fun createCookie(
+        name: String,
+        value: String?,
+        path: String,
+        maxAge: Int,
+        request: HttpServletRequest
+    ): Cookie {
+        return Cookie(name, value).apply {
+            isHttpOnly = true
+            secure = request.isSecure
+            this.path = path
+            this.maxAge = maxAge
         }
-        val refreshCookie = Cookie(refreshTokenCookieName, null).apply {
-            maxAge = 0;
-            path = refreshTokenPath
-        }
-        response.addCookie(accessCookie)
-        response.addCookie(refreshCookie)
+    }
+
+    private fun clearTokens(response: HttpServletResponse, request: HttpServletRequest) {
+        response.addCookie(
+            createCookie(accessTokenCookieName, null, accessTokenPath, 0, request)
+        )
+        response.addCookie(
+            createCookie(refreshTokenCookieName, null, refreshTokenPath, 0, request)
+        )
     }
 }

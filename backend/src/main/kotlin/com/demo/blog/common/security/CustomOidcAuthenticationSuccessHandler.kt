@@ -79,22 +79,26 @@ class CustomOidcAuthenticationSuccessHandler(
             val refreshToken = refreshTokenService.createOrUpdateOpaqueRefreshToken(user.id)
 
             // 7. Access Token을 HttpOnly 쿠키에 담아 전달 (짧은 만료 시간)
-            val accessTokenCookie = Cookie(accessTokenCookieName, accessToken).apply {
-                isHttpOnly = true
-                secure = request.isSecure
-                path = accessTokenPath
-                maxAge = accessTokenCookieMaxAge
-            }
-            response.addCookie(accessTokenCookie)
+            response.addCookie(
+                createCookie(
+                    name = accessTokenCookieName,
+                    value = accessToken,
+                    path = accessTokenPath,
+                    maxAge = accessTokenCookieMaxAge,
+                    request = request
+                )
+            )
 
             // 8. Refresh Token을 HttpOnly 쿠키에 담아 전달 (긴 만료 시간)
-            val refreshTokenCookie = Cookie(refreshTokenCookieName, refreshToken).apply {
-                isHttpOnly = true
-                secure = request.isSecure
-                path = refreshTokenPath
-                maxAge = refreshTokenCookieMaxAge
-            }
-            response.addCookie(refreshTokenCookie)
+            response.addCookie(
+                createCookie(
+                    name = refreshTokenCookieName,
+                    value = refreshToken,
+                    path = refreshTokenPath,
+                    maxAge = refreshTokenCookieMaxAge,
+                    request = request
+                )
+            )
 
             // 9. 성공 처리 및 리디렉션
             clearAuthenticationAttributes(request) // Spring Security가 사용한 임시 세션 데이터 정리
@@ -102,21 +106,32 @@ class CustomOidcAuthenticationSuccessHandler(
             logger.info {"Successfully generated JWT and redirected user ${user.email}"}
         } catch (e: Exception) {
             logger.error("Error during post-authentication processing for user: ${googleUserInfo.email}", e)
-            clearTokens(response)
+            clearTokens(response, request)
             throw OidcAuthenticationProcessingException("Error during post-authentication processing", e)
         }
     }
 
-    private fun clearTokens(response: HttpServletResponse) {
-        val accessCookie = Cookie(accessTokenCookieName, null).apply {
-            maxAge = 0;
-            path = accessTokenPath
+    private fun createCookie(
+        name: String,
+        value: String?,
+        path: String,
+        maxAge: Int,
+        request: HttpServletRequest
+    ): Cookie {
+        return Cookie(name, value).apply {
+            isHttpOnly = true
+            secure = request.isSecure
+            this.path = path
+            this.maxAge = maxAge
         }
-        val refreshCookie = Cookie(refreshTokenCookieName, null).apply {
-            maxAge = 0;
-            path = refreshTokenPath
-        }
-        response.addCookie(accessCookie)
-        response.addCookie(refreshCookie)
+    }
+
+    private fun clearTokens(response: HttpServletResponse, request: HttpServletRequest) {
+        response.addCookie(
+            createCookie(accessTokenCookieName, null, accessTokenPath, 0, request)
+        )
+        response.addCookie(
+            createCookie(refreshTokenCookieName, null, refreshTokenPath, 0, request)
+        )
     }
 }
