@@ -51,6 +51,7 @@ const DashboardHeader = () => {
   }, []);
 
   const handleLogout = async () => {
+    console.log('start logout');
     setIsProfileOpen(false);
     try {
       await apiClient('/api/auth/logout', { method: 'POST' });
@@ -58,8 +59,7 @@ const DashboardHeader = () => {
       router.push('/');
     } catch (e) {
       console.error('Logout error:', e);
-      setUser(null);
-      router.push('/');
+      alert('로그아웃 중 오류가 발생했습니다. 다시 시도해 주세요.');
     }
   };
 

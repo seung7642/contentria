@@ -1,8 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { FileText, Eye, MessageSquare, ThumbsUp, ArrowRight, BarChart2, Users } from 'lucide-react';
+import {
+  FileText,
+  Eye,
+  MessageSquare,
+  ThumbsUp,
+  ArrowRight,
+  BarChart2,
+  Users,
+  Loader2,
+} from 'lucide-react';
 import {
   LineChart,
   Line,
@@ -18,6 +27,10 @@ import StatCard from '@/components/dashboard/statCard';
 import PopularPostList from '@/components/dashboard/popularPostList';
 import RevenueList from '@/components/dashboard/revenueList';
 import QuickActions from '@/components/dashboard/quickActions';
+import { useRouter } from 'next/navigation';
+import { useAuthStore, User } from '@/store/authStore';
+import { DEFAULT_LOGGED_OUT_REDIRECT_URL } from '@/constants/auth';
+import apiClient from '@/lib/apiClient';
 
 // 타입 정의
 type TimeRange = '2weeks' | '30days' | '90days';
@@ -119,7 +132,38 @@ interface QuickAction {
 }
 
 const DashboardPage = () => {
+  const router = useRouter();
+  const user = useAuthStore((state) => state.user);
+  const setUser = useAuthStore((state) => state.setUser);
+
   const [timeRange, setTimeRange] = useState<TimeRange>('2weeks');
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true); // 인증 상태 확인 중
+
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      if (user) {
+        console.log('[Dashboard Page] User found in store. Redirecting...');
+        setIsCheckingAuth(false);
+        return;
+      }
+
+      console.log('[Dashboard Page] Checking auth status via API...');
+      try {
+        const fetchedUser = await apiClient<User>('/api/users/me');
+        console.log('[Dashboard Page] API check successful. User logged in. Redirecting...');
+        setUser(fetchedUser);
+        setIsCheckingAuth(false);
+      } catch (apiError) {
+        console.log(
+          '[Dashboard Page] API check failed or user not logged in. Staying on login page.',
+          apiError
+        );
+        router.replace(DEFAULT_LOGGED_OUT_REDIRECT_URL);
+      }
+    };
+
+    checkAuthStatus();
+  }, [user, setUser, router]);
 
   // 테스트 데이터 (실제로는 API에서 가져옴)
   const stats: Stats = {
@@ -171,6 +215,14 @@ const DashboardPage = () => {
       color: 'bg-purple-100 text-purple-600',
     },
   ];
+
+  if (isCheckingAuth) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

@@ -3,13 +3,45 @@
 import Link from 'next/link';
 import { Edit3, LayoutDashboard, Rss } from 'lucide-react';
 import { TypeAnimation } from 'react-type-animation';
-import { memo, useRef } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
+import { useAuthStore, User } from '@/store/authStore';
+import { useRouter } from 'next/navigation';
+import apiClient from '@/lib/apiClient';
 
 // TypeAnimation 컴포넌트를 memo로 감싸서 불필요한 리렌더링 방지 (선택 사항)
 const MemoizedTypeAnimation = memo(TypeAnimation);
 
 export default function HomePage() {
+  const router = useRouter();
+  const user = useAuthStore((state) => state.user);
+  const setUser = useAuthStore((state) => state.setUser);
+
   const h1Ref = useRef<HTMLHeadingElement>(null); // h1 요소 참조
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true); // 인증 상태 확인 중
+
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      if (user) {
+        console.log('[Home Page] User found in store. Redirecting...');
+        return;
+      }
+
+      console.log('[Home Page] Checking auth status via API...');
+      try {
+        const fetchedUser = await apiClient<User>('/api/users/me');
+        console.log('[Home Page] API check successful. User logged in. Redirecting...');
+        setUser(fetchedUser);
+      } catch (apiError) {
+        console.log(
+          '[Home Page] API check failed or user not logged in. Staying on login page.',
+          apiError
+        );
+        setIsCheckingAuth(false);
+      }
+    };
+
+    checkAuthStatus();
+  }, [router, user, setUser]);
 
   const triggerWaveAnimation = (element: HTMLSpanElement | null) => {
     if (!element) {

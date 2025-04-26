@@ -25,7 +25,7 @@ const Header = () => {
 
     // 사용자 정보 로드
     const loadUserData = () => {
-      const token = localStorage.getItem('auth_token');
+      const token = localStorage.getItem('access_token');
       const userData = localStorage.getItem('userData');
 
       if (token && userData) {
@@ -70,7 +70,7 @@ const Header = () => {
 
   // 로그아웃 처리
   const handleLogout = () => {
-    localStorage.removeItem('auth_token');
+    localStorage.removeItem('access_token');
     localStorage.removeItem('userData');
     setUser(null);
     setIsDropdownOpen(false);

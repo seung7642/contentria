@@ -1,11 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Mail, Lock, ArrowLeft } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Mail, Lock, ArrowLeft, Loader2 } from 'lucide-react';
 import InputField from '@/components/ui/inputField';
 import Divider from '@/components/ui/divider';
 import GoogleLoginButton from '@/components/auth/googleLoginButton';
 import CodeInput from '@/components/auth/codeInput'; // 새로 만들 컴포넌트
+import { useRouter } from 'next/navigation';
+import { useAuthStore, User } from '@/store/authStore';
+import apiClient from '@/lib/apiClient';
+import { DEFAULT_LOGGED_IN_REDIRECT_URL } from '@/constants/auth';
 
 // 단계 정의
 type AuthStep = 'email' | 'password' | 'code' | 'signup-details';
@@ -13,6 +17,10 @@ type AuthStep = 'email' | 'password' | 'code' | 'signup-details';
 type AuthMode = 'signin' | 'signup';
 
 const LoginPage = () => {
+  const router = useRouter();
+  const user = useAuthStore((state) => state.user);
+  const setUser = useAuthStore((state) => state.setUser);
+
   const [authMode, setAuthMode] = useState<AuthMode>('signin');
   const [step, setStep] = useState<AuthStep>('email');
   const [email, setEmail] = useState('');
@@ -21,8 +29,35 @@ const LoginPage = () => {
   const [code, setCode] = useState('');
   const [isLoading, setIsLoading] = useState(false); // API 로딩 상태 (선택적)
   const [error, setError] = useState<string | null>(null); // 에러 메시지 표시용
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true); // 인증 상태 확인 중
 
-  // --- 이벤트 핸들러 ---
+  useEffect(() => {
+    console.log('[Login Page] useEffect...');
+
+    const checkAuthStatus = async () => {
+      if (user) {
+        console.log('[Login Page] User found in store. Redirecting...');
+        router.replace(DEFAULT_LOGGED_IN_REDIRECT_URL);
+        return;
+      }
+
+      console.log('[Login Page] Checking auth status via API...');
+      try {
+        const fetchedUser = await apiClient<User>('/api/users/me');
+        console.log('[Login Page] API check successful. User logged in. Redirecting...');
+        setUser(fetchedUser);
+        router.replace(DEFAULT_LOGGED_IN_REDIRECT_URL);
+      } catch (apiError) {
+        console.log(
+          '[Login Page] API check failed or user not logged in. Staying on login page.',
+          apiError
+        );
+        setIsCheckingAuth(false);
+      }
+    };
+
+    checkAuthStatus();
+  }, [router, user, setUser]);
 
   const handleEmailSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -390,6 +425,14 @@ const LoginPage = () => {
       </div>
     </>
   );
+
+  if (isCheckingAuth) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+      </div>
+    );
+  }
 
   return (
     // pt-48은 콘텐츠 양에 따라 조정 필요

@@ -1,24 +1,31 @@
+import { REFRESH_URL } from '@/constants/auth';
 import { useAuthStore } from '@/store/authStore';
 
 let isRefreshing = false;
 let refreshPromise: Promise<void> | null = null;
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
-const REFRESH_URL = '/api/auth/refresh';
 
 const handleTokenRefresh = async (): Promise<void> => {
+  console.log('apiClient handleTokenRefresh start');
+
   isRefreshing = true;
-  console.log('apiClient: Attempting token refresh...');
   try {
-    const refreshResponse = await fetch(REFRESH_URL, {
+    const refreshResponse = await fetch(`${API_BASE_URL}${REFRESH_URL}`, {
       method: 'POST',
     });
 
     if (!refreshResponse.ok) {
-      const errorText = await refreshResponse.text();
-      console.error('apiClient: Token refresh failed.', refreshResponse.status, errorText);
+      const errorData = await refreshResponse.json();
+      const errorDetails = JSON.stringify(errorData);
+
+      console.error(
+        `apiClient: Token refresh request failed with status ${refreshResponse.status}. Details: ${errorDetails}`
+      );
       useAuthStore.getState().setUser(null);
-      throw new Error('Session expired or refresh failed.');
+      throw new Error(
+        `Token refresh failed with status ${refreshResponse.status}. User has been logged out.`
+      );
     }
 
     console.log('apiClient: Token refresh successful.');
@@ -29,7 +36,7 @@ const handleTokenRefresh = async (): Promise<void> => {
   } finally {
     isRefreshing = false;
     refreshPromise = null;
-    console.log('apiClient: Refresh process finished.');
+    console.log('apiClient handleTokenRefresh end');
   }
 };
 
