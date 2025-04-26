@@ -1,16 +1,18 @@
 package com.demo.blog.common.security
 
+import com.demo.blog.common.exception.ErrorResponse
 import com.demo.blog.common.properties.AppProperties
-import com.demo.blog.user.service.UserService
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpStatus
-import org.springframework.security.authentication.AuthenticationManager
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration
+import org.springframework.http.MediaType
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
+import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.access.AccessDeniedHandler
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler
@@ -25,7 +27,8 @@ class SecurityConfig(
     private val jwtAuthenticationFilter: JwtAuthenticationFilter,
     private val customAuthenticationSuccessHandler: AuthenticationSuccessHandler,
     private val customLogoutHandler: LogoutHandler,
-    private val appProperties: AppProperties
+    private val appProperties: AppProperties,
+    private val objectMapper: ObjectMapper
 ) {
 
     private val accessTokenName: String = appProperties.auth.cookie.accessTokenName
@@ -36,6 +39,9 @@ class SecurityConfig(
         http
             .cors { cors -> cors.configurationSource(corsConfigurationSource()) }
             .csrf { csrf -> csrf.disable() }
+            .sessionManagement { session ->
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            }
             .authorizeHttpRequests { auth ->
                 auth
                     .requestMatchers("/", "/login/**", "/error", "/api/auth/refresh").permitAll()
@@ -44,17 +50,18 @@ class SecurityConfig(
             .oauth2Login { oauth2 ->
                 oauth2.successHandler(customAuthenticationSuccessHandler)
             }
-            .sessionManagement { session ->
-                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            }
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
             .logout { logout ->
                 logout
                     .logoutUrl("/auth/logout")
                     .addLogoutHandler(customLogoutHandler)
-                    .deleteCookies(accessTokenName, refreshTokenName)
                     .logoutSuccessHandler(HttpStatusReturningLogoutSuccessHandler(HttpStatus.OK))
             }
+            .exceptionHandling { exception ->
+                exception
+                    .authenticationEntryPoint(customAuthenticationEntryPoint())
+                    .accessDeniedHandler(customAccessDeniedHandler())
+            }
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
 
         return http.build()
     }
@@ -63,12 +70,42 @@ class SecurityConfig(
     fun corsConfigurationSource(): CorsConfigurationSource {
         val configuration = CorsConfiguration()
         configuration.allowedOrigins = appProperties.cors.allowedOrigins
-        configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
+        configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
         configuration.allowedHeaders = listOf("*")
         configuration.allowCredentials = true
 
         val source = UrlBasedCorsConfigurationSource()
         source.registerCorsConfiguration("/**", configuration)
         return source
+    }
+
+    private fun customAuthenticationEntryPoint(): AuthenticationEntryPoint {
+        return AuthenticationEntryPoint { request, response, authException ->
+            val errorResponse = ErrorResponse(
+                status = HttpStatus.UNAUTHORIZED.value(),
+                error = HttpStatus.UNAUTHORIZED.reasonPhrase,
+                message = "Authentication required: ${authException.message}",
+                path = request.requestURI
+            )
+            response.status = HttpStatus.UNAUTHORIZED.value()
+            response.contentType = MediaType.APPLICATION_JSON_VALUE
+            response.characterEncoding = Charsets.UTF_8.name()
+            response.writer.write(objectMapper.writeValueAsString(errorResponse))
+        }
+    }
+
+    private fun customAccessDeniedHandler(): AccessDeniedHandler {
+        return AccessDeniedHandler { request, response, accessDeniedException ->
+            val errorResponse = ErrorResponse(
+                status = HttpStatus.FORBIDDEN.value(),
+                error = HttpStatus.FORBIDDEN.reasonPhrase,
+                message = "Access denied: ${accessDeniedException.message}",
+                path = request.requestURI
+            )
+            response.status = HttpStatus.FORBIDDEN.value()
+            response.contentType = MediaType.APPLICATION_JSON_VALUE
+            response.characterEncoding = Charsets.UTF_8.name()
+            response.writer.write(objectMapper.writeValueAsString(errorResponse))
+        }
     }
 }
