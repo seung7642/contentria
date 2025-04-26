@@ -11,7 +11,7 @@ const handleTokenRefresh = async (): Promise<void> => {
 
   isRefreshing = true;
   try {
-    const refreshResponse = await fetch(`${API_BASE_URL}${REFRESH_URL}`, {
+    const refreshResponse = await makeRequest(REFRESH_URL, {
       method: 'POST',
     });
 
@@ -43,7 +43,11 @@ const handleTokenRefresh = async (): Promise<void> => {
 const makeRequest = async (url: string, options: RequestInit): Promise<Response> => {
   try {
     const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
-    return await fetch(fullUrl, options);
+    const fetchOptions: RequestInit = {
+      ...options,
+      credentials: 'include', // Include cookies in the request
+    };
+    return await fetch(fullUrl, fetchOptions);
   } catch (error) {
     console.error(`apiClient: Network or fetch error for ${url}:`, error);
     throw new Error('Network request failed');
@@ -75,8 +79,6 @@ async function apiClient<T>(url: string, options: RequestInit = {}): Promise<T> 
   let response = await makeRequest(url, options);
 
   if (response.status === 401) {
-    console.log(`apiClient: Received 401 for ${url}.`);
-
     if (!isRefreshing) {
       isRefreshing = true;
       refreshPromise = handleTokenRefresh();

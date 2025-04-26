@@ -32,8 +32,6 @@ const LoginPage = () => {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true); // 인증 상태 확인 중
 
   useEffect(() => {
-    console.log('[Login Page] useEffect...');
-
     const checkAuthStatus = async () => {
       if (user) {
         console.log('[Login Page] User found in store. Redirecting...');
