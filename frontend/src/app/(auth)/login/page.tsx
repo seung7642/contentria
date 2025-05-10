@@ -1,59 +1,24 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { Mail, Lock, ArrowLeft, Loader2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Mail, Lock, ArrowLeft } from 'lucide-react';
 import InputField from '@/components/ui/inputField';
 import Divider from '@/components/ui/divider';
 import GoogleLoginButton from '@/components/auth/googleLoginButton';
 import CodeInput from '@/components/auth/codeInput'; // 새로 만들 컴포넌트
-import { useRouter } from 'next/navigation';
-import { useAuthStore, User } from '@/store/authStore';
-import apiClient from '@/lib/apiClient';
-import { DEFAULT_LOGGED_IN_REDIRECT_URL } from '@/constants/auth';
 import Link from 'next/link';
+import AuthFormCard from '@/components/auth/AuthFormCard';
 
 // 단계 정의
 type AuthStep = 'email' | 'password' | 'code' | 'signup-details';
 
 const LoginPage = () => {
-  const router = useRouter();
-  const user = useAuthStore((state) => state.user);
-  const setUser = useAuthStore((state) => state.setUser);
-
   const [step, setStep] = useState<AuthStep>('email');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState(''); // 회원가입용
   const [code, setCode] = useState('');
   const [isLoading, setIsLoading] = useState(false); // API 로딩 상태 (선택적)
   const [error, setError] = useState<string | null>(null); // 에러 메시지 표시용
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true); // 인증 상태 확인 중
-
-  useEffect(() => {
-    const checkAuthStatus = async () => {
-      if (user) {
-        console.log('[Login Page] User found in store. Redirecting...');
-        router.replace(DEFAULT_LOGGED_IN_REDIRECT_URL);
-        return;
-      }
-
-      console.log('[Login Page] Checking auth status via API...');
-      try {
-        const fetchedUser = await apiClient<User>('/api/users/me');
-        console.log('[Login Page] API check successful. User logged in. Redirecting...');
-        setUser(fetchedUser);
-        router.replace(DEFAULT_LOGGED_IN_REDIRECT_URL);
-      } catch (apiError) {
-        console.log(
-          '[Login Page] API check failed or user not logged in. Staying on login page.',
-          apiError
-        );
-        setIsCheckingAuth(false);
-      }
-    };
-
-    checkAuthStatus();
-  }, [router, user, setUser]);
 
   const handleEmailSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -122,36 +87,6 @@ const LoginPage = () => {
     }, 1000);
   };
 
-  const handleSignUpSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    if (password !== confirmPassword) {
-      setError('Passwords do not match.');
-      return;
-    }
-    if (!password) {
-      setError('Please enter a password.');
-      return;
-    }
-    // TODO: 비밀번호 정책 검사 추가 (길이, 특수문자 등)
-
-    setIsLoading(true);
-    console.log('Attempting sign up with:', email, password);
-    // TODO: 여기에 회원가입 API 호출 구현
-    // fakeApiCall({ email, password }).then(newUser => { /* 회원가입 성공 처리 */ }).catch(err => setError(err.message)).finally(() => setIsLoading(false));
-
-    // 임시 성공 처리
-    setTimeout(() => {
-      alert('Sign up successful (simulation)! Please sign in.');
-      // 회원가입 성공 후 로그인 페이지 초기 상태로 전환
-      setStep('email');
-      setEmail(''); // 이메일 필드 초기화 또는 유지 선택
-      setPassword('');
-      setConfirmPassword('');
-      setIsLoading(false);
-    }, 1000);
-  };
-
   const requestEmailCode = () => {
     setError(null);
     setIsLoading(true);
@@ -192,8 +127,6 @@ const LoginPage = () => {
       <ArrowLeft size={20} />
     </button>
   );
-
-  // --- 렌더링 로직 ---
 
   const renderEmailStep = () => (
     <>
@@ -332,38 +265,14 @@ const LoginPage = () => {
     </>
   );
 
-  // if (isCheckingAuth) {
-  //   return (
-  //     <div className="flex min-h-screen items-center justify-center bg-gray-50">
-  //       <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
-  //     </div>
-  //   );
-  // }
-
   return (
-    // pt-48은 콘텐츠 양에 따라 조정 필요
     <div className="flex min-h-screen items-start justify-center bg-gray-50 px-4 pt-64 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
-        <h2 className="text-center text-3xl font-extrabold text-gray-900">
-          {step === 'code' ? 'Verify your email' : 'Sign in'}
-        </h2>
-        {/* 카드 스타일 Wrapper 추가 */}
-        <div className="relative rounded-lg bg-white p-8 shadow-md">
-          {/* 조건부 렌더링 */}
+        <AuthFormCard title={step === 'code' ? 'Verify your email' : 'Sign in'}>
           {step === 'email' && renderEmailStep()}
           {step === 'password' && renderPasswordStep()}
           {step === 'code' && renderCodeStep()}
-        </div>
-      </div>
-      <div className="fixed bottom-12 left-0 right-0 text-center text-sm text-gray-500">
-        By continuing, you agree to our{' '}
-        <a href="/policy?tab=privacy" className="text-indigo-600 hover:text-indigo-500">
-          Privacy Policy
-        </a>{' '}
-        and{' '}
-        <a href="/policy?tab=terms" className="text-indigo-600 hover:text-indigo-500">
-          Terms of Service
-        </a>
+        </AuthFormCard>
       </div>
     </div>
   );

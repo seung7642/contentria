@@ -1,23 +1,20 @@
 'use client';
 
+import AuthFormCard from '@/components/auth/AuthFormCard';
 import CodeInput from '@/components/auth/codeInput';
 import GoogleLoginButton from '@/components/auth/googleLoginButton';
 import Divider from '@/components/ui/divider';
 import InputField from '@/components/ui/inputField';
 import { DEFAULT_LOGGED_IN_REDIRECT_URL } from '@/constants/auth';
-import apiClient from '@/lib/apiClient';
-import { useAuthStore, User } from '@/store/authStore';
-import { ArrowLeft, Loader2, Mail, Lock } from 'lucide-react';
+import { ArrowLeft, Mail, Lock } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 type SignUpStep = 'email' | 'password-creation' | 'verify-email-code';
 
 const SignUpPage = () => {
   const router = useRouter();
-  const user = useAuthStore((state) => state.user);
-  const setUser = useAuthStore((state) => state.setUser);
 
   const [step, setStep] = useState<SignUpStep>('email');
   const [name, setName] = useState('');
@@ -26,27 +23,6 @@ const SignUpPage = () => {
   const [verificationCode, setVerificationCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-
-  // Check if user is already logged in
-  useEffect(() => {
-    const checkAuthStatus = async () => {
-      if (user) {
-        router.replace(DEFAULT_LOGGED_IN_REDIRECT_URL);
-        return;
-      }
-
-      try {
-        const response = await apiClient<User>('/api/users/me');
-        setUser(response);
-        router.replace(DEFAULT_LOGGED_IN_REDIRECT_URL);
-      } catch (error) {
-        setIsCheckingAuth(false);
-      }
-    };
-
-    checkAuthStatus();
-  }, [router, user, setUser]);
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,7 +107,6 @@ const SignUpPage = () => {
     if (step === 'password-creation') {
       setStep('email');
       setPassword('');
-      setConfirmPassword('');
     } else if (step === 'verify-email-code') {
       setStep('password-creation');
       setVerificationCode('');
@@ -292,35 +267,14 @@ const SignUpPage = () => {
     </button>
   );
 
-  // if (isCheckingAuth) {
-  //   return (
-  //     <div className="flex min-h-screen items-center justify-center bg-gray-50">
-  //       <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
-  //     </div>
-  //   );
-  // }
-
   return (
-    <div className="flex min-h-screen items-start justify-center bg-gray-50 px-4 pt-48 sm:px-6 lg:px-8">
+    <div className="flex min-h-screen items-start justify-center bg-gray-50 px-4 pt-60 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
-        <h2 className="text-center text-3xl font-extrabold text-gray-900">
-          {step === 'verify-email-code' ? 'Verify your email' : 'Sign up'}
-        </h2>
-        <div className="relative rounded-lg bg-white p-8 shadow-md">
+        <AuthFormCard title={step === 'verify-email-code' ? 'Verify your email' : 'Sign in'}>
           {step === 'email' && renderEmailStep()}
           {step === 'password-creation' && renderPasswordCreationStep()}
           {step === 'verify-email-code' && renderVerifyCodeStep()}
-        </div>
-      </div>
-      <div className="fixed bottom-12 left-0 right-0 text-center text-sm text-gray-500">
-        By continuing, you agree to our{' '}
-        <a href="/policy?tab=privacy" className="text-indigo-600 hover:text-indigo-500">
-          Privacy Policy
-        </a>{' '}
-        and{' '}
-        <a href="/policy?tab=terms" className="text-indigo-600 hover:text-indigo-500">
-          Terms of Service
-        </a>
+        </AuthFormCard>
       </div>
     </div>
   );

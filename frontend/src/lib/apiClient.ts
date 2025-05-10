@@ -1,43 +1,28 @@
 import { REFRESH_URL } from '@/constants/auth';
 import { useAuthStore } from '@/store/authStore';
+import { ApiErrorResponse } from '@/types/api';
 
 let isRefreshing = false;
 let refreshPromise: Promise<void> | null = null;
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
-const handleTokenRefresh = async (): Promise<void> => {
-  console.log('apiClient handleTokenRefresh start');
-
-  isRefreshing = true;
-  try {
-    const refreshResponse = await makeRequest(REFRESH_URL, {
-      method: 'POST',
-    });
-
-    if (!refreshResponse.ok) {
-      const errorData = await refreshResponse.json();
-      const errorDetails = JSON.stringify(errorData);
-
-      console.error(
-        `apiClient: Token refresh request failed with status ${refreshResponse.status}. Details: ${errorDetails}`
-      );
-      useAuthStore.getState().setUser(null);
-      throw new Error(
-        `Token refresh failed with status ${refreshResponse.status}. User has been logged out.`
-      );
-    }
-
-    console.log('apiClient: Token refresh successful.');
-  } catch (error) {
-    console.error('apiClient: Error during token refresh process:', error);
-    useAuthStore.getState().setUser(null);
-    throw error;
-  } finally {
-    isRefreshing = false;
-    refreshPromise = null;
-    console.log('apiClient handleTokenRefresh end');
+const createApiError = (
+  message: string,
+  status?: number,
+  details?: ApiErrorResponse | string
+): Error & { status?: number; details?: ApiErrorResponse | string } => {
+  const error = new Error(message) as Error & {
+    status?: number;
+    details?: ApiErrorResponse | string;
+  };
+  if (status) {
+    error.status = status;
   }
+  if (details) {
+    error.details = details;
+  }
+  return error;
 };
 
 const makeRequest = async (url: string, options: RequestInit): Promise<Response> => {
@@ -51,6 +36,36 @@ const makeRequest = async (url: string, options: RequestInit): Promise<Response>
   } catch (error) {
     console.error(`apiClient: Network or fetch error for ${url}:`, error);
     throw new Error('Network request failed');
+  }
+};
+
+const handleTokenRefresh = async (): Promise<void> => {
+  console.log('apiClient handleTokenRefresh start');
+
+  isRefreshing = true;
+  try {
+    const refreshResponse = await makeRequest(REFRESH_URL, { method: 'POST' });
+
+    if (!refreshResponse.ok) {
+      const errorData = await refreshResponse.json();
+      const errorDetails = JSON.stringify(errorData);
+      useAuthStore.getState().setUser(null);
+      throw createApiError(
+        `Token refresh failed. User logged out.`,
+        refreshResponse.status,
+        errorDetails
+      );
+    }
+
+    console.log('apiClient: Token refresh successful.');
+  } catch (error) {
+    console.debug('apiClient: Error during token refresh process:', error);
+    useAuthStore.getState().setUser(null);
+    throw error;
+  } finally {
+    isRefreshing = false;
+    refreshPromise = null;
+    console.log('apiClient handleTokenRefresh end');
   }
 };
 
@@ -73,9 +88,6 @@ const parseResponse = async <T>(response: Response, url: string): Promise<T> => 
 };
 
 async function apiClient<T>(url: string, options: RequestInit = {}): Promise<T> {
-  // For Client-side fetch, the browser automatically attaches cookies (including HttpOnly)
-  // So, we don't need to explicitly set the Authorization header by default.
-
   let response = await makeRequest(url, options);
 
   if (response.status === 401) {
@@ -90,25 +102,26 @@ async function apiClient<T>(url: string, options: RequestInit = {}): Promise<T> 
       response = await makeRequest(url, options);
 
       if (response.status === 401) {
-        console.error(
-          `apiClient: Still received 401 for ${url} after refresh attempt. Logging out.`
-        );
+        console.log(`apiClient: Still received 401 for ${url} after refresh attempt. Logging out.`);
         useAuthStore.getState().setUser(null);
-        throw new Error('Authentication failed even after token refresh.');
+        throw createApiError('Authentication failed even after token refresh.', 401);
       }
     } catch (refreshError) {
-      console.error(`apiClient: Not retrying ${url} due to refresh failure.`);
+      console.debug(`apiClient: Not retrying ${url} due to refresh failure.`);
       throw refreshError;
     }
   }
 
   // Handle non-401 errors after potential retry
   if (!response.ok) {
-    const errorBody = await response.text();
-    console.error(
-      `apiClient: API request failed with status ${response.status} for ${url}. Body: ${errorBody}`
+    const errorData = await response.json();
+    const errorDetails = JSON.stringify(errorData);
+
+    console.log(
+      `apiClient: API request failed with status ${response.status} for ${url}. Details:`,
+      errorDetails
     );
-    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    throw createApiError(`API Error: ${response.statusText}`, response.status, errorDetails);
   }
 
   return parseResponse<T>(response, url);
