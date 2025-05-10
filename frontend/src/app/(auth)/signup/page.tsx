@@ -1,53 +1,46 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { Mail, Lock, ArrowLeft, Loader2 } from 'lucide-react';
-import InputField from '@/components/ui/inputField';
-import Divider from '@/components/ui/divider';
+import CodeInput from '@/components/auth/codeInput';
 import GoogleLoginButton from '@/components/auth/googleLoginButton';
-import CodeInput from '@/components/auth/codeInput'; // 새로 만들 컴포넌트
-import { useRouter } from 'next/navigation';
-import { useAuthStore, User } from '@/store/authStore';
-import apiClient from '@/lib/apiClient';
+import Divider from '@/components/ui/divider';
+import InputField from '@/components/ui/inputField';
 import { DEFAULT_LOGGED_IN_REDIRECT_URL } from '@/constants/auth';
+import apiClient from '@/lib/apiClient';
+import { useAuthStore, User } from '@/store/authStore';
+import { ArrowLeft, Loader2, Mail, Lock } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
-// 단계 정의
-type AuthStep = 'email' | 'password' | 'code' | 'signup-details';
+type SignUpStep = 'email' | 'password-creation' | 'verify-email-code';
 
-const LoginPage = () => {
+const SignUpPage = () => {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
 
-  const [step, setStep] = useState<AuthStep>('email');
+  const [step, setStep] = useState<SignUpStep>('email');
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState(''); // 회원가입용
-  const [code, setCode] = useState('');
-  const [isLoading, setIsLoading] = useState(false); // API 로딩 상태 (선택적)
-  const [error, setError] = useState<string | null>(null); // 에러 메시지 표시용
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true); // 인증 상태 확인 중
+  const [verificationCode, setVerificationCode] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
+  // Check if user is already logged in
   useEffect(() => {
     const checkAuthStatus = async () => {
       if (user) {
-        console.log('[Login Page] User found in store. Redirecting...');
         router.replace(DEFAULT_LOGGED_IN_REDIRECT_URL);
         return;
       }
 
-      console.log('[Login Page] Checking auth status via API...');
       try {
-        const fetchedUser = await apiClient<User>('/api/users/me');
-        console.log('[Login Page] API check successful. User logged in. Redirecting...');
-        setUser(fetchedUser);
+        const response = await apiClient<User>('/api/users/me');
+        setUser(response);
         router.replace(DEFAULT_LOGGED_IN_REDIRECT_URL);
-      } catch (apiError) {
-        console.log(
-          '[Login Page] API check failed or user not logged in. Staying on login page.',
-          apiError
-        );
+      } catch (error) {
         setIsCheckingAuth(false);
       }
     };
@@ -55,101 +48,69 @@ const LoginPage = () => {
     checkAuthStatus();
   }, [router, user, setUser]);
 
-  const handleEmailSubmit = (e: React.FormEvent) => {
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null); // 이전 에러 초기화
-
-    // TODO: 이메일 유효성 검사 추가
+    setError(null);
     if (!email) {
       setError('Please enter your email address.');
       return;
     }
-    setIsLoading(true); // 로딩 시작
+    // TODO: Add email validation
 
-    // 실제 API 호출 예시 (백엔드에서 이메일 존재 여부 확인 등)
-    // fakeApiCall().then(() => {
-    //   if (authMode === 'signin') {
-    //     // TODO: 백엔드 응답에 따라 이메일이 존재하면 비밀번호 단계로
-    //     setStep('password');
-    //   } else {
-    //      // 회원가입 시 상세 정보 단계로
-    //      setStep('signup-details');
-    //   }
-    // }).catch(err => setError(err.message)).finally(() => setIsLoading(false));
+    setIsLoading(true);
+    try {
+      // TODO: Call API to check if email is already registered (e.g., /api/auth/signup/check-email)
 
-    // 임시 로직: 바로 다음 단계로 이동
-    setTimeout(() => {
-      setStep('password');
+      setStep('password-creation');
+    } catch (error) {
+      setError('This email is already taken or invalid.');
+    } finally {
       setIsLoading(false);
-    }, 500); // 네트워크 지연 시뮬레이션
+    }
   };
 
-  const handlePasswordSubmit = (e: React.FormEvent) => {
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    // TODO: 비밀번호 유효성 검사 추가
     if (!password) {
-      setError('Please enter your password.');
+      // TODO: Check password policy (e.g., length, complexity)
+      setError('Please enter a password that meets the requirements.');
       return;
     }
-    setIsLoading(true);
-    console.log('Attempting sign in with:', email, password);
-    // TODO: 여기에 이메일/비밀번호 로그인 API 호출 구현
-    // fakeApiCall({ email, password }).then(user => { /* 로그인 성공 처리 */ }).catch(err => setError(err.message)).finally(() => setIsLoading(false));
 
-    // 임시 성공 처리
-    setTimeout(() => {
-      alert('Sign in successful (simulation)');
+    setIsLoading(true);
+    try {
+      // TODO: Call API to send Sign Up information (email, password) and request verification code (e.g., /api/auth/signup/initiate)
+
+      setStep('verify-email-code');
+    } catch (error) {
+      setError('Failed to initiate sign up. Please try again.');
+    } finally {
       setIsLoading(false);
-      // 로그인 성공 후 리디렉션 등
-    }, 1000);
+    }
   };
 
-  const handleCodeSubmit = () => {
+  const handleVerificationCodeSubmit = async (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
     setError(null);
-
-    setIsLoading(true);
-    console.log('Attempting sign in with email code:', email, code);
-
-    // TODO: 여기에 이메일/코드 로그인 API 호출 구현
-    // fakeApiCall({ email, code }).then(user => { /* 로그인 성공 처리 */ }).catch(err => setError(err.message)).finally(() => setIsLoading(false));
-
-    // 임시 성공 처리
-    setTimeout(() => {
-      alert('Sign in with code successful (simulation)');
-      setIsLoading(false);
-      // 로그인 성공 후 리디렉션 등
-    }, 1000);
-  };
-
-  const handleSignUpSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    if (password !== confirmPassword) {
-      setError('Passwords do not match.');
+    if (verificationCode.length !== 6) {
+      setError('Please enter the 6-digit code.');
       return;
     }
-    if (!password) {
-      setError('Please enter a password.');
-      return;
-    }
-    // TODO: 비밀번호 정책 검사 추가 (길이, 특수문자 등)
 
     setIsLoading(true);
-    console.log('Attempting sign up with:', email, password);
-    // TODO: 여기에 회원가입 API 호출 구현
-    // fakeApiCall({ email, password }).then(newUser => { /* 회원가입 성공 처리 */ }).catch(err => setError(err.message)).finally(() => setIsLoading(false));
+    try {
+      // TODO: Call API to verify the verification code (e.g., /api/auth/signup/verify-code)
 
-    // 임시 성공 처리
-    setTimeout(() => {
-      alert('Sign up successful (simulation)! Please sign in.');
-      // 회원가입 성공 후 로그인 페이지 초기 상태로 전환
-      setStep('email');
-      setEmail(''); // 이메일 필드 초기화 또는 유지 선택
-      setPassword('');
-      setConfirmPassword('');
+      // If successful, redirect to the login page or automatically log in the user
+      router.replace(DEFAULT_LOGGED_IN_REDIRECT_URL);
+    } catch (error) {
+      setError('Invalid or expired code. Please try again.');
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const requestEmailCode = () => {
@@ -161,43 +122,37 @@ const LoginPage = () => {
 
     // 임시 처리
     setTimeout(() => {
-      setStep('code');
       setIsLoading(false);
     }, 500);
   };
 
   const goBack = () => {
-    setError(null); // 에러 초기화
-    if (step === 'password') {
+    setError(null);
+    if (step === 'password-creation') {
       setStep('email');
       setPassword('');
-      setCode('');
-    } else if (step === 'code') {
-      setStep('password');
-      setCode('');
-    } else if (step === 'signup-details') {
-      setStep('email'); // 회원가입 상세에서 이메일 단계로
-      setPassword('');
       setConfirmPassword('');
+    } else if (step === 'verify-email-code') {
+      setStep('password-creation');
+      setVerificationCode('');
     }
   };
 
-  const renderBackButton = () => (
-    <button
-      type="button"
-      onClick={goBack}
-      className="absolute left-4 top-4 text-gray-500 hover:text-gray-700"
-      aria-label="Go back"
-    >
-      <ArrowLeft size={20} />
-    </button>
-  );
-
-  // --- 렌더링 로직 ---
-
   const renderEmailStep = () => (
     <>
-      <form className="mt-8 space-y-6" onSubmit={handleEmailSubmit}>
+      <form className="mt-2 space-y-6" onSubmit={handleEmailSubmit}>
+        <InputField
+          id="name"
+          name="name"
+          type="text"
+          placeholder="Your name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          autoComplete="name"
+          isRounded="both"
+          label="Name"
+          required
+        />
         <InputField
           id="email"
           name="email"
@@ -232,19 +187,18 @@ const LoginPage = () => {
 
       <div className="mt-4 text-center">
         <p className="text-sm text-gray-600">
-          Don't have an account?{' '}
-          <Link href="/signup" className="font-medium text-indigo-600 hover:text-indigo-500">
-            Sign up
+          Already have an account?{' '}
+          <Link href="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
+            Sign in
           </Link>
         </p>
       </div>
     </>
   );
 
-  const renderPasswordStep = () => (
+  const renderPasswordCreationStep = () => (
     <>
       {renderBackButton()}
-      {/* 이메일 표시 및 변경 옵션 */}
       <form className="mt-8" onSubmit={handlePasswordSubmit}>
         <InputField
           id="email"
@@ -256,14 +210,10 @@ const LoginPage = () => {
           placeholder="Email address"
         />
 
-        {/* Password 라벨과 Forgot password 링크 */}
         <div className="mb-1 mt-6 flex items-center justify-between">
           <label htmlFor="password" className="block text-sm font-medium text-gray-700">
             Password
           </label>
-          <a href="#" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-            Forgot your password?
-          </a>
         </div>
         <InputField
           id="password"
@@ -284,12 +234,11 @@ const LoginPage = () => {
             disabled={isLoading}
             className="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
           >
-            {isLoading ? 'Signing in...' : 'Sign in'}
+            {isLoading ? 'Processing...' : 'Continue'}
           </button>
         </div>
       </form>
 
-      {/* 이메일 코드로 로그인 옵션 */}
       <div className="mt-6">
         <Divider text={'OR'} />
         <div className="mt-6">
@@ -300,28 +249,28 @@ const LoginPage = () => {
             className="group relative flex w-full items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
           >
             <Mail className="mr-2 h-4 w-4" />
-            {isLoading ? 'Sending...' : 'Email sign-in code'}
+            {isLoading ? 'Sending...' : 'Continue with email code'}
           </button>
         </div>
       </div>
     </>
   );
 
-  const renderCodeStep = () => (
+  const renderVerifyCodeStep = () => (
     <>
       {renderBackButton()}
       <div className="mt-4 pl-8 text-sm text-gray-600">
         <p>Enter the code sent to</p>
         <span className="font-medium text-gray-900">{email}</span>
       </div>
-      <form className="mt-4 space-y-6" onSubmit={handleCodeSubmit}>
+      <form className="mt-4 space-y-6" onSubmit={handleVerificationCodeSubmit}>
         <CodeInput
           length={6}
           onChange={setCode}
           onComplete={(code) => {
-            setCode(code);
+            setVerificationCode(code);
             if (code.length === 6) {
-              handleCodeSubmit();
+              handleVerificationCodeSubmit();
             } else {
               setError('Please enter the 6-digit code.');
             }
@@ -330,6 +279,17 @@ const LoginPage = () => {
         {error && <p className="text-center text-sm text-red-600">{error}</p>}
       </form>
     </>
+  );
+
+  const renderBackButton = () => (
+    <button
+      type="button"
+      onClick={goBack}
+      className="absolute left-4 top-4 text-gray-500 hover:text-gray-700"
+      aria-label="Go back"
+    >
+      <ArrowLeft size={20} />
+    </button>
   );
 
   // if (isCheckingAuth) {
@@ -341,18 +301,15 @@ const LoginPage = () => {
   // }
 
   return (
-    // pt-48은 콘텐츠 양에 따라 조정 필요
-    <div className="flex min-h-screen items-start justify-center bg-gray-50 px-4 pt-64 sm:px-6 lg:px-8">
+    <div className="flex min-h-screen items-start justify-center bg-gray-50 px-4 pt-48 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
         <h2 className="text-center text-3xl font-extrabold text-gray-900">
-          {step === 'code' ? 'Verify your email' : 'Sign in'}
+          {step === 'verify-email-code' ? 'Verify your email' : 'Sign up'}
         </h2>
-        {/* 카드 스타일 Wrapper 추가 */}
         <div className="relative rounded-lg bg-white p-8 shadow-md">
-          {/* 조건부 렌더링 */}
           {step === 'email' && renderEmailStep()}
-          {step === 'password' && renderPasswordStep()}
-          {step === 'code' && renderCodeStep()}
+          {step === 'password-creation' && renderPasswordCreationStep()}
+          {step === 'verify-email-code' && renderVerifyCodeStep()}
         </div>
       </div>
       <div className="fixed bottom-12 left-0 right-0 text-center text-sm text-gray-500">
@@ -369,4 +326,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default SignUpPage;
