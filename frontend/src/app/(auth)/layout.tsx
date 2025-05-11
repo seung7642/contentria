@@ -24,7 +24,7 @@ const AuthLayout = ({ children }: AuthLayoutProps) => {
       <div className="fixed bottom-12 left-0 right-0 text-center text-sm text-gray-500">
         By continuing, you agree to out{' '}
         <a href="/policy?tab=privacy" className="text-indigo-600 hover:text-indigo-500">
-          Privacy Policy
+          Privacy Policy{' '}
         </a>
         and{' '}
         <a href="/ppolicy?tab=terms" className="text-indigo-600 hover:text-indigo-500">

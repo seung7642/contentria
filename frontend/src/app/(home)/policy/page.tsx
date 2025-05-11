@@ -57,7 +57,7 @@ export default function PolicyPage() {
           {activeTab === 'privacy' ? (
             <>
               <h1 className="text-3xl font-bold text-gray-900">개인정보처리방침</h1>
-              <p className="text-gray-600">최종 수정일: 2024년 3월 20일</p>
+              <p className="text-gray-600">최종 수정일: 2025년 5월 11일</p>
 
               <section className="mt-8">
                 <h2 className="text-2xl font-semibold text-gray-900">1. 개인정보의 처리 목적</h2>
@@ -162,7 +162,7 @@ export default function PolicyPage() {
                 </p>
                 <ul className="mt-4 list-disc pl-6 text-gray-700">
                   <li>개인정보 보호책임자: 이승호</li>
-                  <li>연락처: seung7642@gmail.com</li>
+                  <li>연락처: help@contentria.com</li>
                 </ul>
               </section>
 
@@ -178,7 +178,7 @@ export default function PolicyPage() {
           ) : (
             <>
               <h1 className="text-3xl font-bold text-gray-900">서비스 이용약관</h1>
-              <p className="text-gray-600">최종 수정일: 2024년 3월 20일</p>
+              <p className="text-gray-600">최종 수정일: 2025년 5월 11일</p>
 
               <section className="mt-8">
                 <h2 className="text-2xl font-semibold text-gray-900">제1조 (목적)</h2>

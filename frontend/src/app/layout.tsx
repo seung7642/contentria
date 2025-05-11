@@ -2,10 +2,6 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import localFont from 'next/font/local';
 import './globals.css';
-import AuthInitializer from '@/components/common/AuthInitializer';
-import { User } from '@/store/authStore';
-import { cookies } from 'next/headers';
-import { ACCESS_TOKEN_COOKIE_NAME } from '@/constants/auth';
 
 const pretendard = localFont({
   src: '../../public/fonts/PretendardVariable.woff2',

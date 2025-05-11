@@ -9,7 +9,7 @@ export default function Footer() {
             © {new Date().getFullYear()} Blog Service. All rights reserved.
           </p>
           <p className="text-sm text-gray-500">
-            이메일: <span className="hover:text-indigo-600">seung7642@gmail.com</span>
+            이메일: <span className="hover:text-indigo-600">help@contentria.com</span>
           </p>
         </div>
 
