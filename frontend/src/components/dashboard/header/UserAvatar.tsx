@@ -1,9 +1,9 @@
 import Image from 'next/image';
-import { User as UserType } from '@/store/authStore';
 import { UserIcon } from 'lucide-react';
+import { User } from '@/types/user';
 
 interface UserAvatarProps {
-  user: UserType | null;
+  user: User | null;
   size?: number;
 }
 

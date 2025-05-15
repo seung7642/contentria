@@ -4,9 +4,10 @@ import Link from 'next/link';
 import { Edit3, LayoutDashboard, Rss } from 'lucide-react';
 import { TypeAnimation } from 'react-type-animation';
 import { memo, useEffect, useRef, useState } from 'react';
-import { useAuthStore, User } from '@/store/authStore';
+import { useAuthStore } from '@/store/authStore';
 import { useRouter } from 'next/navigation';
 import apiClient from '@/lib/apiClient';
+import { User } from '@/types/user';
 
 // TypeAnimation 컴포넌트를 memo로 감싸서 불필요한 리렌더링 방지 (선택 사항)
 const MemoizedTypeAnimation = memo(TypeAnimation);

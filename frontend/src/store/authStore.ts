@@ -1,13 +1,6 @@
+import { User } from '@/types/user';
 import { create } from 'zustand';
 
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  profileImage: string | null;
-}
-
-// 스토어 상태 타입 정의
 interface AuthState {
   user: User | null;
   isLoading: boolean;

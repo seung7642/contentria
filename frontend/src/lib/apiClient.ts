@@ -1,6 +1,6 @@
 import { REFRESH_URL } from '@/constants/auth';
 import { useAuthStore } from '@/store/authStore';
-import { ApiErrorResponse } from '@/types/api';
+import { ApiErrorResponse } from '@/types/api/common';
 
 let isRefreshing = false;
 let refreshPromise: Promise<void> | null = null;
@@ -87,7 +87,7 @@ const parseResponse = async <T>(response: Response, url: string): Promise<T> => 
   }
 };
 
-async function apiClient<T>(url: string, options: RequestInit = {}): Promise<T> {
+async function apiClient<T>(url: string, options: RequestInit = {}, retryCount = 1): Promise<T> {
   let response = await makeRequest(url, options);
 
   if (response.status === 401) {
@@ -98,11 +98,17 @@ async function apiClient<T>(url: string, options: RequestInit = {}): Promise<T> 
 
     try {
       await refreshPromise;
-      console.log(`apiClient: Retrying original request for ${url} after refresh.`);
+      console.debug(`apiClient: Retrying original request for ${url} after refresh.`);
       response = await makeRequest(url, options);
 
+      if (response.status === 401 && retryCount > 0) {
+        return apiClient(url, options, retryCount - 1);
+      }
+
       if (response.status === 401) {
-        console.log(`apiClient: Still received 401 for ${url} after refresh attempt. Logging out.`);
+        console.debug(
+          `apiClient: Still received 401 for ${url} after refresh attempt. Logging out.`
+        );
         useAuthStore.getState().setUser(null);
         throw createApiError('Authentication failed even after token refresh.', 401);
       }

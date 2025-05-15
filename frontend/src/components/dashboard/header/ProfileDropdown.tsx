@@ -1,10 +1,10 @@
-import { User as UserType } from '@/store/authStore';
+import { User } from '@/types/user';
 import UserAvatar from './UserAvatar';
 import { Home, LogOut, Settings } from 'lucide-react';
 import Link from 'next/link';
 
 interface ProfileDropdownProps {
-  user: UserType | null;
+  user: User | null;
   onClose: () => void;
   onLogout: () => void;
 }

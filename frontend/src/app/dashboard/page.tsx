@@ -28,9 +28,10 @@ import PopularPostList from '@/components/dashboard/popularPostList';
 import RevenueList from '@/components/dashboard/revenueList';
 import QuickActions from '@/components/dashboard/quickActions';
 import { useRouter } from 'next/navigation';
-import { useAuthStore, User } from '@/store/authStore';
+import { useAuthStore } from '@/store/authStore';
 import { DEFAULT_LOGGED_OUT_REDIRECT_URL } from '@/constants/auth';
 import apiClient from '@/lib/apiClient';
+import { User } from '@/types/user';
 
 // 타입 정의
 type TimeRange = '2weeks' | '30days' | '90days';

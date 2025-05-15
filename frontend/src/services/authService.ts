@@ -1,56 +1,20 @@
 import apiClient from '@/lib/apiClient';
-import { User } from '@/store/authStore';
+import {
+  CheckEmailPayload,
+  CheckEmailResponse,
+  InitiateSignupPayload,
+  InitiateSignupResponse,
+  LoginPayload,
+  LoginResponse,
+  RequestCodeResponse,
+  ResendCodePayload,
+  ResendCodeResponse,
+  VerifyCodePayload,
+  VerifyCodeResponse,
+} from '@/types/api/auth';
 
 interface BaseApiResponse {
   message?: string;
-}
-
-export interface LoginPayload {
-  email: string;
-  password?: string;
-  code?: string;
-}
-
-export interface LoginResponse extends BaseApiResponse {
-  user: User;
-  token: string;
-}
-
-export interface RequestCodeResponse extends BaseApiResponse {
-  // TODO: Define the structure of the response if needed
-  isSuccess: boolean;
-}
-
-export interface CheckEmailPayload {
-  email: string;
-}
-export interface CheckEmailResponse extends BaseApiResponse {
-  isAvailable?: boolean;
-}
-
-export interface InitiateSignupPayload {
-  email: string;
-  name?: string;
-  password?: string;
-}
-export interface InitiateSignupResponse extends BaseApiResponse {
-  isSuccess: boolean;
-}
-
-export interface VerifyCodePayload {
-  email: string;
-  code: string;
-}
-export interface VerifyCodeResponse extends BaseApiResponse {
-  user?: User;
-  token?: string;
-}
-
-export interface ResendCodePayload {
-  email: string;
-}
-export interface ResendCodeResponse extends BaseApiResponse {
-  isSuccess: boolean;
 }
 
 export const authService = {

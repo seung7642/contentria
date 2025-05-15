@@ -1,6 +1,7 @@
 import { DEFAULT_LOGGED_IN_REDIRECT_URL } from '@/constants/auth';
 import apiClient from '@/lib/apiClient';
-import { useAuthStore, User } from '@/store/authStore';
+import { useAuthStore } from '@/store/authStore';
+import { User } from '@/types/user';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
