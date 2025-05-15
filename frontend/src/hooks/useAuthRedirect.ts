@@ -1,7 +1,6 @@
 import { DEFAULT_LOGGED_IN_REDIRECT_URL } from '@/constants/auth';
-import apiClient from '@/lib/apiClient';
+import { authService } from '@/services/authService';
 import { useAuthStore } from '@/store/authStore';
-import { User } from '@/types/user';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -18,7 +17,7 @@ export const useAuthRedirect = () => {
         return;
       }
       try {
-        const fetchedUser = await apiClient<User>('/api/users/me');
+        const fetchedUser = await authService.getMe();
         setUser(fetchedUser);
         router.replace(DEFAULT_LOGGED_IN_REDIRECT_URL);
       } catch (error) {

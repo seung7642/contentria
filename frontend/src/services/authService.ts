@@ -12,6 +12,7 @@ import {
   VerifyCodePayload,
   VerifyCodeResponse,
 } from '@/types/api/auth';
+import { User } from '@/types/user';
 
 interface BaseApiResponse {
   message?: string;
