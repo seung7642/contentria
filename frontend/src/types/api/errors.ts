@@ -6,11 +6,29 @@ export interface ApiErrorResponse {
   path: string | null; // 요청한 URL 경로를 포함한다.
 }
 
+export interface GenericErrorDetails {
+  _detailType: 'GenericError';
+  name: string;
+  message: string;
+  stack?: string;
+}
+
+export interface UnknownErrorDetails {
+  _detailType: 'UnknownError';
+  thrownValue: string;
+}
+
+export type ApiErrorDetailType =
+  | ApiErrorResponse
+  | GenericErrorDetails
+  | UnknownErrorDetails
+  | string;
+
 export class ApiError extends Error {
   status: number;
-  details?: ApiErrorResponse | string;
+  details?: ApiErrorDetailType;
 
-  constructor(message: string, status: number, details?: ApiErrorResponse | string) {
+  constructor(message: string, status: number, details?: ApiErrorDetailType) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
@@ -18,14 +36,9 @@ export class ApiError extends Error {
   }
 }
 
-export class AuthError extends Error {
-  status: number;
-  details?: ApiErrorResponse | string;
-
-  constructor(message: string, status: number, details?: ApiErrorResponse | string) {
-    super(message);
+export class AuthError extends ApiError {
+  constructor(message: string, status: number, details?: ApiErrorDetailType) {
+    super(message, status, details);
     this.name = 'AuthError';
-    this.status = status;
-    this.details = details;
   }
 }
