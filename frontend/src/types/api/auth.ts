@@ -1,5 +1,9 @@
 import { User } from '../user';
 
+export interface BaseApiResponse {
+  message?: string;
+}
+
 export interface LoginPayload {
   email: string;
   password?: string;
