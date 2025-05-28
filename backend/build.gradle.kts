@@ -43,9 +43,13 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.3")
 
+    implementation("com.mailgun:mailgun-java:1.1.6")
+
     // 데이터베이스
     runtimeOnly("com.h2database:h2") // 개발용, 필요시 변경
-    // runtimeOnly("org.postgresql:postgresql") // 프로덕션용
+    runtimeOnly("org.postgresql:postgresql") // 프로덕션용
+
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
     // 테스트 종속성 - 명시적으로 JUnit 프레임워크 지정
     testImplementation("org.springframework.boot:spring-boot-starter-test")

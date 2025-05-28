@@ -11,7 +11,8 @@ data class AppProperties(
 data class AuthProperties(
     val jwt: JwtProperties,
     val cookie: CookieProperties,
-    val oidc: OidcProperties
+    val oidc: OidcProperties,
+    val verificationCode: VerificationCodeProperties
 )
 
 data class JwtProperties(
@@ -29,6 +30,12 @@ data class CookieProperties(
 
 data class OidcProperties(
     val successRedirectUrl: String,
+)
+
+data class VerificationCodeProperties(
+    val ttlMinutes: Long = 10L,
+    val length: Int = 6,
+    val redisKeyPrefix: String = "verification_code:email:",
 )
 
 data class CorsProperties(

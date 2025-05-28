@@ -23,6 +23,8 @@ class User(
 
     var pictureUrl: String? = null,
 
+    val emailVerified: Boolean = false,
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     var provider: AuthProvider = AuthProvider.EMAIL,
@@ -75,6 +77,7 @@ class User(
                 pictureUrl = pictureUrl,
                 provider = AuthProvider.GOOGLE,
                 providerId = providerId,
+                emailVerified = true
             )
         }
     }

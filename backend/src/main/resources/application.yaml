@@ -51,6 +51,10 @@ app:
       refresh-token-path: "/api/auth"
     oidc:
       success-redirect-url: http://localhost:3000/dashboard
+    verification-code:
+      ttl-minutes: 10
+      length: 6
+      redis-key-prefix: "verification_code:email:"
   cors:
     allowed-origins: http://localhost:3000
 

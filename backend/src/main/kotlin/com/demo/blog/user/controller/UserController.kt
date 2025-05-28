@@ -17,7 +17,7 @@ class UserController {
 
     @GetMapping("/me")
     fun getMyInfo(authentication: Authentication): ResponseEntity<UserInfoResponse> {
-        logger.info { "/api/users/me start" }
+        logger.info { "------ /api/users/me start ------" }
 
         val userDetails = authentication.principal as? CustomUserDetails
             ?: throw IllegalStateException("User details not found in authentication principal")
@@ -29,7 +29,7 @@ class UserController {
             profileImage = userDetails.profileImageUrl
         )
 
-        logger.info { "/api/users/me end" }
+        logger.info { "------ /api/users/me end ------" }
         return ResponseEntity.ok(response)
     }
 }

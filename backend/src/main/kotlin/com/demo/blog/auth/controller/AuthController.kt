@@ -1,18 +1,25 @@
 package com.demo.blog.auth.controller
 
+import com.demo.blog.auth.dto.SignUpInitiateRequest
+import com.demo.blog.auth.dto.SignUpInitiateResponse
+import com.demo.blog.auth.dto.SignUpResponse
+import com.demo.blog.auth.dto.VerificationCodeRequest
 import com.demo.blog.auth.service.JwtService
 import com.demo.blog.auth.service.RefreshTokenService
+import com.demo.blog.auth.service.SignUpService
 import com.demo.blog.common.properties.AppProperties
 import com.demo.blog.user.security.CustomUserDetailsService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.web.bind.annotation.CookieValue
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.util.concurrent.TimeUnit
@@ -25,7 +32,8 @@ class AuthController(
     private val refreshTokenService: RefreshTokenService,
     private val jwtService: JwtService,
     private val userDetailsService: CustomUserDetailsService,
-    private val appProperties: AppProperties
+    private val appProperties: AppProperties,
+    private val signUpService: SignUpService
 ) {
 
     private val accessTokenCookieMaxAge: Int = TimeUnit.MILLISECONDS.toSeconds(appProperties.auth.jwt.accessTokenExpirationMs).toInt()
@@ -112,5 +120,22 @@ class AuthController(
         response.addCookie(
             createCookie(refreshTokenCookieName, null, refreshTokenPath, 0, request)
         )
+    }
+
+    @PostMapping("/signup/initiate")
+    fun initiateSignUp(
+        @Valid @RequestBody request: SignUpInitiateRequest,
+        httpRequest: HttpServletRequest
+    ): ResponseEntity<SignUpInitiateResponse> {
+        val response = signUpService.initiate(request, httpRequest)
+        return ResponseEntity.ok(response)
+    }
+
+    @PostMapping("/signup/verify-code")
+    fun verifyCodeAndCompleteSignUp(
+        @Valid @RequestBody request: VerificationCodeRequest
+    ): ResponseEntity<SignUpResponse> {
+        val response = signUpService.verifyCodeAndCompleteSignUp(request)
+        return ResponseEntity.ok(response)
     }
 }
