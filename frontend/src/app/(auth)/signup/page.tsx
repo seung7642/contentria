@@ -1,283 +1,64 @@
 'use client';
 
 import AuthFormCard from '@/components/auth/AuthFormCard';
-import CodeInput from '@/components/auth/codeInput';
-import GoogleLoginButton from '@/components/auth/googleLoginButton';
-import Divider from '@/components/ui/divider';
-import InputField from '@/components/ui/inputField';
-import { DEFAULT_LOGGED_IN_REDIRECT_URL } from '@/constants/auth';
-import { ArrowLeft, Mail, Lock } from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { EmailStep } from '@/components/auth/signup/EmailStep';
+import { PasswordStep } from '@/components/auth/signup/PasswordStep';
+import { VerificationStep } from '@/components/auth/signup/VerificationStep';
+import { useSignUpFlow } from '@/hooks/useSignUpFlow';
 
-type SignUpStep = 'email' | 'password-creation' | 'verify-email-code';
+const SignUpPage1 = () => {
+  const signUpFlow = useSignUpFlow();
 
-const SignUpPage = () => {
-  const router = useRouter();
-
-  const [step, setStep] = useState<SignUpStep>('email');
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [verificationCode, setVerificationCode] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleEmailSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    if (!email) {
-      setError('Please enter your email address.');
-      return;
-    }
-    // TODO: Add email validation
-
-    setIsLoading(true);
-    try {
-      // TODO: Call API to check if email is already registered (e.g., /api/auth/signup/check-email)
-
-      setStep('password-creation');
-    } catch (error) {
-      setError('This email is already taken or invalid.');
-    } finally {
-      setIsLoading(false);
+  const getTitle = () => {
+    switch (signUpFlow.step) {
+      case 'verify-email-code':
+        return 'Verify your email';
+      default:
+        return 'Sign up';
     }
   };
 
-  const handlePasswordSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    if (!password) {
-      // TODO: Check password policy (e.g., length, complexity)
-      setError('Please enter a password that meets the requirements.');
-      return;
-    }
+  const renderCurrentStep = () => {
+    const commonProps = {
+      formData: signUpFlow.formData,
+      onUpdateData: signUpFlow.updateFormData,
+      isLoading: signUpFlow.isLoading,
+      error: signUpFlow.error,
+      setIsLoading: signUpFlow.setIsLoading,
+      setError: signUpFlow.setError,
+    };
 
-    setIsLoading(true);
-    try {
-      // TODO: Call API to send Sign Up information (email, password) and request verification code (e.g., /api/auth/signup/initiate)
-
-      setStep('verify-email-code');
-    } catch (error) {
-      setError('Failed to initiate sign up. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleVerificationCodeSubmit = async (e?: React.FormEvent) => {
-    if (e) {
-      e.preventDefault();
-    }
-    setError(null);
-    if (verificationCode.length !== 6) {
-      setError('Please enter the 6-digit code.');
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      // TODO: Call API to verify the verification code (e.g., /api/auth/signup/verify-code)
-
-      // If successful, redirect to the login page or automatically log in the user
-      router.replace(DEFAULT_LOGGED_IN_REDIRECT_URL);
-    } catch (error) {
-      setError('Invalid or expired code. Please try again.');
-    } finally {
-      setIsLoading(false);
+    switch (signUpFlow.step) {
+      case 'email':
+        return <EmailStep {...commonProps} onNext={signUpFlow.goToNextStep} />;
+      case 'password-creation':
+        return (
+          <PasswordStep
+            {...commonProps}
+            onNext={signUpFlow.goToNextStep}
+            onBack={signUpFlow.goToPreviousStep}
+          />
+        );
+      case 'verify-email-code':
+        return (
+          <VerificationStep
+            {...commonProps}
+            onBack={signUpFlow.goToPreviousStep}
+            onComplete={signUpFlow.resetForm}
+          />
+        );
+      default:
+        return null;
     }
   };
-
-  const requestEmailCode = () => {
-    setError(null);
-    setIsLoading(true);
-    console.log('Requesting email sign-in code for:', email);
-    // TODO: 여기에 이메일 인증 코드 발송 API 호출 구현
-    // fakeApiCall({ email, type: 'send_code' }).then(() => setStep('code')).catch(err => setError(err.message)).finally(() => setIsLoading(false));
-
-    // 임시 처리
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 500);
-  };
-
-  const goBack = () => {
-    setError(null);
-    if (step === 'password-creation') {
-      setStep('email');
-      setPassword('');
-    } else if (step === 'verify-email-code') {
-      setStep('password-creation');
-      setVerificationCode('');
-    }
-  };
-
-  const renderEmailStep = () => (
-    <>
-      <form className="mt-2 space-y-6" onSubmit={handleEmailSubmit}>
-        <InputField
-          id="name"
-          name="name"
-          type="text"
-          placeholder="Your name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          autoComplete="name"
-          isRounded="both"
-          label="Name"
-          required
-        />
-        <InputField
-          id="email"
-          name="email"
-          type="email"
-          icon={Mail}
-          placeholder="Your email address"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          autoComplete="email"
-          isRounded="both"
-          label="Email"
-          required
-        />
-        {error && <p className="text-center text-sm text-red-600">{error}</p>}
-        <div>
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
-          >
-            {isLoading ? 'Processing...' : 'Continue'}
-          </button>
-        </div>
-      </form>
-
-      <div className="mt-6">
-        <Divider text="OR" />
-        <div className="mt-6">
-          <GoogleLoginButton />
-        </div>
-      </div>
-
-      <div className="mt-4 text-center">
-        <p className="text-sm text-gray-600">
-          Already have an account?{' '}
-          <Link href="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
-            Sign in
-          </Link>
-        </p>
-      </div>
-    </>
-  );
-
-  const renderPasswordCreationStep = () => (
-    <>
-      {renderBackButton()}
-      <form className="mt-8" onSubmit={handlePasswordSubmit}>
-        <InputField
-          id="email"
-          label="Email"
-          disabled={true}
-          value={email}
-          name="email"
-          type="email"
-          placeholder="Email address"
-        />
-
-        <div className="mb-1 mt-6 flex items-center justify-between">
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-            Password
-          </label>
-        </div>
-        <InputField
-          id="password"
-          name="password"
-          type="password"
-          icon={Lock}
-          placeholder="Enter your password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          autoComplete="current-password"
-          isRounded="both"
-          required
-        />
-        {error && <p className="text-center text-sm text-red-600">{error}</p>}
-        <div className="mt-8">
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
-          >
-            {isLoading ? 'Processing...' : 'Continue'}
-          </button>
-        </div>
-      </form>
-
-      <div className="mt-6">
-        <Divider text={'OR'} />
-        <div className="mt-6">
-          <button
-            type="button"
-            onClick={requestEmailCode}
-            disabled={isLoading}
-            className="group relative flex w-full items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
-          >
-            <Mail className="mr-2 h-4 w-4" />
-            {isLoading ? 'Sending...' : 'Continue with email code'}
-          </button>
-        </div>
-      </div>
-    </>
-  );
-
-  const renderVerifyCodeStep = () => (
-    <>
-      {renderBackButton()}
-      <div className="mt-4 pl-8 text-sm text-gray-600">
-        <p>Enter the code sent to</p>
-        <span className="font-medium text-gray-900">{email}</span>
-      </div>
-      <form className="mt-4 space-y-6" onSubmit={handleVerificationCodeSubmit}>
-        <CodeInput
-          length={6}
-          onChange={setCode}
-          onComplete={(code) => {
-            setVerificationCode(code);
-            if (code.length === 6) {
-              handleVerificationCodeSubmit();
-            } else {
-              setError('Please enter the 6-digit code.');
-            }
-          }}
-        />
-        {error && <p className="text-center text-sm text-red-600">{error}</p>}
-      </form>
-    </>
-  );
-
-  const renderBackButton = () => (
-    <button
-      type="button"
-      onClick={goBack}
-      className="absolute left-4 top-4 text-gray-500 hover:text-gray-700"
-      aria-label="Go back"
-    >
-      <ArrowLeft size={20} />
-    </button>
-  );
 
   return (
     <div className="flex min-h-screen items-start justify-center bg-gray-50 px-4 pt-60 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
-        <AuthFormCard title={step === 'verify-email-code' ? 'Verify your email' : 'Sign in'}>
-          {step === 'email' && renderEmailStep()}
-          {step === 'password-creation' && renderPasswordCreationStep()}
-          {step === 'verify-email-code' && renderVerifyCodeStep()}
-        </AuthFormCard>
+        <AuthFormCard title={getTitle()}>{renderCurrentStep()}</AuthFormCard>
       </div>
     </div>
   );
 };
 
-export default SignUpPage;
+export default SignUpPage1;

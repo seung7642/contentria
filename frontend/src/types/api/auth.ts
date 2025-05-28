@@ -37,8 +37,8 @@ export interface InitiateSignupPayload {
 }
 
 export interface InitiateSignupResponse {
-  message?: string;
-  isSuccess: boolean;
+  status: string;
+  nextStep: string;
 }
 
 export interface VerifyCodePayload {
@@ -52,7 +52,7 @@ export interface VerifyCodeResponse {
   token?: string;
 }
 
-export interface ResendCodePayload {
+export interface RequestVerificationCodePayload {
   email: string;
 }
 

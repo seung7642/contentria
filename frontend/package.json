@@ -19,6 +19,8 @@
     "next-mdx-remote": "5.0.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
+    "react-google-recaptcha": "^3.1.0",
+    "react-google-recaptcha-v3": "^1.10.1",
     "react-type-animation": "^3.2.0",
     "recharts": "^2.15.1",
     "rehype-highlight": "7.0.0",

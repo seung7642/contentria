@@ -8,7 +8,7 @@ import {
   LoginPayload,
   LoginResponse,
   RequestCodeResponse,
-  ResendCodePayload,
+  RequestVerificationCodePayload,
   ResendCodeResponse,
   VerifyCodePayload,
   VerifyCodeResponse,
@@ -111,7 +111,9 @@ export const authService = {
     );
   },
 
-  async resendSignupCode(payload: ResendCodePayload): Promise<ResendCodeResponse> {
+  async requestVerificationCode(
+    payload: RequestVerificationCodePayload
+  ): Promise<ResendCodeResponse> {
     const endpoint = '/api/auth/signup/resend-code';
     return withAuthErrorHandling(
       () =>
