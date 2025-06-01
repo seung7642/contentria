@@ -19,8 +19,18 @@ export const useSignUpFlow = () => {
     }
   };
 
+  const setCurrentStep = (newStep: SignUpStep) => {
+    setStep(newStep);
+    setError(null);
+  };
+
   const goToNextStep = () => {
-    const steps: SignUpStep[] = ['email', 'password-creation', 'verify-email-code'];
+    const steps: SignUpStep[] = [
+      'email',
+      'password-creation',
+      'recaptcha-v2-challenge',
+      'verify-email-code',
+    ];
     const currentIndex = steps.indexOf(step);
     if (currentIndex < steps.length - 1) {
       setStep(steps[currentIndex + 1]);
@@ -29,13 +39,20 @@ export const useSignUpFlow = () => {
   };
 
   const goToPreviousStep = () => {
-    const steps: SignUpStep[] = ['email', 'password-creation', 'verify-email-code'];
+    const steps: SignUpStep[] = [
+      'email',
+      'password-creation',
+      'recaptcha-v2-challenge',
+      'verify-email-code',
+    ];
     const currentIndex = steps.indexOf(step);
     if (currentIndex > 0) {
       setStep(steps[currentIndex - 1]);
       setError(null);
       if (step === 'password-creation') {
         setFormData((prev) => ({ ...prev, password: '' }));
+      } else if (step === 'recaptcha-v2-challenge') {
+        setFormData((prev) => ({ ...prev }));
       } else if (step === 'verify-email-code') {
         setFormData((prev) => ({ ...prev, verificationCode: '' }));
       }
@@ -49,21 +66,22 @@ export const useSignUpFlow = () => {
       password: '',
       verificationCode: '',
     });
-    setStep('email');
+    setCurrentStep('email');
     setError(null);
     setIsLoading(false);
   };
 
   return {
     step,
+    setStep: setCurrentStep,
     formData,
-    isLoading,
-    error,
-    setIsLoading,
-    setError,
     updateFormData,
+    resetForm,
+    isLoading,
+    setIsLoading,
+    error,
+    setError,
     goToNextStep,
     goToPreviousStep,
-    resetForm,
   };
 };

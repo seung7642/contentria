@@ -1,6 +1,7 @@
 import BackButton from '@/components/ui/BackButton';
 import Divider from '@/components/ui/divider';
 import InputField from '@/components/ui/inputField';
+import { RECAPTCHA_SIGN_UP_ACTION } from '@/constants/auth';
 import { authService } from '@/services/authService';
 import { PasswordStepProps } from '@/types/signup';
 import { Mail } from 'lucide-react';
@@ -16,6 +17,7 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
   error,
   setError,
   setIsLoading,
+  setStep,
 }) => {
   const { executeRecaptcha } = useGoogleReCaptcha();
 
@@ -41,22 +43,22 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
 
     setIsLoading(true);
     try {
-      const recaptchaToken = await executeRecaptcha('signup_initiate');
+      const recaptchaToken = await executeRecaptcha(RECAPTCHA_SIGN_UP_ACTION);
       const signUpData = {
         name: formData.name,
         email: formData.email,
         password: formData.password,
         recaptchaV3Token: recaptchaToken,
       };
-      console.log('Sign up data:', signUpData);
 
-      // const response = await authService.initiateSignup(signUpData);
-      // if (response.nextStep === 'verify_with_recaptcha_v2') {
-      //   setError('High risk detected. Additional verification may be required.');
-      //   return;
-      // }
-
-      onNext();
+      const response = await authService.initiateSignup(signUpData);
+      if (response.nextStep === 'verify_with_recaptcha_v2') {
+        setStep('recaptcha-v2-challenge');
+      } else if (response.nextStep === 'enter_verification_code') {
+        setStep('verify-email-code');
+      } else {
+        setError('An unexpected error occurred. Please try again.');
+      }
     } catch (error: unknown) {
       console.error('reCAPTCHA execution failed:', error);
       return;

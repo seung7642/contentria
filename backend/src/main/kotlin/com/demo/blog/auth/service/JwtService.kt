@@ -8,6 +8,7 @@ import io.jsonwebtoken.io.Decoders
 import io.jsonwebtoken.security.Keys
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Service
+import java.time.Instant
 import java.util.*
 import javax.crypto.SecretKey
 
@@ -28,17 +29,15 @@ class JwtService(
     }
 
     fun generateAccessToken(userDetails: UserDetails): String {
-        return generateToken(userDetails.username, appProperties.auth.jwt.accessTokenExpirationMs)
+        val expiration = Instant.now().plus(appProperties.auth.jwt.accessTokenExpiration)
+        return generateToken(userDetails.username, Date.from(expiration))
     }
 
-    private fun generateToken(subject: String, expirationMs: Long): String {
-        val now = Date()
-        val expiryDate = Date(now.time + expirationMs)
-
+    private fun generateToken(subject: String, expiration: Date): String {
         return Jwts.builder()
             .subject(subject)
-            .issuedAt(now)
-            .expiration(expiryDate)
+            .issuedAt(Date())
+            .expiration(expiration)
             .signWith(secretKey) // 알고리즘 자동 선택 (HS256)
             .compact()
     }

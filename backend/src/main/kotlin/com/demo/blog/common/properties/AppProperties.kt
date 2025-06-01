@@ -1,26 +1,38 @@
 package com.demo.blog.common.properties
 
+import jakarta.validation.Valid
+import jakarta.validation.constraints.DecimalMax
+import jakarta.validation.constraints.DecimalMin
+import jakarta.validation.constraints.NotBlank
 import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.validation.annotation.Validated
+import java.time.Duration
 
 @ConfigurationProperties(prefix = "app")
+@Validated
 data class AppProperties(
-    val auth: AuthProperties,
-    val cors: CorsProperties
+    @field:Valid val auth: AuthProperties,
+    @field:Valid val cors: CorsProperties,
+    @field:Valid val mail: MailProperties,
 )
 
+@Validated
 data class AuthProperties(
-    val jwt: JwtProperties,
-    val cookie: CookieProperties,
-    val oidc: OidcProperties,
-    val verificationCode: VerificationCodeProperties
+    @field:Valid val jwt: JwtProperties,
+    @field:Valid val cookie: CookieProperties,
+    @field:Valid val oidc: OidcProperties,
+    @field:Valid val verificationCode: VerificationCodeProperties,
+    @field:Valid val recaptcha: RecaptchaProperties
 )
 
+@Validated
 data class JwtProperties(
-    val secret: String,
-    val accessTokenExpirationMs: Long,
-    val refreshTokenExpirationMs: Long
+    @field:NotBlank val secret: String,
+    val accessTokenExpiration: Duration,
+    val refreshTokenExpiration: Duration
 )
 
+@Validated
 data class CookieProperties(
     val accessTokenName: String,
     val refreshTokenName: String,
@@ -28,16 +40,42 @@ data class CookieProperties(
     val refreshTokenPath: String
 )
 
+@Validated
 data class OidcProperties(
     val successRedirectUrl: String,
 )
 
+@Validated
 data class VerificationCodeProperties(
     val ttlMinutes: Long = 10L,
     val length: Int = 6,
     val redisKeyPrefix: String = "verification_code:email:",
 )
 
+@Validated
 data class CorsProperties(
     val allowedOrigins: List<String>
+)
+
+@Validated
+data class RecaptchaProperties(
+    @field:NotBlank val v2SecretKey: String,
+    @field:NotBlank val v3SecretKey: String,
+    @field:DecimalMin(value = "0.0") @field:DecimalMax(value = "1.0")
+    val scoreThreshold: Double = 0.5,
+    val siteVerifyUrl: String = "https://www.google.com/recaptcha/api/siteverify",
+    val expectedHostname: String? = null,
+    val expectedActions: Map<String, String> = emptyMap()
+)
+
+@Validated
+data class MailProperties(
+    @field:Valid val mailgun: MailgunProperties
+)
+
+@Validated
+data class MailgunProperties(
+    @field:NotBlank val apiKey: String,
+    @field:NotBlank val domain: String,
+    @field:NotBlank val fromAddress: String,
 )

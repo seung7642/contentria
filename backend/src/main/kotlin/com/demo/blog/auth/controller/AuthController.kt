@@ -36,8 +36,8 @@ class AuthController(
     private val signUpService: SignUpService
 ) {
 
-    private val accessTokenCookieMaxAge: Int = TimeUnit.MILLISECONDS.toSeconds(appProperties.auth.jwt.accessTokenExpirationMs).toInt()
-    private val refreshTokenCookieMaxAge: Int = TimeUnit.MILLISECONDS.toSeconds(appProperties.auth.jwt.refreshTokenExpirationMs).toInt()
+    private val accessTokenCookieMaxAge: Int = appProperties.auth.jwt.accessTokenExpiration.toSeconds().toInt()
+    private val refreshTokenCookieMaxAge: Int = appProperties.auth.jwt.refreshTokenExpiration.toSeconds().toInt()
     private val accessTokenCookieName: String = appProperties.auth.cookie.accessTokenName
     private val refreshTokenCookieName: String = appProperties.auth.cookie.refreshTokenName
     private val accessTokenPath: String = appProperties.auth.cookie.accessTokenPath
@@ -135,7 +135,7 @@ class AuthController(
     fun verifyCodeAndCompleteSignUp(
         @Valid @RequestBody request: VerificationCodeRequest
     ): ResponseEntity<SignUpResponse> {
-        val response = signUpService.verifyCodeAndCompleteSignUp(request)
+        val response = signUpService.verifyCode(request)
         return ResponseEntity.ok(response)
     }
 }

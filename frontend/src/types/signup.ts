@@ -1,4 +1,8 @@
-export type SignUpStep = 'email' | 'password-creation' | 'verify-email-code';
+export type SignUpStep =
+  | 'email'
+  | 'password-creation'
+  | 'recaptcha-v2-challenge'
+  | 'verify-email-code';
 
 export interface SignUpFormData {
   name: string;
@@ -12,6 +16,7 @@ export interface StepProps {
   onUpdateData: (field: keyof SignUpFormData, value: string) => void;
   isLoading: boolean;
   error: string | null;
+  setStep: (step: SignUpStep) => void;
   setIsLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
 }
@@ -22,6 +27,10 @@ export interface EmailStepProps extends StepProps {
 
 export interface PasswordStepProps extends StepProps {
   onNext: () => void;
+  onBack: () => void;
+}
+
+export interface RecaptchaV2StepProps extends StepProps {
   onBack: () => void;
 }
 

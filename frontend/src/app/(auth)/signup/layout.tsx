@@ -1,12 +1,11 @@
 'use client';
 
-import type { Metadata } from 'next';
 import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 
-const metadata: Metadata = {
-  title: 'Sign Up',
-  description: 'Contentria 회원가입',
-};
+// const metadata: Metadata = {
+//   title: 'Sign Up',
+//   description: 'Contentria 회원가입',
+// };
 
 export default function SignUpLayout({
   children,
@@ -24,8 +23,8 @@ export default function SignUpLayout({
   return (
     <GoogleReCaptchaProvider
       reCaptchaKey={recaptchaSiteKey}
-      // language="ko"
-      // scriptProps={{ async: true, defer: true }}
+      language="ko"
+      scriptProps={{ async: true, defer: true }}
     >
       <main className="min-h-screen bg-gray-50">{children}</main>
     </GoogleReCaptchaProvider>

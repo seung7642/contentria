@@ -63,6 +63,6 @@ class UserService(
 
     fun existsByEmail(email: String): Boolean {
 //        return userRepository.existsByEmail(email)
-        return true
+        return false
     }
 }

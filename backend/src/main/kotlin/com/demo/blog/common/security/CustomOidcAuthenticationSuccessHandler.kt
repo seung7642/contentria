@@ -31,8 +31,8 @@ class CustomOidcAuthenticationSuccessHandler(
     private val refreshTokenService: RefreshTokenService
 ) : SimpleUrlAuthenticationSuccessHandler() {
 
-    private val accessTokenCookieMaxAge: Int = TimeUnit.MILLISECONDS.toSeconds(appProperties.auth.jwt.accessTokenExpirationMs).toInt()
-    private val refreshTokenCookieMaxAge: Int = TimeUnit.MILLISECONDS.toSeconds(appProperties.auth.jwt.refreshTokenExpirationMs).toInt()
+    private val accessTokenCookieMaxAge: Int = appProperties.auth.jwt.accessTokenExpiration.toSeconds().toInt()
+    private val refreshTokenCookieMaxAge: Int = appProperties.auth.jwt.refreshTokenExpiration.toSeconds().toInt()
     private val accessTokenCookieName: String = appProperties.auth.cookie.accessTokenName
     private val refreshTokenCookieName: String = appProperties.auth.cookie.refreshTokenName
     private val accessTokenPath: String = appProperties.auth.cookie.accessTokenPath

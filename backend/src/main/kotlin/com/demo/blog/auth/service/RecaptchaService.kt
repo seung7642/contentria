@@ -1,8 +1,11 @@
 package com.demo.blog.auth.service
 
+import com.demo.blog.auth.dto.RecaptchaVerificationResult
+import reactor.core.publisher.Mono
+
 interface RecaptchaService {
 
-    fun isValidRecaptchaV3(token: String?, clientIp: String?): Boolean
+    fun verifyRecaptchaV3(token: String?, clientIp: String?, expectedAction: String?): Mono<RecaptchaVerificationResult>
 
-    fun isValidRecaptchaV2(token: String?, clientIp: String?): Boolean
+    fun verifyRecaptchaV2(token: String?, clientIp: String?): Mono<RecaptchaVerificationResult>
 }

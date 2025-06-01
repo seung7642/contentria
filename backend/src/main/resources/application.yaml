@@ -42,8 +42,8 @@ app:
   auth:
     jwt:
       secret: ${JWT_SECRET}
-      access-token-expiration-ms: 900000       # access token 만료 시간: 15분
-      refresh-token-expiration-ms: 604800000   # refresh token 만료 시간: 7일
+      access-token-expiration: 15m   # access token 만료 시간: 15분
+      refresh-token-expiration: 7d   # refresh token 만료 시간: 7일
     cookie:
       access-token-name: "access_token"
       refresh-token-name: "refresh_token"
@@ -55,8 +55,22 @@ app:
       ttl-minutes: 10
       length: 6
       redis-key-prefix: "verification_code:email:"
+    recaptcha:
+      v2-secret-key: ${RECAPTCHA_V2_SECRET_KEY}
+      v3-secret-key: ${RECAPTCHA_V3_SECRET_KEY}
+      score-threshold: 1.0 # 이 점수 이상이어야 통과로 간주
+      site-verify-url: "https://www.google.com/recaptcha/api/siteverify"
+      expected-hostname: "localhost"
+      expected-actions:
+        signup_initiate: "signup_initiate"
+        login: "login"
   cors:
     allowed-origins: http://localhost:3000
+  mail:
+    mailgun:
+      api-key: ${MAILGUN_API_KEY}
+      domain: ${MAILGUN_DOMAIN}
+      from-address: "no-reply@${MAILGUN_DOMAIN}"
 
 logging:
   level:

@@ -27,11 +27,6 @@ class JwtAuthenticationFilter(
 
     private val accessTokenCookieName = appProperties.auth.cookie.accessTokenName
 
-    companion object {
-        private const val AUTHORIZATION_HEADER = "Authorization"
-        private const val BEARER_PREFIX = "Bearer "
-    }
-
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,
@@ -73,5 +68,10 @@ class JwtAuthenticationFilter(
             ?.let { return it }
 
         return null
+    }
+
+    companion object {
+        private const val AUTHORIZATION_HEADER = "Authorization"
+        private const val BEARER_PREFIX = "Bearer "
     }
 }

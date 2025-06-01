@@ -3,10 +3,11 @@
 import AuthFormCard from '@/components/auth/AuthFormCard';
 import { EmailStep } from '@/components/auth/signup/EmailStep';
 import { PasswordStep } from '@/components/auth/signup/PasswordStep';
+import RecaptchaV2Step from '@/components/auth/signup/RecaptchaV2Step';
 import { VerificationStep } from '@/components/auth/signup/VerificationStep';
 import { useSignUpFlow } from '@/hooks/useSignUpFlow';
 
-const SignUpPage1 = () => {
+const SignUpPage = () => {
   const signUpFlow = useSignUpFlow();
 
   const getTitle = () => {
@@ -20,11 +21,12 @@ const SignUpPage1 = () => {
 
   const renderCurrentStep = () => {
     const commonProps = {
+      setStep: signUpFlow.setStep,
       formData: signUpFlow.formData,
       onUpdateData: signUpFlow.updateFormData,
       isLoading: signUpFlow.isLoading,
-      error: signUpFlow.error,
       setIsLoading: signUpFlow.setIsLoading,
+      error: signUpFlow.error,
       setError: signUpFlow.setError,
     };
 
@@ -39,6 +41,8 @@ const SignUpPage1 = () => {
             onBack={signUpFlow.goToPreviousStep}
           />
         );
+      case 'recaptcha-v2-challenge':
+        return <RecaptchaV2Step {...commonProps} onBack={signUpFlow.goToPreviousStep} />;
       case 'verify-email-code':
         return (
           <VerificationStep
@@ -61,4 +65,4 @@ const SignUpPage1 = () => {
   );
 };
 
-export default SignUpPage1;
+export default SignUpPage;
