@@ -28,29 +28,19 @@ const SignUpPage = () => {
       setIsLoading: signUpFlow.setIsLoading,
       error: signUpFlow.error,
       setError: signUpFlow.setError,
+      goToNextStep: signUpFlow.goToNextStep,
+      goToPreviousStep: signUpFlow.goToPreviousStep,
     };
 
     switch (signUpFlow.step) {
       case 'email':
-        return <EmailStep {...commonProps} onNext={signUpFlow.goToNextStep} />;
+        return <EmailStep {...commonProps} />;
       case 'password-creation':
-        return (
-          <PasswordStep
-            {...commonProps}
-            onNext={signUpFlow.goToNextStep}
-            onBack={signUpFlow.goToPreviousStep}
-          />
-        );
+        return <PasswordStep {...commonProps} />;
       case 'recaptcha-v2-challenge':
-        return <RecaptchaV2Step {...commonProps} onBack={signUpFlow.goToPreviousStep} />;
+        return <RecaptchaV2Step {...commonProps} />;
       case 'verify-email-code':
-        return (
-          <VerificationStep
-            {...commonProps}
-            onBack={signUpFlow.goToPreviousStep}
-            onComplete={signUpFlow.resetForm}
-          />
-        );
+        return <VerificationStep {...commonProps} onComplete={signUpFlow.resetForm} />;
       default:
         return null;
     }

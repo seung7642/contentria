@@ -22,19 +22,20 @@ export interface StepProps {
 }
 
 export interface EmailStepProps extends StepProps {
-  onNext: () => void;
+  goToNextStep: () => void;
 }
 
 export interface PasswordStepProps extends StepProps {
-  onNext: () => void;
-  onBack: () => void;
+  goToNextStep: () => void;
+  goToPreviousStep: () => void;
 }
 
 export interface RecaptchaV2StepProps extends StepProps {
-  onBack: () => void;
+  goToNextStep: () => void;
+  goToPreviousStep: () => void;
 }
 
 export interface VerificationStepProps extends StepProps {
-  onBack: () => void;
+  goToPreviousStep: () => void;
   onComplete: () => void;
 }

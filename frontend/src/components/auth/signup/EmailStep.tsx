@@ -5,67 +5,60 @@ import { Mail } from 'lucide-react';
 import React from 'react';
 import GoogleLoginButton from '../googleLoginButton';
 import Link from 'next/link';
+import { SubmitHandler, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { EmailStepFormData, emailStepSchema } from '@/lib/schemas/authSchemas';
 
 export const EmailStep: React.FC<EmailStepProps> = ({
   formData,
   onUpdateData,
-  onNext,
+  goToNextStep,
   isLoading,
-  error,
-  setError,
+  error: apiError, // react-hook-form(RHF) errors와 구분하기 위해 이름 변경
 }) => {
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<EmailStepFormData>({
+    resolver: zodResolver(emailStepSchema),
+    mode: 'onBlur',
+    defaultValues: {
+      name: formData.name,
+      email: formData.email,
+    },
+  });
 
-    if (!formData.name.trim()) {
-      setError('Please enter your name.');
-      return;
-    }
-
-    if (!formData.email.trim()) {
-      setError('Please enter your email address.');
-      return;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      setError('Please enter a valid email address.');
-      return;
-    }
-
-    onNext();
+  const onSubmit: SubmitHandler<EmailStepFormData> = (data) => {
+    onUpdateData('name', data.name);
+    onUpdateData('email', data.email);
+    goToNextStep();
   };
 
   return (
     <>
-      <form className="mt-2 space-y-6" onSubmit={handleSubmit}>
+      <form className="mt-2 space-y-6" onSubmit={handleSubmit(onSubmit)}>
         <InputField
           id="name"
-          name="name"
+          label="Name"
           type="text"
           placeholder="Your name"
-          value={formData.name}
-          onChange={(e) => onUpdateData('name', e.target.value)}
           autoComplete="name"
           isRounded="both"
-          label="Name"
-          required
+          {...register('name')}
+          errorMessage={errors.name?.message}
         />
         <InputField
           id="email"
-          name="email"
+          label="Email"
           type="email"
-          icon={Mail}
           placeholder="Your email address"
-          value={formData.email}
-          onChange={(e) => onUpdateData('email', e.target.value)}
           autoComplete="email"
           isRounded="both"
-          label="Email"
-          required
+          {...register('email')}
+          errorMessage={errors.email?.message}
         />
-        {error && <p className="text-center text-sm text-red-600">{error}</p>}
+        {apiError && <p className="text-center text-sm text-red-600">{apiError}</p>}
         <div>
           <button
             type="submit"
