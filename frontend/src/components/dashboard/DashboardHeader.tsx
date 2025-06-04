@@ -1,0 +1,150 @@
+'use client';
+
+import { useState, useRef, useEffect } from 'react';
+import Link from 'next/link';
+import { Search, Bell, Home } from 'lucide-react';
+import { useAuthStore } from '@/store/authStore';
+import { useRouter } from 'next/navigation';
+import apiClient from '@/lib/apiClient';
+import NotificationDropdown from './header/NotificationDropdown';
+import UserAvatar from './header/UserAvatar';
+import ProfileDropdown from './header/ProfileDropdown';
+
+const DashboardHeader = () => {
+  const [isSearchVisible, setIsSearchVisible] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+  const notificationRef = useRef(null);
+  const profileRef = useRef(null);
+  const router = useRouter();
+
+  const user = useAuthStore((state) => state.user);
+  const setUser = useAuthStore((state) => state.setUser);
+
+  // 알림 목록 - 실제로는 API에서 가져올 것
+  const notifications = [
+    { id: 1, text: '새 댓글이 달렸습니다.', time: '방금 전' },
+    { id: 2, text: '광고 수익이 입금되었습니다.', time: '3시간 전' },
+    { id: 3, text: '블로그 방문자가 증가했습니다.', time: '어제' },
+  ];
+
+  // 외부 클릭 감지 (알림, 프로필 드롭다운 닫기)
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        notificationRef.current &&
+        !(notificationRef.current as HTMLElement).contains(event.target as Node)
+      ) {
+        setIsNotificationOpen(false);
+      }
+      if (
+        profileRef.current &&
+        !(profileRef.current as HTMLElement).contains(event.target as Node)
+      ) {
+        setIsProfileOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleLogout = async () => {
+    setIsProfileOpen(false);
+    try {
+      await apiClient('/api/auth/logout', { method: 'POST' });
+      setUser(null);
+      router.push('/');
+    } catch (e) {
+      console.error('Logout error:', e);
+      alert('로그아웃 중 오류가 발생했습니다. 다시 시도해 주세요.');
+    }
+  };
+
+  return (
+    <header className="sticky top-0 z-10 w-full border-b bg-white shadow-sm">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
+        {/* 왼쪽 영역: 블로그 제목 & 검색 전환 */}
+        <div className="flex items-center md:w-64">
+          <Link href="/dashboard" className="text-xl font-bold md:hidden">
+            Blog
+          </Link>
+
+          <div className={`relative ${isSearchVisible ? 'block' : 'hidden'} md:block`}>
+            <div className="absolute inset-y-0 left-0 flex items-center pl-3">
+              <Search size={18} className="text-gray-400" />
+            </div>
+            <input
+              type="text"
+              placeholder="검색..."
+              className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 md:w-64"
+            />
+          </div>
+
+          {!isSearchVisible && (
+            <button
+              onClick={() => setIsSearchVisible(true)}
+              className="rounded-full p-2 hover:bg-gray-100 md:hidden"
+            >
+              <Search size={20} />
+            </button>
+          )}
+        </div>
+
+        {/* 중앙 영역: 블로그 제목 (데스크톱에서만) */}
+        <h1 className="hidden text-2xl font-bold md:block">Blog</h1>
+
+        {/* 오른쪽 영역: 버튼 및 프로필 */}
+        <div className="flex items-center space-x-2">
+          {/* 블로그로 돌아가기 버튼 */}
+          <Link
+            href="/"
+            className="mx-2 hidden items-center rounded-lg bg-white px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 md:flex"
+          >
+            <Home size={18} className="mr-2" />
+            블로그로 돌아가기
+          </Link>
+
+          {/* 알림 버튼 */}
+          <div className="relative" ref={notificationRef}>
+            <button
+              onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+              className="relative rounded-full p-2 hover:bg-gray-100"
+              aria-label={`알림 ${notifications.length > 0 ? '있음' : '없음'}`}
+              aria-haspopup="true"
+              aria-expanded={isNotificationOpen}
+            >
+              <Bell size={20} />
+              {notifications.length > 0 && (
+                <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500"></span>
+              )}
+            </button>
+
+            {isNotificationOpen && <NotificationDropdown notifications={notifications} />}
+          </div>
+
+          {/* 프로필 드롭다운 */}
+          <div className="relative" ref={profileRef}>
+            <button
+              onClick={() => setIsProfileOpen(!isProfileOpen)}
+              className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border-2 border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <UserAvatar user={user} size={36} />
+            </button>
+
+            {isProfileOpen && (
+              <ProfileDropdown
+                user={user}
+                onClose={() => setIsProfileOpen(false)}
+                onLogout={handleLogout}
+              />
+            )}
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+export default DashboardHeader;

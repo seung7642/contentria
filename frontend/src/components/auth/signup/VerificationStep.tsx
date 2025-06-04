@@ -3,7 +3,7 @@ import { authService } from '@/services/authService';
 import { VerificationStepProps } from '@/types/signup';
 import { useRouter } from 'next/navigation';
 import React from 'react';
-import CodeInput from '../codeInput';
+import CodeInput from '../CodeInput';
 import BackButton from '@/components/ui/BackButton';
 
 export const VerificationStep: React.FC<VerificationStepProps> = ({

@@ -2,10 +2,10 @@
 
 import React, { useState } from 'react';
 import { Mail, Lock, ArrowLeft } from 'lucide-react';
-import InputField from '@/components/ui/inputField';
-import Divider from '@/components/ui/divider';
-import GoogleLoginButton from '@/components/auth/googleLoginButton';
-import CodeInput from '@/components/auth/codeInput'; // 새로 만들 컴포넌트
+import InputField from '@/components/ui/InputField';
+import Divider from '@/components/ui/Divider';
+import GoogleLoginButton from '@/components/auth/GoogleLoginButton';
+import CodeInput from '@/components/auth/CodeInput'; // 새로 만들 컴포넌트
 import Link from 'next/link';
 import AuthFormCard from '@/components/auth/AuthFormCard';
 

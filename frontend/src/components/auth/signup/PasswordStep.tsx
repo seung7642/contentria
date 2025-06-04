@@ -1,6 +1,6 @@
 import BackButton from '@/components/ui/BackButton';
-import Divider from '@/components/ui/divider';
-import InputField from '@/components/ui/inputField';
+import Divider from '@/components/ui/Divider';
+import InputField from '@/components/ui/InputField';
 import { RECAPTCHA_SIGN_UP_ACTION } from '@/constants/auth';
 import { PasswordStepFormData, passwordStepSchema } from '@/lib/schemas/authSchemas';
 import { authService } from '@/services/authService';

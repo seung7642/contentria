@@ -1,9 +1,9 @@
-import Divider from '@/components/ui/divider';
-import InputField from '@/components/ui/inputField';
+import Divider from '@/components/ui/Divider';
+import InputField from '@/components/ui/InputField';
 import { EmailStepProps } from '@/types/signup';
 import { Mail } from 'lucide-react';
 import React from 'react';
-import GoogleLoginButton from '../googleLoginButton';
+import GoogleLoginButton from '../GoogleLoginButton';
 import Link from 'next/link';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
