@@ -23,10 +23,10 @@ import {
 } from 'recharts';
 
 // 컴포넌트 분리
-import StatCard from '@/components/dashboard/statCard';
-import PopularPostList from '@/components/dashboard/popularPostList';
-import RevenueList from '@/components/dashboard/revenueList';
-import QuickActions from '@/components/dashboard/quickActions';
+import StatCard from '@/components/dashboard/StatCard';
+import PopularPostList from '@/components/dashboard/PopularPostList';
+import RevenueList from '@/components/dashboard/RevenueList';
+import QuickActions from '@/components/dashboard/QuickActions';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { DEFAULT_LOGGED_OUT_REDIRECT_URL } from '@/constants/auth';

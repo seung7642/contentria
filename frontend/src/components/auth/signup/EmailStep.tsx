@@ -1,7 +1,6 @@
 import Divider from '@/components/ui/Divider';
 import InputField from '@/components/ui/InputField';
 import { EmailStepProps } from '@/types/signup';
-import { Mail } from 'lucide-react';
 import React from 'react';
 import GoogleLoginButton from '../GoogleLoginButton';
 import Link from 'next/link';

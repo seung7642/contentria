@@ -1,4 +1,4 @@
-import Footer from '@/components/home/footer';
+import Footer from '@/components/home/Footer';
 import HomeHeader from '@/components/home/homeHeader';
 
 export default function HomeLayout({
