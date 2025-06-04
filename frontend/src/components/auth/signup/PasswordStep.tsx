@@ -6,7 +6,7 @@ import { PasswordStepFormData, passwordStepSchema } from '@/lib/schemas/authSche
 import { authService } from '@/services/authService';
 import { PasswordStepProps } from '@/types/signup';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CheckCircle2, Info, Mail, XCircle } from 'lucide-react';
+import { Info, Mail } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { SubmitHandler, useForm } from 'react-hook-form';
@@ -24,7 +24,7 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
   goToNextStep,
   goToPreviousStep,
   isLoading,
-  error: apiError, // react-hook-form(RHF) errors와 구분하기 위해 이름 변경
+  error: apiError,
   setError: setApiError,
   setIsLoading,
   setStep,
@@ -87,7 +87,7 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
         setApiError('An unexpected error occurred. Please try again.');
       }
     } catch (error: unknown) {
-      console.error('reCAPTCHA execution failed:', error);
+      console.error('reCAPTCHA execution or signUp API request failed:', error);
       return;
     } finally {
       setIsLoading(false);
@@ -126,7 +126,6 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
 
         <div className="mt-6">
           {' '}
-          {/* Password 섹션 전체를 감싸는 div가 필요할 수 있음 */}
           <div className="mb-1 flex items-center space-x-1">
             <label htmlFor="password" className="block text-sm font-medium text-gray-700">
               Password
@@ -138,13 +137,12 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
                 onMouseLeave={() => setIsPolicyVisible(false)}
                 onFocus={() => setIsPolicyVisible(true)}
                 onBlur={() => setIsPolicyVisible(false)}
-                className="focus:outline-none rounded-full p-0.5 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2"
+                className="rounded-full p-0.5 text-gray-400 hover:text-gray-600 focus:outline-none"
                 aria-label="Show password policy"
-                aria-expanded={isPolicyVisible} // 팝오버 확장 상태 알림
+                aria-expanded={isPolicyVisible}
               >
                 <Info size={16} />
               </button>
-              {/* 조건부 렌더링은 여기서, 내용은 PasswordPolicyTooltip 컴포넌트가 담당 */}
               <PasswordPolicyTooltip
                 policies={passwordPolicies}
                 currentPasswordValue={currentPassword || ''}
@@ -159,6 +157,7 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
             autoComplete="new-password"
             isRounded="both"
             {...register('password')}
+            errorMessage={errors.password?.message}
           />
         </div>
 
