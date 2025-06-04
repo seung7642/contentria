@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import CategoryItem from './categoryItem';
+import CategoryItem from './CategoryItem';
 
 export type Category = {
   id: string;
