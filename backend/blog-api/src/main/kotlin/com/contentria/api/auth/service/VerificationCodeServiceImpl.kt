@@ -4,7 +4,6 @@ import com.contentria.api.auth.cache.dto.VerificationCodeCache
 import com.contentria.api.auth.cache.service.AuthCacheService
 import com.contentria.api.common.mail.MailService
 import com.contentria.api.common.properties.AppProperties
-import com.demo.com.contentria.api.auth.service.VerificationCodeService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import java.time.ZonedDateTime

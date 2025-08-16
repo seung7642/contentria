@@ -1,4 +1,4 @@
-package com.demo.com.contentria.api.auth.service
+package com.contentria.api.auth.service
 
 interface VerificationCodeService {
 

@@ -41,9 +41,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
     // Rate Limiting
-    implementation("com.bucket4j:bucket4j_jdk17-core:8.14.0")
-    implementation("com.bucket4j:bucket4j_jdk17-redis-common:8.14.0")
-    implementation("com.bucket4j:bucket4j_jdk17-lettuce:8.14.0")
+//    implementation("com.bucket4j:bucket4j_jdk17-core:8.14.0")
+//    implementation("com.bucket4j:bucket4j_jdk17-redis-common:8.14.0")
+//    implementation("com.bucket4j:bucket4j_jdk17-lettuce:8.14.0")
+    implementation("com.giffing.bucket4j.spring.boot.starter:bucket4j-spring-boot-starter:0.13.0")
 
     // 테스트 종속성 - 명시적으로 JUnit 프레임워크 지정
     testImplementation("org.springframework.boot:spring-boot-starter-test")

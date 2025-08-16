@@ -1,7 +1,7 @@
 package com.contentria.api.auth.cache.service
 
 import com.contentria.api.auth.cache.dto.VerificationCodeCache
-import com.contentria.api.common.cache.service.CacheService
+import com.contentria.common.cache.CacheService
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.stereotype.Service
 

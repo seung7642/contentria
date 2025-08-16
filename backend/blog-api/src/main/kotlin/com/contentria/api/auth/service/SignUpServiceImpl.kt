@@ -9,7 +9,7 @@ import com.contentria.api.common.exception.RecaptchaVerificationFailedException
 import com.contentria.api.common.properties.AppProperties
 import com.contentria.api.common.ratelimit.service.RateLimitService
 import com.contentria.api.user.service.UserService
-import com.demo.com.contentria.api.auth.service.VerificationCodeService
+import com.contentria.api.auth.service.VerificationCodeService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.security.crypto.password.PasswordEncoder
