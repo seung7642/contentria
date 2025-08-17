@@ -1,6 +1,6 @@
 package com.contentria.api.auth.dto
 
-import com.contentria.api.user.controller.response.UserInfoResponse
+import com.contentria.api.user.controller.UserInfoResponse
 
 data class SignUpResponse(
     val status: String,

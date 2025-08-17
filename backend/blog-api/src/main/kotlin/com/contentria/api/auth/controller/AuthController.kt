@@ -7,7 +7,7 @@ import com.contentria.api.auth.dto.VerificationCodeRequest
 import com.contentria.api.auth.service.JwtService
 import com.contentria.api.auth.service.RefreshTokenService
 import com.contentria.api.auth.service.SignUpService
-import com.contentria.api.common.properties.AppProperties
+import com.contentria.api.config.properties.AppProperties
 import com.contentria.api.user.security.CustomUserDetailsService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.Cookie

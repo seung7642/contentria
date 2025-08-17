@@ -66,12 +66,38 @@ app:
         login: "login"
   cors:
     allowed-origins: http://localhost:3000
-  mail:
-    mailgun:
-      api-key: ${MAILGUN_API_KEY}
-      domain: ${MAILGUN_DOMAIN}
-      from-address: "no-reply@${MAILGUN_DOMAIN}"
 
 logging:
   level:
     root: info
+
+bucket4j:
+  enabled: true
+  filter-config-caching-enabled: true
+  filter-config-cache-name: filterConfigCache
+  methods:
+    - name: default
+      cache-name: buckets
+      rate-limit:
+        cache-key: 1
+        bandwidths:
+          - capacity: 1
+            refill-capacity: 1
+            time: 2
+            unit: seconds
+            initial-capacity: 1
+            refill-speed: interval
+  filters:
+    - id: filter1
+      cache-name: buckets
+      url: .*
+      rate-limits:
+        - cache-key: getRemoteAddr()
+          post-execute-condition: getStatus() eq 200
+          bandwidths:
+            - capacity: 10
+              refill-capacity: 1
+              time: 10
+              unit: seconds
+              initial-capacity: 5
+              refill-speed: interval

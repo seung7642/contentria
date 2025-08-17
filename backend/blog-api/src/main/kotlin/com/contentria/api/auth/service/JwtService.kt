@@ -1,6 +1,6 @@
 package com.contentria.api.auth.service
 
-import com.contentria.api.common.properties.AppProperties
+import com.contentria.api.config.properties.AppProperties
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts

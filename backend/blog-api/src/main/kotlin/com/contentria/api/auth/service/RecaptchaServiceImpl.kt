@@ -3,13 +3,12 @@ package com.contentria.api.auth.service
 import com.contentria.api.auth.dto.RecaptchaResponse
 import com.contentria.api.auth.dto.RecaptchaVerificationResult
 import com.contentria.api.auth.dto.RecaptchaVerifyRequest
-import com.contentria.api.common.properties.AppProperties
+import com.contentria.api.config.properties.AppProperties
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
-import kotlin.text.get
 
 private val logger = KotlinLogging.logger {}
 

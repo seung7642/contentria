@@ -37,9 +37,6 @@ dependencies {
     runtimeOnly("com.h2database:h2") // 개발용, 필요시 변경
     runtimeOnly("org.postgresql:postgresql") // 프로덕션용
 
-    // Redis
-    implementation("org.springframework.boot:spring-boot-starter-data-redis")
-
     // Rate Limiting
 //    implementation("com.bucket4j:bucket4j_jdk17-core:8.14.0")
 //    implementation("com.bucket4j:bucket4j_jdk17-redis-common:8.14.0")

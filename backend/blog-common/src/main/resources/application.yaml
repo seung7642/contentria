@@ -1,0 +1,9 @@
+spring:
+  application: name=blog-common
+
+common:
+  mail:
+    mailgun:
+      api-key: ${MAILGUN_API_KEY}
+      domain: ${MAILGUN_DOMAIN}
+      from-address: "no-reply@${MAILGUN_DOMAIN}"

@@ -4,12 +4,10 @@ import com.contentria.api.auth.dto.SignUpInitiateRequest
 import com.contentria.api.auth.dto.SignUpInitiateResponse
 import com.contentria.api.auth.dto.SignUpResponse
 import com.contentria.api.auth.dto.VerificationCodeRequest
-import com.contentria.api.common.exception.MissingRecaptchaTokenException
-import com.contentria.api.common.exception.RecaptchaVerificationFailedException
-import com.contentria.api.common.properties.AppProperties
-import com.contentria.api.common.ratelimit.service.RateLimitService
+import com.contentria.api.config.exception.MissingRecaptchaTokenException
+import com.contentria.api.config.exception.RecaptchaVerificationFailedException
+import com.contentria.api.config.properties.AppProperties
 import com.contentria.api.user.service.UserService
-import com.contentria.api.auth.service.VerificationCodeService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -22,7 +20,6 @@ private val logger = KotlinLogging.logger {}
 class SignUpServiceImpl(
     private val verificationCodeService: VerificationCodeService,
     private val recaptchaService: RecaptchaService,
-    private val rateLimitService: RateLimitService,
     private val userService: UserService,
     private val appProperties: AppProperties,
     private val passwordEncoder: PasswordEncoder,
@@ -34,13 +31,6 @@ class SignUpServiceImpl(
     @Transactional
     override fun initiate(request: SignUpInitiateRequest, httpRequest: HttpServletRequest): SignUpInitiateResponse {
         val clientIp = getClientIp(httpRequest) ?: throw IllegalArgumentException("Client IP address not found")
-
-        rateLimitService.checkRateLimitOrThrow(
-            clientIp = clientIp,
-            action = "signup_initiate",
-            windowSeconds = 3600,
-            maxRequests = 5
-        )
 
         verifyRecaptcha(request, clientIp)?.let { return it }
 

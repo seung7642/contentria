@@ -2,8 +2,8 @@ package com.contentria.api.auth.service
 
 import com.contentria.api.auth.cache.dto.VerificationCodeCache
 import com.contentria.api.auth.cache.service.AuthCacheService
-import com.contentria.api.common.mail.MailService
-import com.contentria.api.common.properties.AppProperties
+import com.contentria.api.config.properties.AppProperties
+import com.contentria.common.mail.MailService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import java.time.ZonedDateTime

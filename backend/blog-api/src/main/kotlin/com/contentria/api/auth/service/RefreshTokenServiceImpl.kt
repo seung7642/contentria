@@ -2,9 +2,9 @@ package com.contentria.api.auth.service
 
 import com.contentria.api.auth.domain.RefreshToken
 import com.contentria.api.auth.repository.RefreshTokenRepository
-import com.contentria.api.common.exception.RefreshTokenExpiredException
-import com.contentria.api.common.exception.RefreshTokenNotFoundException
-import com.contentria.api.common.properties.AppProperties
+import com.contentria.api.config.exception.RefreshTokenExpiredException
+import com.contentria.api.config.exception.RefreshTokenNotFoundException
+import com.contentria.api.config.properties.AppProperties
 import com.contentria.api.user.repository.UserRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.security.core.userdetails.UsernameNotFoundException

@@ -1,7 +1,7 @@
 package com.contentria.api
 
-import com.contentria.api.common.config.GoogleProperties
-import com.contentria.api.common.properties.AppProperties
+import com.contentria.api.config.properties.AppProperties
+import com.contentria.api.config.properties.GoogleProperties
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication

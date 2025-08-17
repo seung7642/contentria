@@ -1,6 +1,6 @@
 package com.contentria.api.user.controller
 
-import com.contentria.api.user.controller.response.UserInfoResponse
+import com.contentria.api.user.controller.UserInfoResponse
 import com.contentria.api.user.security.CustomUserDetails
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.ResponseEntity
