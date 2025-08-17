@@ -1,9 +1,9 @@
-package com.contentria.api.auth.cache.dto
+package com.contentria.api.auth.dto
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import java.time.ZonedDateTime
 
-data class VerificationCodeCache(
+data class VerificationCodeCacheDto(
     @param:JsonProperty("code")
     val code: String,
 
