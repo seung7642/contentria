@@ -5,18 +5,18 @@ import io.jsonwebtoken.JwtException
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
-import java.time.ZonedDateTime
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception::class)
     fun handleGlobalException(ex: Exception, request: HttpServletRequest): ResponseEntity<ErrorResponse> {
-        logger.error(ex) { "Unhandled exception occurred for request path ${request.requestURI}: ${ex.message}" }
+        log.error(ex) { "Unhandled exception occurred for request path ${request.requestURI}: ${ex.message}" }
 
         val errorResponse = ErrorResponse(
             status = HttpStatus.INTERNAL_SERVER_ERROR.value(),
@@ -31,7 +31,7 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(JwtException::class)
     fun handleJwtException(ex: JwtException, request: HttpServletRequest): ResponseEntity<ErrorResponse> {
-        logger.error(ex) { "JWT processing error for path ${request.requestURI}: ${ex.message}" }
+        log.error(ex) { "JWT processing error for path ${request.requestURI}: ${ex.message}" }
 
         val errorResponse = ErrorResponse(
             status = HttpStatus.UNAUTHORIZED.value(),
@@ -44,12 +44,35 @@ class GlobalExceptionHandler {
             .body(errorResponse)
     }
 
+    @ExceptionHandler(MethodArgumentNotValidException::class)
+    protected fun handleMethodArgumentNotValidException(
+        ex: MethodArgumentNotValidException,
+        request: HttpServletRequest
+    ): ResponseEntity<ErrorResponse> {
+        log.error { "Validation error for request path ${request.requestURI}: ${ex.message}" }
+
+        // 실패한 필드와 에러 메시지를 map으로 가공
+        val errors = ex.bindingResult.fieldErrors.associate {
+            it.field to (it.defaultMessage ?: "Invalid value")
+        }
+        val errorResponse = ErrorResponse(
+            status = HttpStatus.BAD_REQUEST.value(),
+            error = HttpStatus.BAD_REQUEST.reasonPhrase,
+            message = "Validation failed for request",
+            path = request.requestURI,
+            details = errors
+        )
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(errorResponse)
+    }
+
     @ExceptionHandler(OidcAuthenticationProcessingException::class)
     fun handleOidcAuthenticationException(
         ex: OidcAuthenticationProcessingException,
         request: HttpServletRequest,
     ): ResponseEntity<ErrorResponse> {
-        logger.error(ex) { "OIDC post-authentication error for path ${request.requestURI}: ${ex.message}" }
+        log.error(ex) { "OIDC post-authentication error for path ${request.requestURI}: ${ex.message}" }
 
         val errorResponse = ErrorResponse(
             status = HttpStatus.INTERNAL_SERVER_ERROR.value(),
@@ -63,11 +86,3 @@ class GlobalExceptionHandler {
             .body(errorResponse)
     }
 }
-
-data class ErrorResponse(
-    val timestamp: ZonedDateTime = ZonedDateTime.now(),
-    val status: Int,
-    val error: String,
-    val message: String?,
-    val path: String? = null
-)
