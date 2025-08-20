@@ -1,11 +1,9 @@
 package com.contentria.common.cache
 
-import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Service
 
 @Service
 class CacheServiceImpl(
-    private val redisTemplate: StringRedisTemplate
 ) : CacheService {
 
     override fun set(key: String, value: String, ttlSeconds: Long) {

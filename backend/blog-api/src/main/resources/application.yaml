@@ -2,21 +2,21 @@ server:
   port: 8080
   servlet:
     context-path: /api
-
-
+logging:
+  level:
+    root: info
+    com.giffing.bucket4j: debug
+    org.springframework.security.web: DEBUG
 spring:
   application:
     name: backend
-
   config:
     import: optional:file:.env[.properties]
-
   datasource:
     url: jdbc:h2:mem:authdb
     driver-class-name: org.h2.Driver
     username: sa
     password:
-
   jpa:
     hibernate:
       ddl-auto: update # 운영 환경에서는 validate 설정 필요. (Flyway 또는 Liquibase 같은 데이터베이스 마이그레이션 도구도 고려)
@@ -24,7 +24,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
-
   security:
     oauth2:
       client:
@@ -37,7 +36,29 @@ spring:
               - email
               - profile
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-
+  cache:
+    jcache:
+      provider: com.github.benmanes.caffeine.jcache.spi.CaffeineCachingProvider # Cache Provider가 하나일 경우 생략 가능하지만, 명시성을 위해 기입
+    cache-names:
+      - rateLimiting
+    caffeine:
+      spec: maximumSize=500,expireAfterAccess=600s
+bucket4j:
+  enabled: true
+  filters:
+    - id: rateLimitingFilter
+      cache-name: rateLimiting
+      url: "/api/auth/.*"
+      rate-limits:
+        - cache-key: "@ipResolver.getClientIp(#root)"
+          post-execute-condition: getStatus() eq 200
+          numTokens: 1 # The number of tokens that should be consumed
+          bandwidths:
+            - capacity: 10
+              initial-capacity: 10
+              time: 1
+              unit: minutes
+              refill-speed: interval
 app:
   auth:
     jwt:
@@ -65,39 +86,11 @@ app:
         signup_initiate: "signup_initiate"
         login: "login"
   cors:
-    allowed-origins: http://localhost:3000
-
-logging:
-  level:
-    root: info
-
-bucket4j:
-  enabled: true
-  filter-config-caching-enabled: true
-  filter-config-cache-name: filterConfigCache
-  methods:
-    - name: default
-      cache-name: buckets
-      rate-limit:
-        cache-key: 1
-        bandwidths:
-          - capacity: 1
-            refill-capacity: 1
-            time: 2
-            unit: seconds
-            initial-capacity: 1
-            refill-speed: interval
-  filters:
-    - id: filter1
-      cache-name: buckets
-      url: .*
-      rate-limits:
-        - cache-key: getRemoteAddr()
-          post-execute-condition: getStatus() eq 200
-          bandwidths:
-            - capacity: 10
-              refill-capacity: 1
-              time: 10
-              unit: seconds
-              initial-capacity: 5
-              refill-speed: interval
+    allowed-origins:
+      - http://localhost:3000
+common:
+  mail:
+    mailgun:
+      api-key: ${MAILGUN_API_KEY}
+      domain: ${MAILGUN_DOMAIN}
+      from-address: "no-reply@${MAILGUN_DOMAIN}"

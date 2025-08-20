@@ -11,6 +11,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("org.springframework.boot:spring-boot-starter-cache")
 
     // Security & JWT
     implementation("org.springframework.boot:spring-boot-starter-security")
@@ -31,17 +32,13 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.3")
 
-    implementation("com.mailgun:mailgun-java:1.1.6")
-
     // 데이터베이스
     runtimeOnly("com.h2database:h2") // 개발용, 필요시 변경
     runtimeOnly("org.postgresql:postgresql") // 프로덕션용
 
     // Rate Limiting
-//    implementation("com.bucket4j:bucket4j_jdk17-core:8.14.0")
-//    implementation("com.bucket4j:bucket4j_jdk17-redis-common:8.14.0")
-//    implementation("com.bucket4j:bucket4j_jdk17-lettuce:8.14.0")
     implementation("com.giffing.bucket4j.spring.boot.starter:bucket4j-spring-boot-starter:0.13.0")
+    implementation("com.github.ben-manes.caffeine:jcache:3.2.2")
 
     // 테스트 종속성 - 명시적으로 JUnit 프레임워크 지정
     testImplementation("org.springframework.boot:spring-boot-starter-test")

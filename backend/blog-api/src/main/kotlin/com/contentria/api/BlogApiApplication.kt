@@ -10,8 +10,8 @@ import org.springframework.context.annotation.ComponentScan
 @SpringBootApplication
 @EnableConfigurationProperties(GoogleProperties::class, AppProperties::class)
 @ComponentScan(basePackages = ["com.contentria.common", "com.contentria.api"])
-class BackendApplication
+class BlogApiApplication
 
 fun main(args: Array<String>) {
-    runApplication<BackendApplication>(*args)
+    runApplication<BlogApiApplication>(*args)
 }

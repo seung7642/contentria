@@ -5,6 +5,7 @@ import com.contentria.api.config.properties.AppProperties
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -33,9 +34,6 @@ class SecurityConfig(
     private val objectMapper: ObjectMapper
 ) {
 
-    private val accessTokenName: String = appProperties.auth.cookie.accessTokenName
-    private val refreshTokenName: String = appProperties.auth.cookie.refreshTokenName
-
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http
@@ -46,7 +44,8 @@ class SecurityConfig(
             }
             .authorizeHttpRequests { auth ->
                 auth
-                    .requestMatchers("/", "/auth/signup/**", "/login/**", "/error", "/api/auth/refresh").permitAll()
+                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                    .requestMatchers("/", "/error", "/api/auth/**").permitAll()
                     .anyRequest().authenticated()
             }
             .oauth2Login { oauth2 ->
