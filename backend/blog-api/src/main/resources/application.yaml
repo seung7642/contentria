@@ -4,9 +4,9 @@ server:
     context-path: /api
 logging:
   level:
-    root: info
-    com.giffing.bucket4j: debug
-    org.springframework.security.web: DEBUG
+    root: INFO
+    com.giffing.bucket4j: INFO
+    org.springframework.security.web: INFO
 spring:
   application:
     name: backend
@@ -29,8 +29,8 @@ spring:
       client:
         registration:
           google:
-            client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_CLIENT_SECRET}
+            client-id: ${SPRING_OAUTH_GOOGLE_CLIENT_ID}
+            client-secret: ${SPRING_OAUTH_GOOGLE_CLIENT_SECRET}
             scope:
               - openid
               - email
@@ -77,8 +77,8 @@ app:
       length: 6
       redis-key-prefix: "verification_code:email:"
     recaptcha:
-      v2-secret-key: ${RECAPTCHA_V2_SECRET_KEY}
-      v3-secret-key: ${RECAPTCHA_V3_SECRET_KEY}
+      v2-secret-key: ${GOOGLE_RECAPTCHA_V2_SECRET_KEY}
+      v3-secret-key: ${GOOGLE_RECAPTCHA_V3_SECRET_KEY}
       score-threshold: 1.0 # 이 점수 이상이어야 통과로 간주
       site-verify-url: "https://www.google.com/recaptcha/api/siteverify"
       expected-hostname: "localhost"

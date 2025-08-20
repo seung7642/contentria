@@ -45,7 +45,7 @@ class SecurityConfig(
             .authorizeHttpRequests { auth ->
                 auth
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                    .requestMatchers("/", "/error", "/api/auth/**").permitAll()
+                    .requestMatchers("/", "/error", "/auth/**").permitAll()
                     .anyRequest().authenticated()
             }
             .oauth2Login { oauth2 ->
