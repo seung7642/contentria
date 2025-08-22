@@ -13,4 +13,6 @@ interface UserRepository : JpaRepository<User, String> {
 
     @Query("SELECT u FROM User u JOIN FETCH u.userRoles WHERE u.email = :email")
     fun findByEmailWithRoles(@Param("email") email: String): User?
+
+    fun existsByEmail(email: String): Boolean
 }
