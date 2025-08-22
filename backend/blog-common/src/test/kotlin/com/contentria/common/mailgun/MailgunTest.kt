@@ -1,4 +1,4 @@
-package com.contentria.api.mailgun
+package com.contentria.common.mailgun
 
 import com.mailgun.api.v3.MailgunMessagesApi
 import com.mailgun.client.MailgunClient
@@ -7,13 +7,15 @@ import feign.FeignException
 import feign.Request
 import feign.Retryer
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.junit.jupiter.api.Test
 import java.util.concurrent.TimeUnit
+import kotlin.to
 
 private val logger = KotlinLogging.logger {}
 
 class MailgunTest {
 
-//    @Test
+    @Test
     fun test() {
         val MAILGUN_API_KEY = "9da866ed0430bb91287c6365c06b5c9a-a908eefc-54f1ba51"
 

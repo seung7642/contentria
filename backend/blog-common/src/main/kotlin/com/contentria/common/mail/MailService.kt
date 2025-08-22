@@ -7,7 +7,7 @@ import feign.FeignException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 @Service
 class MailService(
@@ -15,24 +15,26 @@ class MailService(
     private val commonProperties: CommonProperties
 ) {
 
-    fun send() {
-        val USER_EMAIL = "seung7642@naver.com"
-
+    fun send(recipientEmail: String, recipientName: String, verificationCode: String) {
+        val templateVariables = mapOf(
+            "recipient_name" to recipientName,
+            "verification_code" to verificationCode,
+            "app_name" to "Contentria"
+        )
         val message = Message.builder()
             .from(commonProperties.mail.mailgun.fromAddress)
-            .to(USER_EMAIL)
-            .subject("Test Subject")
-            .text("Test Body")
+            .to(recipientEmail)
+            .subject("Verify your email address for Contentria")
+            .template("verify-template")
+            .mailgunVariables(templateVariables)
             .build()
 
         try {
-            val messageResponse = mailgunMessagesApi.sendMessage(commonProperties.mail.mailgun.domain, message)
+            val response = mailgunMessagesApi.sendMessage(commonProperties.mail.mailgun.domain, message)
+            log.info { "Successfully sent email to $recipientEmail" }
         } catch (e: FeignException) {
-            logger.error(e) { "Failed to send email: ${e.message}" }
+            log.error { "Failed to send email: ${e.message}" }
         }
-    }
-
-    fun sendVerificationEmail(toEmail: String, username: String, code: String) {
         return
     }
 }

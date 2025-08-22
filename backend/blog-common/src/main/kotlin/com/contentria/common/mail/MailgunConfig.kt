@@ -10,16 +10,13 @@ import org.springframework.context.annotation.Configuration
 import java.util.concurrent.TimeUnit
 
 @Configuration
-class MailConfig(
-    private val commonProperties: CommonProperties
-) {
+class MailgunConfig {
 
     @Bean
-    fun mailgunMessageApi(): MailgunMessagesApi {
-        val mailgunMessagesApiUS = MailgunClient.config(commonProperties.mail.mailgun.apiKey)
+    fun mailgunMessageApi(commonProperties: CommonProperties): MailgunMessagesApi {
+        return MailgunClient.config(commonProperties.mail.mailgun.apiKey)
             .retryer(Retryer.Default())
             .options(Request.Options(10, TimeUnit.SECONDS, 60, TimeUnit.SECONDS, true))
             .createApi(MailgunMessagesApi::class.java)
-        return mailgunMessagesApiUS
     }
 }

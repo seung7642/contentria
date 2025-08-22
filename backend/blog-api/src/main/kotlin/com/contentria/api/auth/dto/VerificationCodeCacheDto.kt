@@ -1,24 +1,18 @@
 package com.contentria.api.auth.dto
 
-import com.fasterxml.jackson.annotation.JsonProperty
-import java.time.ZonedDateTime
+import java.io.Serializable
 
 data class VerificationCodeCacheDto(
-    @param:JsonProperty("code")
     val code: String,
-
-    @param:JsonProperty("email")
     val email: String,
-
-    @param:JsonProperty("name")
     val name: String,
-
-    @param:JsonProperty("attempts")
     val attempts: Int = 0,
+) : Serializable {
+    fun withIncrementedAttempts(): VerificationCodeCacheDto {
+        return this.copy(attempts = this.attempts + 1)
+    }
 
-    @param:JsonProperty("createdAt")
-    val createdAt: ZonedDateTime,
-
-    @param:JsonProperty("expiresAt")
-    val expiresAt: ZonedDateTime
-)
+    companion object {
+        private const val serialVersionUID = 1L
+    }
+}

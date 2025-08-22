@@ -41,8 +41,9 @@ spring:
       provider: com.github.benmanes.caffeine.jcache.spi.CaffeineCachingProvider # Cache Provider가 하나일 경우 생략 가능하지만, 명시성을 위해 기입
     cache-names:
       - rateLimiting
+      - verificationCode
     caffeine:
-      spec: maximumSize=500,expireAfterAccess=600s
+      spec: maximumSize=1000,expireAfterAccess=300s
 bucket4j:
   enabled: true
   filters:
@@ -93,4 +94,4 @@ common:
     mailgun:
       api-key: ${MAILGUN_API_KEY}
       domain: ${MAILGUN_DOMAIN}
-      from-address: "no-reply@${MAILGUN_DOMAIN}"
+      from-address: "Contentria <no-reply@${MAILGUN_DOMAIN}>"
