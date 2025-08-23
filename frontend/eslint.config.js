@@ -53,4 +53,10 @@ export default [
     },
   },
   eslintPluginPrettierRecommended, // eslint-config-prettier 기능을 포함한다.
+  {
+    files: ['**/*.d.ts'],
+    rules: {
+      '@typescript-eslint/no-unused-vars': 'off',
+    },
+  },
 ];

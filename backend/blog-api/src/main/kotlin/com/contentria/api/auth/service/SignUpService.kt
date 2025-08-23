@@ -31,22 +31,9 @@ class SignUpService(
     @Transactional
     fun initiate(request: SignUpInitiateRequest, httpRequest: HttpServletRequest): SignUpInitiateResponse {
         val clientIp = getClientIp(httpRequest) ?: throw IllegalArgumentException("Client IP address not found")
-
         verifyRecaptcha(request, clientIp)?.let { return it }
 
-        // TODO: 기본 유효성 검사 (예: 이메일 형식, 이메일 계정 존재 유무, 비밀번호
-        if (userService.existsByEmail(request.email)) {
-            throw RuntimeException("Email already exists")
-        }
-
-        // TODO: 인증코드 발송
-        if (!verificationCodeService.hasRecentValidCode(request.email)) {
-            try {
-                verificationCodeService.generateAndSend(request.email, request.name)
-            } catch (e: Exception) {
-                throw RuntimeException("Failed to send verification code", e)
-            }
-        }
+        verificationCodeService.send(request.email, request.name)
 
         return SignUpInitiateResponse("success", "enter_verification_code")
     }
