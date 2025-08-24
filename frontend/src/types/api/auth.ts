@@ -4,39 +4,13 @@ export interface BaseApiResponse {
   message?: string;
 }
 
-export interface LoginPayload {
-  email: string;
-  password?: string;
-  code?: string;
-}
-
-export interface LoginResponse {
-  message?: string;
-  user: User;
-  token: string;
-}
-
-export interface RequestCodeResponse {
-  message?: string;
-  isSuccess: boolean;
-}
-
-export interface CheckEmailPayload {
-  email: string;
-}
-
-export interface CheckEmailResponse {
-  message?: string;
-  isAvailable?: boolean;
-}
-
-export interface InitiateSignupPayload {
+export interface InitiateSignUpPayload {
   email: string;
   name?: string;
   password?: string;
 }
 
-export interface InitiateSignupResponse {
+export interface InitiateSignUpResponse {
   status: string;
   nextStep: string;
 }
@@ -56,7 +30,7 @@ export interface RequestVerificationCodePayload {
   email: string;
 }
 
-export interface ResendCodeResponse {
+export interface RequestVerificationCodeResponse {
   message?: string;
   isSuccess: boolean;
 }

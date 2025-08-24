@@ -11,6 +11,7 @@ import React, { useMemo, useState } from 'react';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import PasswordPolicyTooltip from './PasswordPolicyTooltip';
+import { authService01 } from '@/services/authService01';
 
 interface PolicyItem {
   id: string;
@@ -44,8 +45,9 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
 
   const currentPassword = watch('password', formData.password);
   const [isPolicyVisible, setIsPolicyVisible] = useState(false);
+  const [isPasswordSubmitClick, setIsPasswordSubmitClick] = useState(false);
+  const [isRequestCodeClick, setIsRequestCodeClick] = useState(false);
 
-  // 비밀번호 정책 목록 및 검증 함수 (useMemo로 최적화 가능)
   const passwordPolicies = useMemo(
     (): PolicyItem[] => [
       { id: 'length', text: '최소 10자 이상', isValid: (pw) => pw.length >= 10 },
@@ -69,6 +71,7 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
     }
 
     setIsLoading(true);
+    setIsPasswordSubmitClick(true);
     try {
       const recaptchaToken = await executeRecaptcha(RECAPTCHA_SIGN_UP_ACTION);
       const signUpData = {
@@ -78,7 +81,7 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
         recaptchaV3Token: recaptchaToken,
       };
 
-      const response = await authService.initiateSignup(signUpData);
+      const response = await authService01.initiateSignUp(signUpData);
       if (response.nextStep === 'verify_with_recaptcha_v2') {
         setStep('recaptcha-v2-challenge');
       } else if (response.nextStep === 'enter_verification_code') {
@@ -91,12 +94,14 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
       return;
     } finally {
       setIsLoading(false);
+      setIsPasswordSubmitClick(false);
     }
   };
 
   const requestVerificationCode = async () => {
     setApiError(null);
     setIsLoading(true);
+    setIsRequestCodeClick(true);
 
     // TODO: 이 기능도 reCAPTCHA v3로 보호
     try {
@@ -107,6 +112,7 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
       setApiError('Failed to send verification code. Please try again.');
     } finally {
       setIsLoading(false);
+      setIsRequestCodeClick(false);
     }
   };
 
@@ -168,7 +174,7 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
             disabled={isLoading}
             className="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
           >
-            {isLoading ? 'Processing...' : 'Continue'}
+            {isLoading && isPasswordSubmitClick ? 'Processing...' : 'Continue'}
           </button>
         </div>
       </form>
@@ -183,7 +189,7 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
             className="group relative flex w-full items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
           >
             <Mail className="mr-2 h-4 w-4" />
-            {isLoading ? 'Sending...' : 'Continue with email code'}
+            {isLoading && isRequestCodeClick ? 'Sending...' : 'Continue with email code'}
           </button>
         </div>
       </div>

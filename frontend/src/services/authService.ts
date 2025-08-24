@@ -1,15 +1,9 @@
 import apiClient from '@/lib/apiClient';
 import {
-  BaseApiResponse,
-  CheckEmailPayload,
-  CheckEmailResponse,
-  InitiateSignupPayload,
-  InitiateSignupResponse,
-  LoginPayload,
-  LoginResponse,
-  RequestCodeResponse,
+  InitiateSignUpPayload,
+  InitiateSignUpResponse,
   RequestVerificationCodePayload,
-  ResendCodeResponse,
+  RequestVerificationCodeResponse,
   VerifyCodePayload,
   VerifyCodeResponse,
 } from '@/types/api/auth';
@@ -46,50 +40,11 @@ async function withAuthErrorHandling<T>(
 }
 
 export const authService = {
-  async login(payload: LoginPayload): Promise<LoginResponse> {
-    const endpoint = '/api/auth/login';
-    return withAuthErrorHandling(
-      () =>
-        apiClient<LoginResponse>(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        }),
-      'An unexpected error occurred during login.'
-    );
-  },
-
-  async requestLoginCode(email: string): Promise<RequestCodeResponse> {
-    const endpoint = '/api/auth/login/request-code';
-    return withAuthErrorHandling(
-      () =>
-        apiClient<RequestCodeResponse>(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email }),
-        }),
-      'Failed to request login code due to an unexpected error.'
-    );
-  },
-
-  async checkEmailAvailability(payload: CheckEmailPayload): Promise<CheckEmailResponse> {
-    const endpoint = '/api/auth/signup/check-email';
-    return withAuthErrorHandling(
-      () =>
-        apiClient<CheckEmailResponse>(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        }),
-      'Failed to check email availability due to an unexpected error.'
-    );
-  },
-
-  async initiateSignup(payload: InitiateSignupPayload): Promise<InitiateSignupResponse> {
+  async initiateSignup(payload: InitiateSignUpPayload): Promise<InitiateSignUpResponse> {
     const endpoint = '/api/auth/signup/initiate';
     return withAuthErrorHandling(
       () =>
-        apiClient<InitiateSignupResponse>(endpoint, {
+        apiClient<InitiateSignUpResponse>(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
@@ -113,11 +68,11 @@ export const authService = {
 
   async requestVerificationCode(
     payload: RequestVerificationCodePayload
-  ): Promise<ResendCodeResponse> {
+  ): Promise<RequestVerificationCodeResponse> {
     const endpoint = '/api/auth/signup/resend-code';
     return withAuthErrorHandling(
       () =>
-        apiClient<ResendCodeResponse>(endpoint, {
+        apiClient<RequestVerificationCodeResponse>(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
@@ -134,17 +89,6 @@ export const authService = {
           method: 'GET',
         }),
       'Failed to fetch current user due to an unexpected error.'
-    );
-  },
-
-  async logout(): Promise<BaseApiResponse> {
-    const endpoint = '/api/auth/logout';
-    return withAuthErrorHandling(
-      () =>
-        apiClient<BaseApiResponse>(endpoint, {
-          method: 'POST', // recommended to use POST for preventing CSRF attacks
-        }),
-      'Logout operation failed unexpectedly.'
     );
   },
 };
