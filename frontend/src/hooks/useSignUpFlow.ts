@@ -2,6 +2,12 @@ import { SignUpStep } from '@/types/signup';
 import { useState } from 'react';
 
 export const useSignUpFlow = () => {
+  const steps: SignUpStep[] = [
+    'email',
+    'password-creation',
+    'recaptcha-v2-challenge',
+    'verify-email-code',
+  ];
   const [step, setStep] = useState<SignUpStep>('email');
   const [formData, setFormData] = useState({
     name: '',
@@ -25,12 +31,6 @@ export const useSignUpFlow = () => {
   };
 
   const goToNextStep = () => {
-    const steps: SignUpStep[] = [
-      'email',
-      'password-creation',
-      'recaptcha-v2-challenge',
-      'verify-email-code',
-    ];
     const currentIndex = steps.indexOf(step);
     if (currentIndex < steps.length - 1) {
       setStep(steps[currentIndex + 1]);
@@ -39,12 +39,6 @@ export const useSignUpFlow = () => {
   };
 
   const goToPreviousStep = () => {
-    const steps: SignUpStep[] = [
-      'email',
-      'password-creation',
-      'recaptcha-v2-challenge',
-      'verify-email-code',
-    ];
     const currentIndex = steps.indexOf(step);
     if (currentIndex > 0) {
       setStep(steps[currentIndex - 1]);

@@ -34,3 +34,14 @@ export interface RequestVerificationCodeResponse {
   message?: string;
   isSuccess: boolean;
 }
+
+export interface VerifyOtpCodePayload {
+  email: string;
+  verificationCode: string;
+}
+
+export interface VerifyOtpCodeResponse {
+  message?: string;
+  user?: User;
+  token?: string;
+}

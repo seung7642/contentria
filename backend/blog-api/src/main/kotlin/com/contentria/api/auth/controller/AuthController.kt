@@ -3,7 +3,7 @@ package com.contentria.api.auth.controller
 import com.contentria.api.auth.dto.SignUpInitiateRequest
 import com.contentria.api.auth.dto.SignUpInitiateResponse
 import com.contentria.api.auth.dto.SignUpResponse
-import com.contentria.api.auth.dto.VerificationCodeRequest
+import com.contentria.api.auth.dto.VerifyCodeRequest
 import com.contentria.api.auth.service.JwtService
 import com.contentria.api.auth.service.RefreshTokenService
 import com.contentria.api.auth.service.SignUpService
@@ -50,10 +50,9 @@ class AuthController(
 
             // 2. 유효하다면 User 정보 로드
             val user = refreshToken.user
-            val userDetails = userDetailsService.loadUserByUsername(user.email)
 
             // 3. 새 Access Token 생성
-            val newAccessToken = jwtService.generateAccessToken(userDetails)
+            val newAccessToken = jwtService.generateAccessToken(user)
 
             // 4. Refresh Token Rotation
             val newOpaqueRefreshTokenValue = refreshTokenService.createOrUpdateOpaqueRefreshToken(user.id)
@@ -127,9 +126,7 @@ class AuthController(
     }
 
     @PostMapping("/signup/verify-code")
-    fun verifyCodeAndCompleteSignUp(
-        @Valid @RequestBody request: VerificationCodeRequest
-    ): ResponseEntity<SignUpResponse> {
+    fun verifyCode(@Valid @RequestBody request: VerifyCodeRequest): ResponseEntity<SignUpResponse> {
         val response = signUpService.verifyCode(request)
         return ResponseEntity.ok(response)
     }

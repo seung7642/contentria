@@ -1,10 +1,13 @@
 package com.contentria.api.user.service
 
+import com.contentria.api.user.domain.Role
 import com.contentria.api.user.domain.User
+import com.contentria.api.user.domain.UserStatus
 import com.contentria.api.user.security.GoogleUserInfo
 import com.contentria.api.user.repository.RoleRepository
 import com.contentria.api.user.repository.UserRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -13,7 +16,8 @@ private val logger = KotlinLogging.logger {}
 @Service
 class UserService(
     private val userRepository: UserRepository,
-    private val roleRepository: RoleRepository
+    private val roleRepository: RoleRepository,
+    private val passwordEncoder: PasswordEncoder
 ) {
 
     @Transactional
@@ -61,8 +65,49 @@ class UserService(
         }
     }
 
-    fun existsByEmail(email: String): Boolean {
-//        return userRepository.existsByEmail(email)
-        return false
+    @Transactional
+    fun createUnverifiedUser(email: String, name: String, password: String?): User {
+        // 1. 이미 ACTIVE 상태인 사용자가 있는지 확인
+        userRepository.findByEmail(email)?.let { user ->
+            if (user.status == UserStatus.ACTIVE) {
+                throw IllegalStateException("This email is already in use.")
+            }
+            // 기존에 UNVERIFIED 레코드가 있다면 삭제 후 새로 생성
+            userRepository.delete(user)
+        }
+
+        // 2. 비밀번호 해싱 (제공된 경우)
+        val hashedPassword = password?.let { passwordEncoder.encode(it) }
+
+        // 3. User 엔티티 생성
+        val newUser = User.createEmailUser(
+            email = email,
+            username = name,
+            password = hashedPassword ?: ""
+        )
+
+        // 4. 기본 역할(ROLE_USER) 할당
+        val defaultRole = roleRepository.findByName(Role.USER)
+            ?: throw IllegalArgumentException("Required role 'ROLE_USER' not found in the database.")
+
+        newUser.addRole(defaultRole)
+
+        return userRepository.save(newUser)
+    }
+
+    @Transactional
+    fun activateUserByEmail(email: String): User {
+        // 1. 이메일로 사용자를 찾는다. 없으면 예외를 던진다.
+        val user = userRepository.findByEmail(email)
+            ?: throw IllegalArgumentException("User with email $email not found.")
+
+        // 2. 이미 ACTIVE 상태이너가 다른 상태인지 확인한다.
+        if (user.status != UserStatus.UNVERIFIED) {
+            throw IllegalStateException("This user account has already been verified or is in an invalid state.")
+        }
+
+        user.status = UserStatus.ACTIVE
+
+        return user
     }
 }

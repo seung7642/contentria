@@ -1,18 +1,19 @@
 package com.contentria.api.auth.service
 
 import com.contentria.api.config.properties.AppProperties
+import com.contentria.api.user.domain.User
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.jsonwebtoken.Claims
 import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.io.Decoders
 import io.jsonwebtoken.security.Keys
-import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Service
 import java.time.Instant
 import java.util.*
 import javax.crypto.SecretKey
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 @Service
 class JwtService(
@@ -23,45 +24,63 @@ class JwtService(
             val keyBytes = Decoders.BASE64.decode(appProperties.auth.jwt.secret)
             Keys.hmacShaKeyFor(keyBytes)
         } catch (e: IllegalArgumentException) {
-            logger.error(e) { "Invalid JWT secret key from properties: ${e.message}" }
+            log.error(e) { "Invalid JWT secret key from properties: ${e.message}" }
             throw RuntimeException("Invalid JWT secret key configuration", e)
         }
     }
 
-    fun generateAccessToken(userDetails: UserDetails): String {
+    fun generateAccessToken(user: User): String {
         val expiration = Instant.now().plus(appProperties.auth.jwt.accessTokenExpiration)
-        return generateToken(userDetails.username, Date.from(expiration))
+        val extraClaims = mapOf(
+            "userId" to user.id,
+            "roles" to user.getAuthorities().map { it.authority }
+        )
+        return generateToken01(user.email, extraClaims, Date.from(expiration))
     }
 
-    private fun generateToken(subject: String, expiration: Date): String {
+    fun generateRefreshToken(user: User): String {
+        val expiration = Instant.now().plus(appProperties.auth.jwt.refreshTokenExpiration)
+        return generateToken01(user.email, emptyMap(), Date.from(expiration))
+    }
+
+    private fun generateToken01(subject: String, extraClaims: Map<String, Any>, expiration: Date): String {
         return Jwts.builder()
+            .claims(extraClaims)
             .subject(subject)
             .issuedAt(Date())
             .expiration(expiration)
-            .signWith(secretKey) // 알고리즘 자동 선택 (HS256)
+            .signWith(secretKey)
             .compact()
     }
 
-    fun getUsernameFromJWT(token: String): String {
-        val claims = Jwts.parser()
+    fun getUsernameFromToken(token: String): String {
+        return getAllClaimsFromToken(token).subject
+    }
+
+    fun isTokenValid(token: String, userEmail: String): Boolean {
+        try {
+            val username = getUsernameFromToken(token)
+            return username == userEmail && !isTokenExpired(token)
+        } catch (e: JwtException) {
+            log.debug { "JWT validation failed: ${e.message}" }
+            return false
+        }
+    }
+
+    private fun isTokenExpired(token: String): Boolean {
+        return getClaimFromToken(token) { it.expiration }.before(Date())
+    }
+
+    private fun <T> getClaimFromToken(token: String, claimsResolver: (Claims) -> T): T {
+        val claims = getAllClaimsFromToken(token)
+        return claimsResolver(claims)
+    }
+
+    private fun getAllClaimsFromToken(token: String): Claims {
+        return Jwts.parser()
             .verifyWith(secretKey)
             .build()
             .parseSignedClaims(token)
             .payload
-
-        return claims.subject
-    }
-
-    fun validateToken(token: String): Boolean {
-        try {
-            Jwts.parser()
-                .verifyWith(secretKey)
-                .build()
-                .parseSignedClaims(token)
-            return true
-        } catch (ex: JwtException) {
-            logger.debug(ex) { "JWT validation failed: ${ex.message}" }
-            return false
-        }
     }
 }

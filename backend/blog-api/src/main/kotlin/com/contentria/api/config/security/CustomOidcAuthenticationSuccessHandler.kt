@@ -5,7 +5,6 @@ import com.contentria.api.auth.service.RefreshTokenService
 import com.contentria.api.config.exception.OidcAuthenticationProcessingException
 import com.contentria.api.config.properties.AppProperties
 import com.contentria.api.user.domain.User
-import com.contentria.api.user.security.CustomUserDetailsService
 import com.contentria.api.user.security.GoogleUserInfo
 import com.contentria.api.user.service.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -25,7 +24,6 @@ class CustomOidcAuthenticationSuccessHandler(
     private val userService: UserService,
     private val jwtService: JwtService,
     private val appProperties: AppProperties,
-    private val customUserDetailsService: CustomUserDetailsService,
     private val refreshTokenService: RefreshTokenService
 ) : SimpleUrlAuthenticationSuccessHandler() {
 
@@ -63,9 +61,8 @@ class CustomOidcAuthenticationSuccessHandler(
 
         try {
             val user: User = userService.upsertGoogleUser(googleUserInfo)
-            val userDetails = customUserDetailsService.loadUserByUsername(user.email)
 
-            val accessToken = jwtService.generateAccessToken(userDetails)
+            val accessToken = jwtService.generateAccessToken(user)
             val refreshToken = refreshTokenService.createOrUpdateOpaqueRefreshToken(user.id)
 
             response.addCookie(

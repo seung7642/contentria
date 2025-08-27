@@ -1,55 +1,44 @@
 import { DEFAULT_LOGGED_IN_REDIRECT_URL } from '@/constants/auth';
-import { authService } from '@/services/authService';
+import { authService01 } from '@/services/authService01';
 import { VerificationStepProps } from '@/types/signup';
 import { useRouter } from 'next/navigation';
-import React from 'react';
-import CodeInput from '../CodeInput';
-import BackButton from '@/components/ui/BackButton';
+import React, { useCallback } from 'react';
+import OtpInput from 'react-otp-input';
 
 export const VerificationStep: React.FC<VerificationStepProps> = ({
   formData,
   onUpdateData,
-  onBack,
   isLoading,
   error,
   setError,
   setIsLoading,
-  onComplete,
 }) => {
   const router = useRouter();
 
-  const handleVerificationCodeSubmit = async (e?: React.FormEvent) => {
-    if (e) {
-      e.preventDefault();
-    }
-    setError(null);
+  // 의존성 배열이 변경되지 않는 한, 리렌더링 시 매번 함수를 새로 생성하지 않고 재사용
+  const handleVerificationCodeSubmit = useCallback(
+    async (code: string) => {
+      setIsLoading(true);
+      setError(null);
 
-    if (formData.verificationCode.length !== 6) {
-      setError('Please enter the 6-digit code.');
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      // await authService.verifySignupCode();
-      onComplete();
-      router.replace(DEFAULT_LOGGED_IN_REDIRECT_URL);
-    } catch (error: unknown) {
-      console.error('Verification failed:', error);
-      setError('Invalid or expired code. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      try {
+        console.log('Verifying code:', code);
+        await authService01.verifyOtpCode({ email: formData.email, verificationCode: code });
+        router.replace(DEFAULT_LOGGED_IN_REDIRECT_URL);
+      } catch (error: unknown) {
+        console.error('Verification failed:', error);
+        setError('Invalid or expired code. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [router, setError, setIsLoading, formData.email]
+  );
 
   const handleCodeChange = (code: string) => {
     onUpdateData('verificationCode', code);
-  };
-
-  const handleCodeComplete = (code: string) => {
-    onUpdateData('verificationCode', code);
-    if (code.length === 6) {
-      handleVerificationCodeSubmit();
+    if (code.length === 6 && !isLoading) {
+      handleVerificationCodeSubmit(code);
     }
   };
 
@@ -71,17 +60,30 @@ export const VerificationStep: React.FC<VerificationStepProps> = ({
 
   return (
     <>
-      <BackButton onClick={onBack} />
       <div className="mt-4 pl-8 text-sm text-gray-600">
         <p>Enter the code sent to</p>
         <span className="font-medium text-gray-900">{formData.email}</span>
       </div>
-      <form className="mt-4 space-y-6" onSubmit={handleVerificationCodeSubmit}>
-        <CodeInput
-          length={6}
-          onChange={handleCodeChange}
-          onComplete={handleCodeComplete}
+      <div className="mt-4 space-y-6">
+        <OtpInput
           value={formData.verificationCode}
+          onChange={handleCodeChange}
+          numInputs={6}
+          shouldAutoFocus={true}
+          containerStyle="flex justify-between w-full"
+          renderInput={({ style, ...props }) => {
+            if (style) {
+              delete (style as React.CSSProperties).width;
+            }
+            return (
+              <input
+                style={style}
+                {...props}
+                disabled={isLoading}
+                className={`${props.className || ''} h-12 w-12 flex-shrink-0 rounded-md border border-gray-300 text-center text-xl text-gray-900 transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:border-gray-200 disabled:bg-gray-100 disabled:text-gray-400`}
+              />
+            );
+          }}
         />
         {error && <p className="text-center text-sm text-red-600">{error}</p>}
 
@@ -95,7 +97,7 @@ export const VerificationStep: React.FC<VerificationStepProps> = ({
             {isLoading ? 'Sending...' : "Didn't receive a code? Resend"}
           </button>
         </div>
-      </form>
+      </div>
     </>
   );
 };

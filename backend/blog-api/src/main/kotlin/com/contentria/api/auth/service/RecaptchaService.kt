@@ -1,16 +1,19 @@
 package com.contentria.api.auth.service
 
+import com.contentria.api.auth.dto.GoogleRecaptchaResponse
 import com.contentria.api.auth.dto.RecaptchaResponse
 import com.contentria.api.auth.dto.RecaptchaVerificationResult
 import com.contentria.api.auth.dto.RecaptchaVerifyRequest
 import com.contentria.api.config.properties.AppProperties
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
+import org.springframework.util.LinkedMultiValueMap
+import org.springframework.util.MultiValueMap
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 @Service
 class RecaptchaService(
@@ -26,7 +29,7 @@ class RecaptchaService(
         action: String?
     ): Mono<RecaptchaVerificationResult> {
         if (token.isNullOrBlank()) {
-            logger.warn { "reCAPTCHA v3 token is null or blank." }
+            log.warn { "reCAPTCHA v3 token is null or blank." }
             return Mono.just(
                 RecaptchaVerificationResult(
                     success = false, score = null, action = null, hostname = null,
@@ -41,14 +44,15 @@ class RecaptchaService(
             response = token,
             remoteip = clientIp
         )
+        log.info { "reCAPTCHAv3 request: ${request}" }
 
         return callGoogleSiteVerifyApi(request) { response ->
-            logger.info { "Google reCAPTCHA v3 raw response: $response" }
+            log.info { "Google reCAPTCHA v3 raw response: $response" }
             var overallSuccess = response.success
 
             val expectedAction = action ?: recaptchaProperties.expectedActions[response.action]
             if (overallSuccess && !expectedAction.isNullOrEmpty() && expectedAction != response.action) {
-                logger.warn { "reCAPTCHA action mismatch. Expected: ${expectedAction}, Actual: ${response.action}" }
+                log.warn { "reCAPTCHA action mismatch. Expected: ${expectedAction}, Actual: ${response.action}" }
                 overallSuccess = false
             }
 
@@ -66,7 +70,7 @@ class RecaptchaService(
 
     fun verifyRecaptchaV2(token: String?, clientIp: String?): Mono<RecaptchaVerificationResult> {
         if (token.isNullOrBlank()) {
-            logger.warn { "reCAPTCHA v2 token is null or blank." }
+            log.warn { "reCAPTCHA v2 token is null or blank." }
             return Mono.just(
                 RecaptchaVerificationResult(
                     success = false, score = null, action = null, hostname = null,
@@ -77,7 +81,7 @@ class RecaptchaService(
         }
 
         if (recaptchaProperties.v2SecretKey.isBlank()) {
-            logger.warn { "reCAPTCHA v2 secret key is not configured." }
+            log.warn { "reCAPTCHA v2 secret key is not configured." }
             return Mono.just(
                 RecaptchaVerificationResult(
                     success = false, score = null, action = null, hostname = null,
@@ -97,7 +101,7 @@ class RecaptchaService(
             var overallSuccess = response.success
 
             if (overallSuccess && !recaptchaProperties.expectedHostname.isNullOrBlank() && recaptchaProperties.expectedHostname != response.hostname) {
-                logger.warn { "reCAPTCHA v2 hostname mismatch. Expected ${recaptchaProperties.expectedHostname}, Actual: ${response.hostname}" }
+                log.warn { "reCAPTCHA v2 hostname mismatch. Expected ${recaptchaProperties.expectedHostname}, Actual: ${response.hostname}" }
                 overallSuccess = false
             }
             RecaptchaVerificationResult(
@@ -123,7 +127,7 @@ class RecaptchaService(
             .bodyToMono(RecaptchaResponse::class.java)
             .map(responseMapper)
             .onErrorResume { e ->
-                logger.error(e) { "Error during reCAPTCHA verification HTTP request: $e.message" }
+                log.error(e) { "Error during reCAPTCHA verification HTTP request: $e.message" }
                 Mono.just(
                     RecaptchaVerificationResult(
                         success = false, score = null, action = null, hostname = null,
@@ -132,5 +136,55 @@ class RecaptchaService(
                     )
                 )
             }
+    }
+
+    fun verifyV3(token: String, clientIp: String?): Mono<GoogleRecaptchaResponse> {
+        if (recaptchaProperties.v3SecretKey.isBlank()) {
+            log.warn { "reCAPTCHA v3 secret key is not configured. Verification will be skipped." }
+            return Mono.just(createErrorResponse("missing-v3-secret-key"))
+        }
+
+        val requestBody = LinkedMultiValueMap<String, String>().apply {
+            add("secret", recaptchaProperties.v3SecretKey)
+            add("response", token)
+            clientIp?.let { add("remoteip", it) }
+        }
+
+        return callGoogleApi(requestBody)
+    }
+
+    fun verifyV2(token: String, clientIp: String?): Mono<GoogleRecaptchaResponse> {
+        if (recaptchaProperties.v2SecretKey.isBlank()) {
+            log.warn { "reCAPTCHA v2 secret key is not configured. Verification will be skipped." }
+            return Mono.just(createErrorResponse("missing-v2-secret-key"))
+        }
+
+        val requestBody = LinkedMultiValueMap<String, String>().apply {
+            add("secret", recaptchaProperties.v2SecretKey)
+            add("response", token)
+            clientIp?.let { add("remoteip", it) }
+        }
+
+        return callGoogleApi(requestBody)
+    }
+
+    private fun callGoogleApi(requestBody: MultiValueMap<String, String>): Mono<GoogleRecaptchaResponse> {
+        return webClient.post()
+            .uri(recaptchaProperties.siteVerifyUrl)
+            .body(BodyInserters.fromFormData(requestBody))
+            .retrieve()
+            .bodyToMono(GoogleRecaptchaResponse::class.java)
+            .doOnError { e -> log.error(e) { "reCAPTCHA API call failed" } }
+    }
+
+    private fun createErrorResponse(errorCode: String): GoogleRecaptchaResponse {
+        return GoogleRecaptchaResponse(
+            success = false,
+            score = null,
+            action = null,
+            hostname = null,
+            errorCodes = listOf(errorCode),
+            challengeTimestamp = null
+        )
     }
 }

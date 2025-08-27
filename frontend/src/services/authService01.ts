@@ -4,6 +4,8 @@ import {
   InitiateSignUpResponse,
   RequestVerificationCodePayload,
   RequestVerificationCodeResponse,
+  VerifyOtpCodePayload,
+  VerifyOtpCodeResponse,
 } from '@/types/api/auth';
 import { AuthError } from '@/types/api/errors';
 import axios from 'axios';
@@ -49,5 +51,15 @@ export const authService01 = {
       );
       return data;
     }, 'Failed to request verification code');
+  },
+
+  async verifyOtpCode(payload: VerifyOtpCodePayload): Promise<VerifyOtpCodeResponse> {
+    return withAuthErrorHandling(async () => {
+      const { data } = await apiClient01.post<VerifyOtpCodeResponse>(
+        '/api/auth/signup/verify-code',
+        payload
+      );
+      return data;
+    }, 'Failed to verify OTP code');
   },
 };

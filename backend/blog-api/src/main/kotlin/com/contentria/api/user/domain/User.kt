@@ -26,7 +26,9 @@ class User(
 
     var pictureUrl: String? = null,
 
-    val emailVerified: Boolean = false,
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    var status: UserStatus = UserStatus.UNVERIFIED,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -68,6 +70,7 @@ class User(
                 email = email,
                 username = username,
                 password = password,
+                status = UserStatus.UNVERIFIED,
                 provider = AuthProvider.EMAIL,
             )
         }
@@ -78,9 +81,9 @@ class User(
                 realUsername = realUsername,
                 username = username,
                 pictureUrl = pictureUrl,
+                status = UserStatus.ACTIVE,
                 provider = AuthProvider.GOOGLE,
                 providerId = providerId,
-                emailVerified = true
             )
         }
     }

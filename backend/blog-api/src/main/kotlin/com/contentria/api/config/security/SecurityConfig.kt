@@ -109,9 +109,4 @@ class SecurityConfig(
             response.writer.write(objectMapper.writeValueAsString(errorResponse))
         }
     }
-
-    @Bean
-    fun passwordEncoder(): PasswordEncoder {
-        return BCryptPasswordEncoder()
-    }
 }
