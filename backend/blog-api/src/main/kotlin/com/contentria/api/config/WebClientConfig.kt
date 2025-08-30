@@ -13,12 +13,11 @@ class WebClientConfig {
     @Bean
     fun webClient(builder: WebClient.Builder): WebClient {
         val httpClient = HttpClient.create()
-            .responseTimeout(Duration.ofSeconds(10)) // 예시: 응답 타임아웃 10초
+            .responseTimeout(Duration.ofSeconds(10))
 
         return builder
-            // .baseUrl("https://default-base-url.com") // 기본 URL 설정 (reCAPTCHA는 전체 URL 사용)
             .clientConnector(ReactorClientHttpConnector(httpClient))
-            .codecs { configurer -> configurer.defaultCodecs().maxInMemorySize(16 * 1024 * 1024) } // 버퍼 크기 설정 (선택)
+            .codecs { configurer -> configurer.defaultCodecs().maxInMemorySize(2 * 1024 * 1024) }
             .build()
     }
 }

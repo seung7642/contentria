@@ -4,19 +4,14 @@ import com.contentria.api.auth.dto.SignUpInitiateRequest
 import com.contentria.api.auth.dto.SignUpInitiateResponse
 import com.contentria.api.auth.dto.SignUpResponse
 import com.contentria.api.auth.dto.VerifyCodeRequest
-import com.contentria.api.auth.service.JwtService
 import com.contentria.api.auth.service.RefreshTokenService
 import com.contentria.api.auth.service.SignUpService
-import com.contentria.api.config.properties.AppProperties
-import com.contentria.api.user.security.CustomUserDetailsService
+import com.contentria.api.utils.CookieUtil
 import io.github.oshai.kotlinlogging.KotlinLogging
-import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.web.bind.annotation.*
 
 private val logger = KotlinLogging.logger {}
@@ -25,18 +20,9 @@ private val logger = KotlinLogging.logger {}
 @RequestMapping("/auth")
 class AuthController(
     private val refreshTokenService: RefreshTokenService,
-    private val jwtService: JwtService,
-    private val userDetailsService: CustomUserDetailsService,
-    private val appProperties: AppProperties,
-    private val signUpService: SignUpService
+    private val signUpService: SignUpService,
+    private val cookieUtil: CookieUtil
 ) {
-
-    private val accessTokenCookieMaxAge: Int = appProperties.auth.jwt.accessTokenExpiration.toSeconds().toInt()
-    private val refreshTokenCookieMaxAge: Int = appProperties.auth.jwt.refreshTokenExpiration.toSeconds().toInt()
-    private val accessTokenCookieName: String = appProperties.auth.cookie.accessTokenName
-    private val refreshTokenCookieName: String = appProperties.auth.cookie.refreshTokenName
-    private val accessTokenPath: String = appProperties.auth.cookie.accessTokenPath
-    private val refreshTokenPath: String = appProperties.auth.cookie.refreshTokenPath
 
     @PostMapping("/refresh")
     fun refreshToken(
@@ -44,76 +30,13 @@ class AuthController(
         request: HttpServletRequest,
         response: HttpServletResponse
     ): ResponseEntity<*> {
-        try {
-            // 1. DB에서 Refresh Token 조회 및 만료 검증
-            val refreshToken = refreshTokenService.findByTokenAndVerify(refreshTokenValue)
+        val newTokens = refreshTokenService.refreshTokens(refreshTokenValue)
 
-            // 2. 유효하다면 User 정보 로드
-            val user = refreshToken.user
+        response.addCookie(cookieUtil.createAccessTokenCookie(newTokens.accessToken, request))
+        response.addCookie(cookieUtil.createRefreshTokenCookie(newTokens.refreshToken, request))
 
-            // 3. 새 Access Token 생성
-            val newAccessToken = jwtService.generateAccessToken(user)
-
-            // 4. Refresh Token Rotation
-            val newOpaqueRefreshTokenValue = refreshTokenService.createOrUpdateOpaqueRefreshToken(user.id)
-
-            // 5. 새 Access Token 쿠키 생성 및 설정
-            response.addCookie(
-                createCookie(
-                    name = accessTokenCookieName,
-                    value = newAccessToken,
-                    path = accessTokenPath,
-                    maxAge = accessTokenCookieMaxAge,
-                    request = request
-                )
-            )
-
-            // 6. 새로 생성된 Refresh Token 쿠키 생성 및 설정
-            response.addCookie(
-                createCookie(
-                    name = refreshTokenCookieName,
-                    value = newOpaqueRefreshTokenValue,
-                    path = refreshTokenPath,
-                    maxAge = refreshTokenCookieMaxAge,
-                    request = request
-                )
-            )
-
-            logger.info { "Successfully refreshed token for user: ${user.email}" }
-            return ResponseEntity.ok().body(mapOf("message" to "Token refreshed successfully"))
-        } catch (e: UsernameNotFoundException) {
-            logger.error(e) { "User associated with refresh token not found: ${e.message}" }
-            clearTokens(response, request)
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found")
-        } catch(e: Exception) {
-            logger.error(e) { "Unexpected error during token refresh" }
-            clearTokens(response, request)
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Internal server error")
-        }
-    }
-
-    private fun createCookie(
-        name: String,
-        value: String?,
-        path: String,
-        maxAge: Int,
-        request: HttpServletRequest
-    ): Cookie {
-        return Cookie(name, value).apply {
-            isHttpOnly = true
-            secure = request.isSecure
-            this.path = path
-            this.maxAge = maxAge
-        }
-    }
-
-    private fun clearTokens(response: HttpServletResponse, request: HttpServletRequest) {
-        response.addCookie(
-            createCookie(accessTokenCookieName, null, accessTokenPath, 0, request)
-        )
-        response.addCookie(
-            createCookie(refreshTokenCookieName, null, refreshTokenPath, 0, request)
-        )
+        logger.info { "Successfully refreshed token." }
+        return ResponseEntity.ok().body(mapOf("message" to "Token refreshed successfully"))
     }
 
     @PostMapping("/signup/initiate")

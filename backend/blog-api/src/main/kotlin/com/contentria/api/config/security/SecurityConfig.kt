@@ -1,8 +1,11 @@
 package com.contentria.api.config.security
 
+import com.contentria.api.config.exception.ErrorCode
 import com.contentria.api.config.exception.ErrorResponse
 import com.contentria.api.config.properties.AppProperties
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.servlet.http.HttpServletResponse
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
@@ -11,8 +14,6 @@ import org.springframework.http.MediaType
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
-import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.access.AccessDeniedHandler
@@ -23,6 +24,8 @@ import org.springframework.security.web.authentication.logout.LogoutHandler
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
+
+private val log = KotlinLogging.logger {}
 
 @Configuration
 @EnableWebSecurity
@@ -82,31 +85,31 @@ class SecurityConfig(
 
     private fun customAuthenticationEntryPoint(): AuthenticationEntryPoint {
         return AuthenticationEntryPoint { request, response, authException ->
-            val errorResponse = ErrorResponse(
-                status = HttpStatus.UNAUTHORIZED.value(),
-                error = HttpStatus.UNAUTHORIZED.reasonPhrase,
-                message = "Authentication required: ${authException.message}",
-                path = request.requestURI
-            )
-            response.status = HttpStatus.UNAUTHORIZED.value()
-            response.contentType = MediaType.APPLICATION_JSON_VALUE
-            response.characterEncoding = Charsets.UTF_8.name()
-            response.writer.write(objectMapper.writeValueAsString(errorResponse))
+            log.warn { "Authentication required for ${request.requestURI}: ${authException.message}" }
+            sendErrorResponse(response, ErrorCode.AUTHENTICATION_REQUIRED, request.requestURI)
         }
     }
 
     private fun customAccessDeniedHandler(): AccessDeniedHandler {
         return AccessDeniedHandler { request, response, accessDeniedException ->
-            val errorResponse = ErrorResponse(
-                status = HttpStatus.FORBIDDEN.value(),
-                error = HttpStatus.FORBIDDEN.reasonPhrase,
-                message = "Access denied: ${accessDeniedException.message}",
-                path = request.requestURI
-            )
-            response.status = HttpStatus.FORBIDDEN.value()
-            response.contentType = MediaType.APPLICATION_JSON_VALUE
-            response.characterEncoding = Charsets.UTF_8.name()
-            response.writer.write(objectMapper.writeValueAsString(errorResponse))
+            log.warn { "Access denied for ${request.requestURI}: ${accessDeniedException.message}" }
+            sendErrorResponse(response, ErrorCode.AUTHORIZATION_FAILED, request.requestURI)
         }
+    }
+
+    private fun sendErrorResponse(response: HttpServletResponse, errorCode: ErrorCode, path: String) {
+        response.status = errorCode.status.value()
+        response.contentType = MediaType.APPLICATION_JSON_VALUE
+        response.characterEncoding = Charsets.UTF_8.name()
+
+        val errorResponse = ErrorResponse(
+            status = errorCode.status.value(),
+            code = errorCode.code,
+            error = errorCode.status.reasonPhrase,
+            message = errorCode.message,
+            path = path
+        )
+
+        response.writer.write(objectMapper.writeValueAsString(errorResponse))
     }
 }

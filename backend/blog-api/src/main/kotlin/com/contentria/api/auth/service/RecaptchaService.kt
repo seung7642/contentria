@@ -1,14 +1,9 @@
 package com.contentria.api.auth.service
 
-import com.contentria.api.auth.dto.GoogleRecaptchaResponse
-import com.contentria.api.auth.dto.RecaptchaResponse
-import com.contentria.api.auth.dto.RecaptchaVerificationResult
-import com.contentria.api.auth.dto.RecaptchaVerifyRequest
+import com.contentria.api.auth.dto.*
 import com.contentria.api.config.properties.AppProperties
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
-import org.springframework.util.LinkedMultiValueMap
-import org.springframework.util.MultiValueMap
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
@@ -144,13 +139,13 @@ class RecaptchaService(
             return Mono.just(createErrorResponse("missing-v3-secret-key"))
         }
 
-        val requestBody = LinkedMultiValueMap<String, String>().apply {
-            add("secret", recaptchaProperties.v3SecretKey)
-            add("response", token)
-            clientIp?.let { add("remoteip", it) }
-        }
+        val requestBody01 = GoogleRecaptchaRequest(
+            secret = recaptchaProperties.v2SecretKey,
+            response = token,
+            remoteip = clientIp
+        )
 
-        return callGoogleApi(requestBody)
+        return callGoogleApi(requestBody01)
     }
 
     fun verifyV2(token: String, clientIp: String?): Mono<GoogleRecaptchaResponse> {
@@ -159,19 +154,19 @@ class RecaptchaService(
             return Mono.just(createErrorResponse("missing-v2-secret-key"))
         }
 
-        val requestBody = LinkedMultiValueMap<String, String>().apply {
-            add("secret", recaptchaProperties.v2SecretKey)
-            add("response", token)
-            clientIp?.let { add("remoteip", it) }
-        }
+        val requestBody01 = GoogleRecaptchaRequest(
+            secret = recaptchaProperties.v2SecretKey,
+            response = token,
+            remoteip = clientIp
+        )
 
-        return callGoogleApi(requestBody)
+        return callGoogleApi(requestBody01)
     }
 
-    private fun callGoogleApi(requestBody: MultiValueMap<String, String>): Mono<GoogleRecaptchaResponse> {
+    private fun callGoogleApi(requestBody: GoogleRecaptchaRequest): Mono<GoogleRecaptchaResponse> {
         return webClient.post()
             .uri(recaptchaProperties.siteVerifyUrl)
-            .body(BodyInserters.fromFormData(requestBody))
+            .bodyValue(requestBody)
             .retrieve()
             .bodyToMono(GoogleRecaptchaResponse::class.java)
             .doOnError { e -> log.error(e) { "reCAPTCHA API call failed" } }
