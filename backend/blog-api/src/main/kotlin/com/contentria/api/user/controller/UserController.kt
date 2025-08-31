@@ -1,6 +1,7 @@
 package com.contentria.api.user.controller
 
-import com.contentria.api.user.controller.UserInfoResponse
+import com.contentria.api.config.exception.ContentriaException
+import com.contentria.api.config.exception.ErrorCode
 import com.contentria.api.user.security.CustomUserDetails
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.ResponseEntity
@@ -9,7 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 @RestController
 @RequestMapping("/users")
@@ -17,10 +18,11 @@ class UserController {
 
     @GetMapping("/me")
     fun getMyInfo(authentication: Authentication): ResponseEntity<UserInfoResponse> {
-        logger.info { "------ /api/users/me start ------" }
-
         val userDetails = authentication.principal as? CustomUserDetails
-            ?: throw IllegalStateException("User details not found in authentication principal")
+            ?: run {
+                log.error { "Authentication principal is not of type CustomUserDetails. It is: ${authentication.principal::class.simpleName}" }
+                throw ContentriaException(ErrorCode.UNEXPECTED_AUTHENTICATION_PRINCIPAL)
+            }
 
         val response = UserInfoResponse(
             userId = userDetails.userId,
@@ -28,8 +30,6 @@ class UserController {
             name = userDetails.displayName,
             profileImage = userDetails.profileImageUrl
         )
-
-        logger.info { "------ /api/users/me end ------" }
         return ResponseEntity.ok(response)
     }
 }
