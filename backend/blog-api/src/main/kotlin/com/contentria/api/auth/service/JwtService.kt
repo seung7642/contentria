@@ -35,15 +35,15 @@ class JwtService(
             "userId" to user.id,
             "roles" to user.getAuthorities().map { it.authority }
         )
-        return generateToken01(user.email, extraClaims, Date.from(expiration))
+        return generateToken(user.email, extraClaims, Date.from(expiration))
     }
 
     fun generateRefreshToken(user: User): String {
         val expiration = Instant.now().plus(appProperties.auth.jwt.refreshTokenExpiration)
-        return generateToken01(user.email, emptyMap(), Date.from(expiration))
+        return generateToken(user.email, emptyMap(), Date.from(expiration))
     }
 
-    private fun generateToken01(subject: String, extraClaims: Map<String, Any>, expiration: Date): String {
+    private fun generateToken(subject: String, extraClaims: Map<String, Any>, expiration: Date): String {
         return Jwts.builder()
             .claims(extraClaims)
             .subject(subject)

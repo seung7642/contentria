@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
 import java.util.*
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 @Service
 class RefreshTokenService(
@@ -56,12 +56,12 @@ class RefreshTokenService(
         var refreshToken = refreshTokenRepository.findByUser(user)
         if (refreshToken == null) {
             refreshToken = RefreshToken(user = user, token = tokenValue, expiryDate = expiryDate)
-            logger.info { "Creating new refresh token for user ID: $userId" }
+            log.info { "Creating new refresh token for user ID: $userId" }
         } else {
             // 기존 토큰 업데이트 (Rotation 효과)
             refreshToken.token = tokenValue
             refreshToken.expiryDate = expiryDate
-            logger.info { "Updating existing refresh token for user ID: $userId" }
+            log.info { "Updating existing refresh token for user ID: $userId" }
         }
 
         refreshTokenRepository.save(refreshToken)
@@ -75,7 +75,7 @@ class RefreshTokenService(
 
         if (refreshToken.expiryDate.isBefore(Instant.now())) {
             refreshTokenRepository.delete(refreshToken)
-            logger.warn { "Refresh token expired and deleted: ${refreshToken.token}" }
+            log.warn { "Refresh token expired and deleted: ${refreshToken.token}" }
             throw ContentriaException(ErrorCode.REFRESH_TOKEN_EXPIRED)
         }
 
@@ -85,7 +85,7 @@ class RefreshTokenService(
     @Transactional
     fun deleteRefreshTokenByToken(token: String): Int {
         val deletedCount = refreshTokenRepository.deleteByToken(token)
-        logger.info { "Deleted refresh token(s): ${token}" }
+        log.info { "Deleted refresh token(s): ${token}" }
         return deletedCount
     }
 }

@@ -97,7 +97,7 @@ class SignUpService(
     fun verifyCode(request: VerifyCodeRequest): SignUpResponse {
         val result = verificationCodeService.verify(request.email, request.verificationCode)
         if (!result) {
-            throw IllegalArgumentException("Invalid or expired verification code")
+            throw ContentriaException(ErrorCode.INVALID_VERIFICATION_CODE)
         }
 
         val activatedUser = userService.activateUserByEmail(request.email)

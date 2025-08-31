@@ -14,7 +14,7 @@ import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 @RestController
 @RequestMapping("/auth")
@@ -35,7 +35,7 @@ class AuthController(
         response.addCookie(cookieUtil.createAccessTokenCookie(newTokens.accessToken, request))
         response.addCookie(cookieUtil.createRefreshTokenCookie(newTokens.refreshToken, request))
 
-        logger.info { "Successfully refreshed token." }
+        log.info { "Successfully refreshed token." }
         return ResponseEntity.ok().body(mapOf("message" to "Token refreshed successfully"))
     }
 

@@ -9,7 +9,7 @@ import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 @Service
 class VerificationCodeService(
