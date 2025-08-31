@@ -1,4 +1,4 @@
-import apiClient01 from '@/lib/apiClient01';
+import apiClient01 from '@/lib/apiClient';
 import { AuthError } from '@/types/api/errors';
 import { User } from '@/types/user';
 import axios from 'axios';

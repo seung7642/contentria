@@ -1,181 +1,63 @@
-import { REFRESH_URL } from '@/constants/auth';
-import { useAuthStore } from '@/store/authStore';
-import {
-  ApiError,
-  ApiErrorDetailType,
-  ApiErrorResponse,
-  AuthError,
-  GenericErrorDetails,
-  UnknownErrorDetails,
-} from '@/types/api/errors';
+import axios, { AxiosError } from 'axios';
+import { getCookie, setCookie } from 'cookies-next';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
-let isRefreshing = false;
-let refreshPromise: Promise<void> | null = null;
+const apiClient = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
-const makeRequest = async (url: string, options: RequestInit): Promise<Response> => {
-  const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
-  const fetchOptions: RequestInit = {
-    ...options,
-    credentials: 'include', // Include cookies in the request
-  };
-  try {
-    return await fetch(fullUrl, fetchOptions);
-  } catch (error: unknown) {
-    const detail: GenericErrorDetails = {
-      _detailType: 'GenericError',
-      name: (error as Error).name || 'NetworkError',
-      message: (error as Error).message || 'Network request failed',
-      stack: (error as Error).stack,
-    };
-    throw new ApiError((error as Error).message || 'Network request failed', 0, detail);
-  }
-};
-
-const parseErrorResponse = async (
-  response: Response
-): Promise<ApiErrorResponse | { message: string }> => {
-  try {
-    return await response.json();
-  } catch (error: unknown) {
-    const message = (error as Error).message || String(error);
-    return {
-      message: `Failed to parse error response (status: ${response.status}, statusText: ${response.statusText}). Original error: ${message}`,
-    };
-  }
-};
-
-const performTokenRefresh = async (): Promise<void> => {
-  const response = await makeRequest(REFRESH_URL, { method: 'POST' });
-
-  if (!response.ok) {
-    const errorData = await parseErrorResponse(response);
-
-    let detailForError: ApiErrorDetailType;
-    if ('timestamp' in errorData && 'path' in errorData) {
-      detailForError = errorData as ApiErrorResponse;
-    } else {
-      const fallbackMessage = (errorData as { message: string }).message;
-      detailForError = {
-        _detailType: 'GenericError',
-        name: 'ErrorResponseParseFailure',
-        message: fallbackMessage,
-        stack: undefined,
-      };
+// 1. 요청 인터셉터: 모든 요청에 액세스 토큰을 자동으로 추가한다.
+apiClient.interceptors.request.use(
+  (config) => {
+    const accessToken = getCookie('accessToken');
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
     }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
-    const errorMessage =
-      'message' in errorData && errorData.message
-        ? errorData.message
-        : `Token refresh failed: ${response.status}`;
+// 2. 응답 인터셉터: 401 에러 발생 시 토큰 재발급 및 재요청 로직
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error: AxiosError) => {
+    const originalRequest = error.config;
 
-    throw new AuthError(errorMessage!, response.status, detailForError);
-  }
-};
+    // 401 에러이고, 재시도한 요청이 아닐 경우에만 실행
+    if (error.response?.status == 401 && originalRequest && !originalRequest._retry) {
+      originalRequest._retry = true; // 무한 재시도 방지를 위한 플래그
 
-const ensureTokenRefreshedAndClearState = async (): Promise<void> => {
-  try {
-    // 토큰 갱신 작업의 생명주기와 상태 변수의 생명주기를 정확히 일치시켜 동시성 문제를 해결한다.
-    await performTokenRefresh();
-  } finally {
-    isRefreshing = false;
-    refreshPromise = null;
-  }
-};
+      try {
+        // 리프레스 토큰으로 새 액세스 토큰을 요청하는 API 호출
+        const refreshToken = getCookie('refreshToken');
+        const { data } = await axios.post<{ accessToken: string }>(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/refresh-token`,
+          { refreshToken }
+        );
 
-const handle401Error = async (url: string, options: RequestInit): Promise<Response> => {
-  try {
-    // 여러 API 요청이 동시에 401 에러를 받을 경우, 토큰 갱신을 한 번만 수행하도록 한다.
-    if (!isRefreshing) {
-      isRefreshing = true;
-      refreshPromise = ensureTokenRefreshedAndClearState();
-    }
-    await refreshPromise;
-    return await makeRequest(url, options);
-  } catch (error: unknown) {
-    if (error instanceof AuthError) {
-      useAuthStore.getState().setUser(null);
-    }
-    throw error;
-  }
-};
+        const newAccessToken = data.accessToken;
 
-const parseResponse = async <T>(response: Response): Promise<T> => {
-  const contentType = response.headers.get('content-type');
-  if (response.status === 204 || response.headers.get('content-length') === '0') {
-    return null as unknown as T;
-  }
-  if (contentType && contentType.includes('application/json')) {
-    return response.json() as Promise<T>;
-  }
-  return response.text() as unknown as Promise<T>;
-};
+        // 새로 발급받은 토큰을 쿠키에 저장
+        setCookie('accessToken', newAccessToken);
 
-const apiClient = async <T>(url: string, options: RequestInit = {}): Promise<T> => {
-  try {
-    let response = await makeRequest(url, options);
+        // axios 인스턴스의 기본 헤더와 실패했던 운래 요청의 헤더를 새 토큰으로 변경
+        axios.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
+        originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
 
-    if (response.status === 401) {
-      response = await handle401Error(url, options);
-      if (response.status === 401) {
-        useAuthStore.getState().setUser(null);
-        const errorData = await parseErrorResponse(response);
-
-        let detailForAuthError: ApiErrorDetailType;
-        if ('timestamp' in errorData && 'path' in errorData) {
-          detailForAuthError = errorData as ApiErrorResponse;
-        } else {
-          detailForAuthError = {
-            _detailType: 'GenericError',
-            name: 'PostRefreshAuthFailure',
-            message: (errorData as { message: string }).message,
-            stack: undefined,
-          };
-        }
-
-        const errorMessage =
-          'message' in errorData && errorData.message
-            ? errorData.message
-            : 'Authentication failed even after token refresh.';
-
-        throw new AuthError(errorMessage!, 401, detailForAuthError);
+        // 실패했던 원래 요청을 다시 실행
+        return apiClient(originalRequest);
+      } catch (refreshError) {
+        console.error('Token refresh failed. Please try logging in again.', refreshError);
+        return Promise.reject(refreshError);
       }
     }
 
-    // Handle non-401 errors after potential retry
-    if (!response.ok) {
-      const errorData = await parseErrorResponse(response);
-      throw new ApiError(
-        (errorData as ApiErrorResponse).message ||
-          (errorData as { message: string }).message ||
-          `API Error: ${response.statusText}`,
-        response.status,
-        errorData as ApiErrorResponse
-      );
-    }
-
-    return await parseResponse<T>(response);
-  } catch (error: unknown) {
-    if (error instanceof ApiError || error instanceof AuthError) {
-      throw error;
-    }
-    if (error instanceof Error) {
-      throw new ApiError(
-        error.message || 'A client-side or network error occurred in apiClient.',
-        0,
-        {
-          _detailType: 'GenericError',
-          name: error.name,
-          message: error.message,
-          stack: error.stack,
-        } as GenericErrorDetails
-      );
-    }
-    throw new ApiError('An unknown error occurred in apiClient', 0, {
-      _detailType: 'UnknownError',
-      thrownValue: String(error),
-    } as UnknownErrorDetails);
+    // 401 에러가 아니거나, 재시도에 실패한 경우
+    return Promise.reject(error);
   }
-};
+);
 
 export default apiClient;

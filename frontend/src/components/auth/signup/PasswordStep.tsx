@@ -3,7 +3,6 @@ import Divider from '@/components/ui/Divider';
 import InputField from '@/components/ui/InputField';
 import { RECAPTCHA_SIGN_UP_ACTION } from '@/constants/auth';
 import { PasswordStepFormData, passwordStepSchema } from '@/lib/schemas/authSchemas';
-import { authService } from '@/services/authService';
 import { PasswordStepProps } from '@/types/signup';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Info, Mail } from 'lucide-react';
@@ -11,7 +10,7 @@ import React, { useMemo, useState } from 'react';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import PasswordPolicyTooltip from './PasswordPolicyTooltip';
-import { authService01 } from '@/services/authService01';
+import { authService } from '@/services/authService';
 
 interface PolicyItem {
   id: string;
@@ -81,7 +80,7 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
         recaptchaV3Token: recaptchaToken,
       };
 
-      const response = await authService01.initiateSignUp(signUpData);
+      const response = await authService.initiateSignUp(signUpData);
       if (response.nextStep === 'verify_with_recaptcha_v2') {
         setStep('recaptcha-v2-challenge');
       } else if (response.nextStep === 'enter_verification_code') {
@@ -103,9 +102,7 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
     setIsLoading(true);
     setIsRequestCodeClick(true);
 
-    // TODO: 이 기능도 reCAPTCHA v3로 보호
     try {
-      await authService.requestVerificationCode({ email: formData.email });
       goToNextStep();
     } catch (error: unknown) {
       console.error('Failed to send verification code:', error);

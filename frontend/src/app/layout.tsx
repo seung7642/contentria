@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import localFont from 'next/font/local';
 import './globals.css';
+import AuthInitializer from '@/components/auth/AuthInitializer';
 
 const pretendard = localFont({
   src: '../../public/fonts/PretendardVariable.woff2',
@@ -23,7 +24,9 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="ko">
-      <body className={pretendard.className}>{children}</body>
+      <body className={pretendard.className}>
+        <AuthInitializer>{children}</AuthInitializer>
+      </body>
     </html>
   );
 }

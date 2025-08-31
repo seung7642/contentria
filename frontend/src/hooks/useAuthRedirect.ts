@@ -1,6 +1,5 @@
 import { DEFAULT_LOGGED_IN_REDIRECT_URL } from '@/constants/auth';
-import { authService } from '@/services/authService';
-import { userService } from '@/services/userService01';
+import { userService } from '@/services/userService';
 import { useAuthStore } from '@/store/authStore';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -21,7 +20,7 @@ export const useAuthRedirect = () => {
         const fetchedUser = await userService.getMe();
         setUser(fetchedUser);
         router.replace(DEFAULT_LOGGED_IN_REDIRECT_URL);
-      } catch (error) {
+      } catch (error: unknown) {
         setIsCheckingAuth(false);
       }
     };

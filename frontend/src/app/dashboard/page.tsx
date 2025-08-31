@@ -30,8 +30,7 @@ import QuickActions from '@/components/dashboard/QuickActions';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { DEFAULT_LOGGED_OUT_REDIRECT_URL } from '@/constants/auth';
-import apiClient from '@/lib/apiClient';
-import { User } from '@/types/user';
+import { userService } from '@/services/userService';
 
 // 타입 정의
 type TimeRange = '2weeks' | '30days' | '90days';
@@ -150,7 +149,7 @@ const DashboardPage = () => {
 
       console.log('[Dashboard Page] Checking auth status via API...');
       try {
-        const fetchedUser = await apiClient<User>('/api/users/me');
+        const fetchedUser = await userService.getMe();
         console.log('[Dashboard Page] API check successful. User logged in. Redirecting...');
         setUser(fetchedUser);
         setIsCheckingAuth(false);

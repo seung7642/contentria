@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { Search, Bell, Home } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useRouter } from 'next/navigation';
-import apiClient from '@/lib/apiClient';
 import NotificationDropdown from './header/NotificationDropdown';
 import UserAvatar from './header/UserAvatar';
 import ProfileDropdown from './header/ProfileDropdown';
@@ -53,7 +52,7 @@ const DashboardHeader = () => {
   const handleLogout = async () => {
     setIsProfileOpen(false);
     try {
-      await apiClient('/api/auth/logout', { method: 'POST' });
+      // await apiClient('/api/auth/logout', { method: 'POST' });
       setUser(null);
       router.push('/');
     } catch (e) {

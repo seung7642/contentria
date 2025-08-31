@@ -1,94 +1,65 @@
-import apiClient from '@/lib/apiClient';
+import apiClient01 from '@/lib/apiClient';
 import {
   InitiateSignUpPayload,
   InitiateSignUpResponse,
   RequestVerificationCodePayload,
   RequestVerificationCodeResponse,
-  VerifyCodePayload,
-  VerifyCodeResponse,
+  VerifyOtpCodePayload,
+  VerifyOtpCodeResponse,
 } from '@/types/api/auth';
-import { ApiError, AuthError } from '@/types/api/errors';
-import { User } from '@/types/user';
+import { AuthError } from '@/types/api/errors';
+import axios from 'axios';
 
-// Higher-order function to handle authentication errors
 async function withAuthErrorHandling<T>(
   apiCall: () => Promise<T>,
-  defaultErrorMessage: string = 'An unexpected authentication operation error occurred',
-  defaultUnknownErrorMessage: string = 'An unknown value was thrown during an authentication operation.'
+  defaultErrorMessage: string = 'An unexpected authentication operation error occurred'
 ): Promise<T> {
   try {
     return await apiCall();
   } catch (error: unknown) {
-    if (error instanceof AuthError) {
-      throw error;
-    } else if (error instanceof ApiError) {
-      throw new AuthError(error.message, error.status, error.details);
+    if (axios.isAxiosError(error)) {
+      // Axios 에러인 경우, 응답 데이터에서 상세 에러 정보를 추출 시도
+      const errorData = error.response?.data;
+      const message = errorData?.message || error.message || defaultErrorMessage;
+      throw new AuthError(message, error.response?.status || 500, errorData);
     } else if (error instanceof Error) {
-      throw new AuthError(error.message || defaultErrorMessage, 500, {
-        _detailType: 'GenericError',
-        name: error.name,
-        message: error.message,
-        stack: error.stack,
-      });
+      throw new AuthError(error.message || defaultErrorMessage, 500);
     } else {
-      throw new AuthError(defaultUnknownErrorMessage, 0, {
-        _detailType: 'UnknownError',
-        thrownValue: String(error),
-      });
+      throw new AuthError(String(error) || defaultErrorMessage, 0);
     }
   }
 }
 
 export const authService = {
-  async initiateSignup(payload: InitiateSignUpPayload): Promise<InitiateSignUpResponse> {
-    const endpoint = '/api/auth/signup/initiate';
-    return withAuthErrorHandling(
-      () =>
-        apiClient<InitiateSignUpResponse>(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        }),
-      'Failed to initiate signup due to an unexpected error.'
-    );
-  },
-
-  async verifySignupCode(payload: VerifyCodePayload): Promise<VerifyCodeResponse> {
-    const endpoint = '/api/auth/signup/verify-code';
-    return withAuthErrorHandling(
-      () =>
-        apiClient<VerifyCodeResponse>(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        }),
-      'Failed to verify signup code due to an unexpected error.'
-    );
+  async initiateSignUp(payload: InitiateSignUpPayload): Promise<InitiateSignUpResponse> {
+    return withAuthErrorHandling(async () => {
+      const { data } = await apiClient01.post<InitiateSignUpResponse>(
+        '/api/auth/signup/initiate',
+        payload
+      );
+      return data;
+    }, 'Failed to initiate sign up');
   },
 
   async requestVerificationCode(
     payload: RequestVerificationCodePayload
   ): Promise<RequestVerificationCodeResponse> {
-    const endpoint = '/api/auth/signup/resend-code';
-    return withAuthErrorHandling(
-      () =>
-        apiClient<RequestVerificationCodeResponse>(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        }),
-      'Failed to resend signup code due to an unexpected error.'
-    );
+    return withAuthErrorHandling(async () => {
+      const { data } = await apiClient01.post<RequestVerificationCodeResponse>(
+        '/api/auth/signup/resend-code',
+        payload
+      );
+      return data;
+    }, 'Failed to request verification code');
   },
 
-  async getMe(): Promise<User> {
-    const endpoint = '/api/auth/me';
-    return withAuthErrorHandling(
-      () =>
-        apiClient<User>(endpoint, {
-          method: 'GET',
-        }),
-      'Failed to fetch current user due to an unexpected error.'
-    );
+  async verifyOtpCode(payload: VerifyOtpCodePayload): Promise<VerifyOtpCodeResponse> {
+    return withAuthErrorHandling(async () => {
+      const { data } = await apiClient01.post<VerifyOtpCodeResponse>(
+        '/api/auth/signup/verify-code',
+        payload
+      );
+      return data;
+    }, 'Failed to verify OTP code');
   },
 };

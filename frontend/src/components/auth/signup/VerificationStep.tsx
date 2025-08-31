@@ -1,5 +1,5 @@
 import { DEFAULT_LOGGED_IN_REDIRECT_URL } from '@/constants/auth';
-import { authService01 } from '@/services/authService01';
+import { authService } from '@/services/authService';
 import { VerificationStepProps } from '@/types/signup';
 import { useRouter } from 'next/navigation';
 import React, { useCallback } from 'react';
@@ -23,7 +23,7 @@ export const VerificationStep: React.FC<VerificationStepProps> = ({
 
       try {
         console.log('Verifying code:', code);
-        await authService01.verifyOtpCode({ email: formData.email, verificationCode: code });
+        await authService.verifyOtpCode({ email: formData.email, verificationCode: code });
         router.replace(DEFAULT_LOGGED_IN_REDIRECT_URL);
       } catch (error: unknown) {
         console.error('Verification failed:', error);

@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { DollarSign, PlusCircle, Settings, HelpCircle, TrendingUp, BarChart2 } from 'lucide-react';
 import Link from 'next/link';

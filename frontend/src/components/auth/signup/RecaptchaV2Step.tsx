@@ -1,6 +1,5 @@
 import BackButton from '@/components/ui/BackButton';
 import { authService } from '@/services/authService';
-import { authService01 } from '@/services/authService01';
 import { RecaptchaV2StepProps } from '@/types/signup';
 import { ShieldCheck } from 'lucide-react';
 import { useRef } from 'react';
@@ -30,7 +29,7 @@ const RecaptchaV2Step: React.FC<RecaptchaV2StepProps> = ({
         recaptchaV2Token: v2Token,
       };
 
-      const response = await authService01.initiateSignUp(signUpDataWithV2);
+      const response = await authService.initiateSignUp(signUpDataWithV2);
 
       if (response.nextStep === 'enter_verification_code') {
         setStep('verify-email-code');
