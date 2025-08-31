@@ -9,6 +9,7 @@ const AuthInitializer = ({ children }: { children: React.ReactNode }) => {
   // 1. 스토어에서 필요한 상태(isLoading)와 액션(initializeAuth)을 가져온다.
   const isLoading = useAuthStore((state) => state.isLoading);
   const initializeAuth = useAuthStore((state) => state.initializeAuth);
+  const logout = useAuthStore((state) => state.logout);
 
   useEffect(() => {
     const checkAuthStatus = async () => {
@@ -21,6 +22,7 @@ const AuthInitializer = ({ children }: { children: React.ReactNode }) => {
 
         if (error.status === 401) {
           console.log('[Auth] No active session found. Initializing as guest.');
+          logout();
         } else {
           console.error(
             `[AuthInitializer] An unexpected error occurred during auth check:`,
@@ -33,7 +35,7 @@ const AuthInitializer = ({ children }: { children: React.ReactNode }) => {
     };
 
     checkAuthStatus();
-  }, [initializeAuth]); // initializeAuth는 Zustand에 의해 안정성이 보장되므로, 이 useEffect는 의도대로 한 번만 실행된다.
+  }, [initializeAuth, logout]);
 
   if (isLoading) {
     return <Loader2 className="h-12 w-12 animate-spin text-indigo-600" />;

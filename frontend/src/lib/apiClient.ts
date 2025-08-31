@@ -50,7 +50,7 @@ apiClient.interceptors.response.use(
         // 실패했던 원래 요청을 다시 실행
         return apiClient(originalRequest);
       } catch (refreshError) {
-        console.warn('Token refresh failed. Please try logging in again.', refreshError);
+        console.info('Token refresh failed. Please try logging in again.', refreshError);
         return Promise.reject(refreshError);
       }
     }
