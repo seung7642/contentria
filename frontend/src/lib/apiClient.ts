@@ -34,7 +34,7 @@ apiClient.interceptors.response.use(
         // 리프레스 토큰으로 새 액세스 토큰을 요청하는 API 호출
         const refreshToken = getCookie('refreshToken');
         const { data } = await axios.post<{ accessToken: string }>(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/refresh-token`,
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/refresh`,
           { refreshToken }
         );
 
@@ -50,7 +50,7 @@ apiClient.interceptors.response.use(
         // 실패했던 원래 요청을 다시 실행
         return apiClient(originalRequest);
       } catch (refreshError) {
-        console.error('Token refresh failed. Please try logging in again.', refreshError);
+        console.warn('Token refresh failed. Please try logging in again.', refreshError);
         return Promise.reject(refreshError);
       }
     }

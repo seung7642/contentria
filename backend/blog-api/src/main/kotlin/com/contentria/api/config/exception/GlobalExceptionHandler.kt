@@ -3,6 +3,7 @@ package com.contentria.api.config.exception
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.MissingRequestCookieException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.context.request.ServletWebRequest
@@ -28,6 +29,23 @@ class GlobalExceptionHandler {
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(errorResponse)
+    }
+
+    @ExceptionHandler(MissingRequestCookieException::class)
+    fun handleMissingCookieException(e: MissingRequestCookieException, request: WebRequest): ResponseEntity<ErrorResponse> {
+        val requestUri = (request as ServletWebRequest).request.requestURI
+        log.warn { "Required cookie '${e.cookieName}' is missing for path $requestUri" }
+
+        val errorCode = ErrorCode.REFRESH_TOKEN_NOT_FOUND
+
+        val errorResponse = ErrorResponse(
+            status = errorCode.status.value(),
+            error = errorCode.status.reasonPhrase,
+            message = errorCode.message,
+            path = requestUri,
+            code = errorCode.code
+        )
+        return ResponseEntity(errorResponse, errorCode.status)
     }
 
     @ExceptionHandler(ContentriaException::class)

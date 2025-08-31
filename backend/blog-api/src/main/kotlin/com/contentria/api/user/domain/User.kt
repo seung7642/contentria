@@ -1,8 +1,5 @@
 package com.contentria.api.user.domain
 
-import com.contentria.api.user.domain.AuthProvider
-import com.contentria.api.user.domain.Role
-import com.contentria.api.user.domain.UserRole
 import jakarta.persistence.*
 import org.springframework.security.core.GrantedAuthority
 import java.time.ZonedDateTime

@@ -12,11 +12,22 @@ const AuthInitializer = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const checkAuthStatus = async () => {
-      try {
-        const user = await userService.getMe();
-        initializeAuth(user);
-      } catch (error) {
-        console.error('[AuthInitializer] Authentication check failed:', error);
+      const result = await userService.getMe();
+      if (result.success) {
+        console.log('[Auth] User authenticated successfully.');
+        initializeAuth(result.data);
+      } else {
+        const { error } = result;
+
+        if (error.status === 401) {
+          console.log('[Auth] No active session found. Initializing as guest.');
+        } else {
+          console.error(
+            `[AuthInitializer] An unexpected error occurred during auth check:`,
+            error.details
+          );
+        }
+
         initializeAuth(null);
       }
     };

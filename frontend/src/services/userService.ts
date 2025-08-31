@@ -1,33 +1,42 @@
-import apiClient01 from '@/lib/apiClient';
-import { AuthError } from '@/types/api/errors';
+import apiClient from '@/lib/apiClient';
+import { ApiError, ErrorResponse } from '@/types/api/errors';
+import { ApiResult } from '@/types/api/result';
 import { User } from '@/types/user';
 import axios from 'axios';
 
-async function withAuthErrorHandling<T>(
-  apiCall: () => Promise<T>,
-  defaultErrorMessage: string = 'An unexpected authentication operation error occurred'
-): Promise<T> {
+async function withAuthErrorHandling<T>(apiCall: () => Promise<T>): Promise<ApiResult<T>> {
   try {
-    return await apiCall();
-  } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      // Axios 에러인 경우, 응답 데이터에서 상세 에러 정보를 추출 시도
-      const errorData = error.response?.data;
-      const message = errorData?.message || error.message || defaultErrorMessage;
-      throw new AuthError(message, error.response?.status || 500, errorData);
-    } else if (error instanceof Error) {
-      throw new AuthError(error.message || defaultErrorMessage, 500);
+    const data = await apiCall();
+    return { success: true, data };
+  } catch (error) {
+    let apiError: ApiError;
+
+    if (axios.isAxiosError(error) && error.response?.data) {
+      apiError = new ApiError(error.response.data as ErrorResponse);
     } else {
-      throw new AuthError(String(error) || defaultErrorMessage, 0);
+      // 네트워크 에러, 타임아웃 또는 서버가 죽어서 JSON 응답조차 못 주는 경우
+      // 프론트엔드에서 자체적으로 비상용 ErrorResponse 객체를 만들어 ApiError로 정규화한다.
+      const fallbackResponse: ErrorResponse = {
+        timestamp: new Date().toISOString(),
+        status: 0,
+        error: '',
+        message:
+          error instanceof Error ? error.message : 'An unexpected client-side error occurred.',
+        path: '',
+        code: 'CLIENT0000',
+      };
+      apiError = new ApiError(fallbackResponse);
     }
+
+    return { success: false, error: apiError };
   }
 }
 
 export const userService = {
-  async getMe(): Promise<User> {
+  async getMe(): Promise<ApiResult<User>> {
     return withAuthErrorHandling(async () => {
-      const { data } = await apiClient01.get<User>('/api/users/me');
+      const { data } = await apiClient.get<User>('/api/users/me');
       return data;
-    }, 'Failed to get user information');
+    });
   },
 };
