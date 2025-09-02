@@ -3,24 +3,17 @@
 import Link from 'next/link';
 import { Edit3, LayoutDashboard, Rss } from 'lucide-react';
 import { TypeAnimation } from 'react-type-animation';
-import { memo, useEffect, useRef } from 'react';
+import { memo, useRef } from 'react';
 import { useAuthStore } from '@/store/authStore';
-import { useRouter } from 'next/navigation';
+import { PATHS } from '@/constants/paths';
 
 // TypeAnimation 컴포넌트를 memo로 감싸서 불필요한 리렌더링 방지 (선택 사항)
 const MemoizedTypeAnimation = memo(TypeAnimation);
 
 export default function HomePage() {
-  const router = useRouter();
-  const user = useAuthStore((state) => state.user);
+  const { isAuthenticated } = useAuthStore();
 
   const h1Ref = useRef<HTMLHeadingElement>(null); // h1 요소 참조
-
-  useEffect(() => {
-    if (user) {
-      router.push('/dashboard');
-    }
-  }, [router, user]);
 
   const triggerWaveAnimation = (element: HTMLSpanElement | null) => {
     if (!element) {
@@ -73,12 +66,29 @@ export default function HomePage() {
             당신의 이야기가 곧 당신의 브랜드가 됩니다.
           </p>
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link
-              href="/login"
-              className="inline-block rounded-lg bg-indigo-600 px-8 py-3.5 text-base font-semibold text-white shadow-md transition duration-300 ease-in-out hover:bg-indigo-700 hover:shadow-lg"
-            >
-              블로그 시작하기
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <Link
+                  href={PATHS.DASHBOARD}
+                  className="inline-block rounded-lg bg-indigo-600 px-8 py-3.5 text-base font-semibold text-white shadow-md transition duration-300 ease-in-out hover:bg-indigo-700 hover:shadow-lg"
+                >
+                  대시보드로 이동
+                </Link>
+                <Link
+                  href={PATHS.NEW_POST}
+                  className="inline-block rounded-lg border border-gray-300 bg-white px-8 py-3.5 text-base font-semibold text-gray-700 shadow-sm transition duration-300 ease-in-out hover:bg-gray-50"
+                >
+                  새 글 작성
+                </Link>
+              </>
+            ) : (
+              <Link
+                href={PATHS.LOGIN}
+                className="inline-block rounded-lg bg-indigo-600 px-8 py-3.5 text-base font-semibold text-white shadow-md transition duration-300 ease-in-out hover:bg-indigo-700 hover:shadow-lg"
+              >
+                블로그 시작하기
+              </Link>
+            )}
           </div>
         </div>
       </section>
