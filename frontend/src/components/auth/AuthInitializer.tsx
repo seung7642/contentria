@@ -3,11 +3,9 @@
 import { useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { userService } from '@/services/userService';
-import { Loader2 } from 'lucide-react';
 
 const AuthInitializer = ({ children }: { children: React.ReactNode }) => {
   // 1. 스토어에서 필요한 상태(isLoading)와 액션(initializeAuth)을 가져온다.
-  const isLoading = useAuthStore((state) => state.isLoading);
   const initializeAuth = useAuthStore((state) => state.initializeAuth);
   const logout = useAuthStore((state) => state.logout);
 
@@ -37,9 +35,9 @@ const AuthInitializer = ({ children }: { children: React.ReactNode }) => {
     checkAuthStatus();
   }, [initializeAuth, logout]);
 
-  if (isLoading) {
-    return <Loader2 className="h-12 w-12 animate-spin text-indigo-600" />;
-  }
+  // if (isLoading) {
+  //   return <Loader2 className="h-12 w-12 animate-spin text-indigo-600" />;
+  // }
 
   return <>{children}</>;
 };
