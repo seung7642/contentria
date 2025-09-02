@@ -1,9 +1,4 @@
-export interface User {
-  id?: string;
-  name: string;
-  email: string;
-  profileImage?: string;
-}
+import { User } from '@/types/user';
 
 export interface ProfileDropdownProps {
   user: User;
