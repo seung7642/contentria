@@ -12,19 +12,14 @@ interface AuthState {
   logout: () => void;
 }
 
-// Zustand 스토어 생성
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isLoading: true,
   isAuthenticated: false,
 
-  // action 구현
   setUser: (user) => set({ user: user, isAuthenticated: !!user }),
   setLoading: (loading) => set({ isLoading: loading }),
-
-  // 서버에서 가져온 초기 데이터로 스토어 상태를 설정하는 action
   initializeAuth: (user) => set({ user: user, isAuthenticated: !!user, isLoading: false }),
-
   logout: () => {
     cookieManager.clearAuthCookies();
     set({ user: null, isAuthenticated: false, isLoading: false });
