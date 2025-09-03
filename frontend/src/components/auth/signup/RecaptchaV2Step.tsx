@@ -8,7 +8,7 @@ import ReCAPTCHA from 'react-google-recaptcha';
 const RecaptchaV2Step: React.FC<RecaptchaV2StepProps> = ({
   setStep,
   formData,
-  onBack,
+  goToPreviousStep,
   isLoading,
   setIsLoading,
   error,
@@ -18,31 +18,34 @@ const RecaptchaV2Step: React.FC<RecaptchaV2StepProps> = ({
   const siteKeyV2 = process.env.NEXT_PUBLIC_RECAPTCHA_V2_CHECKBOX_SITE_KEY;
 
   const handleV2TokenSubmit = async (v2Token: string | null) => {
+    if (!v2Token) {
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
-    try {
-      const signUpDataWithV2 = {
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-        recaptchaV2Token: v2Token,
-      };
+    const signUpDataWithV2 = {
+      email: formData.email,
+      name: formData.name,
+      password: formData.password,
+      recaptchaV2Token: v2Token,
+    };
 
-      const response = await authService.initiateSignUp(signUpDataWithV2);
-
-      if (response.nextStep === 'enter_verification_code') {
+    const result = await authService.initiateSignUp(signUpDataWithV2);
+    if (result.success) {
+      if (result.data.nextStep === 'enter_verification_code') {
         setStep('verify-email-code');
       } else {
-        setError('An unexpected error occurred. Please try again.');
-        recaptchaV2Ref.current?.reset();
+        setError('An unexpected server response. Please try again.');
+        recaptchaV2Ref?.current?.reset();
       }
-    } catch (error: unknown) {
-      console.error('Error during reCAPTCHA v2 verification:', error);
-      setError('An error occurred while verifying reCAPTCHA. Please try again.');
-    } finally {
-      setIsLoading(false);
+    } else {
+      setError(result.error.message);
+      recaptchaV2Ref.current?.reset();
     }
+
+    setIsLoading(false);
   };
 
   const handleOnExpired = () => {
@@ -56,7 +59,7 @@ const RecaptchaV2Step: React.FC<RecaptchaV2StepProps> = ({
   if (!siteKeyV2) {
     return (
       <>
-        <BackButton onClick={onBack} />
+        <BackButton onClick={goToPreviousStep} />
         <p className="mt-4 text-center text-red-500">
           reCAPTCHA v2 is not configured. Please contack support.
         </p>
@@ -66,7 +69,7 @@ const RecaptchaV2Step: React.FC<RecaptchaV2StepProps> = ({
 
   return (
     <>
-      <BackButton onClick={onBack} />
+      <BackButton onClick={goToPreviousStep} />
       <div className="mt-4 text-center">
         <ShieldCheck className="mx-auto h-12 w-12 text-gray-400" />
         <h2 className="mt-2 text-lg font-medium text-gray-900">Security Check</h2>

@@ -1,4 +1,4 @@
-import { DEFAULT_LOGGED_IN_REDIRECT_URL } from '@/constants/auth';
+import { PATHS } from '@/constants/paths';
 import { authService } from '@/services/authService';
 import { VerificationStepProps } from '@/types/signup';
 import { useRouter } from 'next/navigation';
@@ -21,16 +21,18 @@ export const VerificationStep: React.FC<VerificationStepProps> = ({
       setIsLoading(true);
       setError(null);
 
-      try {
-        console.log('Verifying code:', code);
-        await authService.verifyOtpCode({ email: formData.email, verificationCode: code });
-        router.replace(DEFAULT_LOGGED_IN_REDIRECT_URL);
-      } catch (error: unknown) {
-        console.error('Verification failed:', error);
-        setError('Invalid or expired code. Please try again.');
-      } finally {
-        setIsLoading(false);
+      const result = await authService.verifyOtpCode({
+        email: formData.email,
+        verificationCode: code,
+      });
+
+      if (result.success) {
+        router.replace(PATHS.DASHBOARD);
+      } else {
+        setError(result.error.message || 'Invalid or expired code. Please try again.');
       }
+
+      setIsLoading(false);
     },
     [router, setError, setIsLoading, formData.email]
   );
@@ -46,16 +48,16 @@ export const VerificationStep: React.FC<VerificationStepProps> = ({
     setError(null);
     setIsLoading(true);
 
-    try {
-      // TODO: 새 인증 코드 요청 API
+    const result = await authService.requestVerificationCode({ email: formData.email });
 
+    if (result.success) {
+      // TODO: "새로운 코드를 전송했습니다." 같은 Toast 메시지를 보여주면 사용자 경험이 더 좋아진다.
       onUpdateData('verificationCode', '');
-    } catch (error: unknown) {
-      console.error('Failed to request new code:', error);
-      setError('Failed to request new code. Please try again.');
-    } finally {
-      setIsLoading(false);
+    } else {
+      setError(result.error.message || 'Failed to request new code. Please try again.');
     }
+
+    setIsLoading(false);
   };
 
   return (

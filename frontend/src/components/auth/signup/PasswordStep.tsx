@@ -21,7 +21,6 @@ interface PolicyItem {
 export const PasswordStep: React.FC<PasswordStepProps> = ({
   formData,
   onUpdateData,
-  goToNextStep,
   goToPreviousStep,
   isLoading,
   error: apiError,
@@ -44,8 +43,11 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
 
   const currentPassword = watch('password', formData.password);
   const [isPolicyVisible, setIsPolicyVisible] = useState(false);
-  const [isPasswordSubmitClick, setIsPasswordSubmitClick] = useState(false);
-  const [isRequestCodeClick, setIsRequestCodeClick] = useState(false);
+  // const [isPasswordSubmitClick, setIsPasswordSubmitClick] = useState(false);
+  // const [isRequestCodeClick, setIsRequestCodeClick] = useState(false);
+  const [submissionType, setSubmissionType] = useState<'with_password' | 'without_password' | null>(
+    null
+  );
 
   const passwordPolicies = useMemo(
     (): PolicyItem[] => [
@@ -58,60 +60,94 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
     []
   );
 
-  // RHF 유효성 검사 통과 후 실행될 함수
-  const processPasswordSubmit: SubmitHandler<PasswordStepFormData> = async (data) => {
-    onUpdateData('password', data.password);
+  const handleInitiateSignUp = async (password: string | null) => {
+    onUpdateData('password', password || '');
     setApiError(null);
+    setIsLoading(true);
+
+    setSubmissionType(password ? 'with_password' : 'without_password');
 
     if (!executeRecaptcha) {
-      setApiError('reCAPTCHA not ready. Please try again.');
-      console.error('Execute recaptcha not yet available.');
+      setApiError('reCAPTCHA is not ready. Please try again.');
+      setIsLoading(false);
+      setSubmissionType(null);
       return;
     }
 
-    setIsLoading(true);
-    setIsPasswordSubmitClick(true);
-    try {
-      const recaptchaToken = await executeRecaptcha(RECAPTCHA_SIGN_UP_ACTION);
-      const signUpData = {
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-        recaptchaV3Token: recaptchaToken,
-      };
+    const recaptchaToken = await executeRecaptcha(RECAPTCHA_SIGN_UP_ACTION);
 
-      const response = await authService.initiateSignUp(signUpData);
-      if (response.nextStep === 'verify_with_recaptcha_v2') {
+    const signUpData = {
+      name: formData.name,
+      email: formData.email,
+      password: password,
+      recaptchaV3Token: recaptchaToken,
+    };
+
+    const result = await authService.initiateSignUp(signUpData);
+
+    if (result.success) {
+      const { nextStep } = result.data;
+      if (nextStep == 'verify_with_recaptcha_v2') {
         setStep('recaptcha-v2-challenge');
-      } else if (response.nextStep === 'enter_verification_code') {
+      } else if (nextStep == 'enter_verification_code') {
         setStep('verify-email-code');
       } else {
-        setApiError('An unexpected error occurred. Please try again.');
+        setApiError('An unexpected server response. Please try again.');
       }
-    } catch (error: unknown) {
-      console.error('reCAPTCHA execution or signUp API request failed:', error);
-      return;
-    } finally {
-      setIsLoading(false);
-      setIsPasswordSubmitClick(false);
+    } else {
+      setApiError(result.error.message);
     }
+
+    setIsLoading(false);
+    setSubmissionType(null);
   };
 
-  const requestVerificationCode = async () => {
-    setApiError(null);
-    setIsLoading(true);
-    setIsRequestCodeClick(true);
-
-    try {
-      goToNextStep();
-    } catch (error: unknown) {
-      console.error('Failed to send verification code:', error);
-      setApiError('Failed to send verification code. Please try again.');
-    } finally {
-      setIsLoading(false);
-      setIsRequestCodeClick(false);
-    }
+  const processPasswordSubmit: SubmitHandler<PasswordStepFormData> = (data) => {
+    handleInitiateSignUp(data.password);
   };
+
+  const processWithoutPassword = () => {
+    handleInitiateSignUp(null);
+  };
+
+  // RHF 유효성 검사 통과 후 실행될 함수
+  // const processPasswordSubmit: SubmitHandler<PasswordStepFormData> = async (data) => {
+  //   onUpdateData('password', data.password);
+  //   setApiError(null);
+
+  //   if (!executeRecaptcha) {
+  //     setApiError('reCAPTCHA not ready. Please try again.');
+  //     console.error('Execute recaptcha not yet available.');
+  //     return;
+  //   }
+
+  //   setIsLoading(true);
+  //   setIsPasswordSubmitClick(true);
+  //   try {
+  //     const recaptchaToken = await executeRecaptcha(RECAPTCHA_SIGN_UP_ACTION);
+  //     const signUpData = {
+  //       name: formData.name,
+  //       email: formData.email,
+  //       password: formData.password,
+  //       recaptchaV3Token: recaptchaToken,
+  //     };
+
+  //     const response = await authService.initiateSignUp(signUpData);
+  //     if (response.nextStep === 'verify_with_recaptcha_v2') {
+  //       setStep('recaptcha-v2-challenge');
+  //     } else if (response.nextStep === 'enter_verification_code') {
+  //       setStep('verify-email-code');
+  //     } else {
+  //       setApiError('An unexpected error occurred. Please try again.');
+  //     }
+  //   } catch (error: unknown) {
+  //     console.error('reCAPTCHA execution or signUp API request failed:', error);
+  //     return;
+  //   } finally {
+  //     setIsLoading(false);
+  //     setIsPasswordSubmitClick(false);
+  //   }
+  // };
 
   return (
     <>
@@ -171,7 +207,7 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
             disabled={isLoading}
             className="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
           >
-            {isLoading && isPasswordSubmitClick ? 'Processing...' : 'Continue'}
+            {isLoading && submissionType === 'with_password' ? 'Processing...' : 'Continue'}
           </button>
         </div>
       </form>
@@ -181,12 +217,14 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
         <div className="mt-6">
           <button
             type="button"
-            onClick={requestVerificationCode}
+            onClick={processWithoutPassword}
             disabled={isLoading}
             className="group relative flex w-full items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
           >
             <Mail className="mr-2 h-4 w-4" />
-            {isLoading && isRequestCodeClick ? 'Sending...' : 'Continue with email code'}
+            {isLoading && submissionType === 'without_password'
+              ? 'Sending...'
+              : 'Continue with email code'}
           </button>
         </div>
       </div>

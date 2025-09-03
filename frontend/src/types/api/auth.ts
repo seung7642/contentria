@@ -6,8 +6,10 @@ export interface BaseApiResponse {
 
 export interface InitiateSignUpPayload {
   email: string;
-  name?: string;
-  password?: string;
+  name: string;
+  password: string | null;
+  recaptchaV3Token?: string;
+  recaptchaV2Token?: string | null;
 }
 
 export interface InitiateSignUpResponse {
