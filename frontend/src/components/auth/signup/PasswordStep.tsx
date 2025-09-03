@@ -110,45 +110,6 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
     handleInitiateSignUp(null);
   };
 
-  // RHF 유효성 검사 통과 후 실행될 함수
-  // const processPasswordSubmit: SubmitHandler<PasswordStepFormData> = async (data) => {
-  //   onUpdateData('password', data.password);
-  //   setApiError(null);
-
-  //   if (!executeRecaptcha) {
-  //     setApiError('reCAPTCHA not ready. Please try again.');
-  //     console.error('Execute recaptcha not yet available.');
-  //     return;
-  //   }
-
-  //   setIsLoading(true);
-  //   setIsPasswordSubmitClick(true);
-  //   try {
-  //     const recaptchaToken = await executeRecaptcha(RECAPTCHA_SIGN_UP_ACTION);
-  //     const signUpData = {
-  //       name: formData.name,
-  //       email: formData.email,
-  //       password: formData.password,
-  //       recaptchaV3Token: recaptchaToken,
-  //     };
-
-  //     const response = await authService.initiateSignUp(signUpData);
-  //     if (response.nextStep === 'verify_with_recaptcha_v2') {
-  //       setStep('recaptcha-v2-challenge');
-  //     } else if (response.nextStep === 'enter_verification_code') {
-  //       setStep('verify-email-code');
-  //     } else {
-  //       setApiError('An unexpected error occurred. Please try again.');
-  //     }
-  //   } catch (error: unknown) {
-  //     console.error('reCAPTCHA execution or signUp API request failed:', error);
-  //     return;
-  //   } finally {
-  //     setIsLoading(false);
-  //     setIsPasswordSubmitClick(false);
-  //   }
-  // };
-
   return (
     <>
       <BackButton onClick={goToPreviousStep} />
