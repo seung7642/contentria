@@ -1,4 +1,5 @@
 import apiClient from '@/lib/apiClient';
+import { LoginPayload, LoginResponse } from '@/types/api/auth/login';
 import {
   InitiateSignUpPayload,
   InitiateSignUpResponse,
@@ -6,7 +7,7 @@ import {
   RequestVerificationCodeResponse,
   VerifyOtpCodePayload,
   VerifyOtpCodeResponse,
-} from '@/types/api/auth';
+} from '@/types/api/auth/signUp';
 import { ApiError, ErrorResponse } from '@/types/api/errors';
 import { ApiResult } from '@/types/api/result';
 import axios from 'axios';
@@ -66,6 +67,13 @@ export const authService = {
         '/api/auth/signup/verify-code',
         payload
       );
+      return data;
+    });
+  },
+
+  async login(payload: LoginPayload): Promise<ApiResult<LoginResponse>> {
+    return withAuthErrorHandling(async () => {
+      const { data } = await apiClient.post<LoginResponse>('/api/auth/login', payload);
       return data;
     });
   },

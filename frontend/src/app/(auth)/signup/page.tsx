@@ -3,8 +3,8 @@
 import AuthFormCard from '@/components/auth/AuthFormCard';
 import { EmailStep } from '@/components/auth/signup/EmailStep';
 import { PasswordStep } from '@/components/auth/signup/PasswordStep';
-import RecaptchaV2Step from '@/components/auth/signup/RecaptchaV2Step';
-import { VerificationStep } from '@/components/auth/signup/VerificationStep';
+import RecaptchaV2Step from '@/components/auth/RecaptchaV2Step';
+import { VerificationStep } from '@/components/auth/VerificationStep';
 import { useSignUpFlow } from '@/hooks/useSignUpFlow';
 
 const SignUpPage = () => {

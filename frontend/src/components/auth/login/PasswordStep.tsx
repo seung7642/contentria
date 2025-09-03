@@ -1,0 +1,136 @@
+import BackButton from '@/components/ui/BackButton';
+import Divider from '@/components/ui/Divider';
+import InputField from '@/components/ui/InputField';
+import { PATHS } from '@/constants/paths';
+import { PasswordStepFormData, passwordStepSchema } from '@/lib/schemas/authSchemas';
+import { authService } from '@/services/authService';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Mail } from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
+import { SubmitHandler, useForm } from 'react-hook-form';
+import { LoginPasswordStepProps } from './types';
+
+const PasswordStep: React.FC<LoginPasswordStepProps> = ({
+  formData,
+  onUpdateData,
+  isLoading,
+  setIsLoading,
+  error,
+  setError,
+  goToPreviousStep,
+  setStep,
+}) => {
+  const { executeRecaptcha } = useGoogleReCaptcha();
+  const [submissionType, setSubmissionType] = useState<'with_password' | 'without_password' | null>(
+    null
+  );
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<PasswordStepFormData>({
+    resolver: zodResolver(passwordStepSchema),
+    defaultValues: { password: formData.password || '' },
+  });
+
+  const handleLoginAttempt = async (password: string | null) => {
+    onUpdateData('password', password || '');
+    setError(null);
+    setIsLoading(true);
+    setSubmissionType(password ? 'with_password' : 'without_password');
+
+    if (!executeRecaptcha) {
+      setError('reCAPTCHA is not ready. Please try again.');
+      setIsLoading(false);
+      return;
+    }
+
+    const recaptchaV3Token = await executeRecaptcha('login');
+    const result = await authService.login({ email: formData.email, password, recaptchaV3Token });
+
+    if (result.success) {
+      const { nextStep } = result.data;
+      if (nextStep === 'complete') {
+        window.location.href = PATHS.DASHBOARD;
+      } else if (nextStep === 'verify_with_recaptcha_v2') {
+        setStep('recaptcha-v2-challenge');
+      } else if (nextStep == 'enter_verification_code') {
+        setStep('verify-email-code');
+      }
+    } else {
+      setError(result.error.message);
+    }
+
+    setIsLoading(false);
+    setSubmissionType(null);
+  };
+
+  const processPasswordSubmit: SubmitHandler<PasswordStepFormData> = (data) => {
+    handleLoginAttempt(data.password);
+  };
+
+  const processWithoutPassword = () => {
+    handleLoginAttempt(null);
+  };
+
+  return (
+    <>
+      <BackButton onClick={goToPreviousStep} />
+      <form className="mt-8" onSubmit={handleSubmit(processPasswordSubmit)}>
+        <InputField id="email-display" label="Email" disabled value={formData.email} />
+
+        <div className="mb-1 mt-6 flex items-center justify-between">
+          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            Password
+          </label>
+          <Link
+            href="/forgot-password"
+            className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+          >
+            Forgot your password?
+          </Link>
+        </div>
+        <InputField
+          id="password"
+          type="password"
+          placeholder="Enter your password"
+          autoComplete="current-password"
+          {...register('password')}
+          errorMessage={errors.password?.message}
+        />
+        {error && <p className="mt-4 text-center text-sm text-red-600">{error}</p>}
+        <div className="mt-8">
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+          >
+            {isLoading && submissionType === 'with_password' ? 'Signing in...' : 'Sign in'}
+          </button>
+        </div>
+      </form>
+
+      <div className="mt-6">
+        <Divider text={'OR'} />
+        <div className="mt-6">
+          <button
+            type="button"
+            onClick={processWithoutPassword}
+            disabled={isLoading}
+            className="group relative flex w-full items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+          >
+            <Mail className="mr-2 h-4 w-4" />
+            {isLoading && submissionType === 'without_password'
+              ? 'Sending...'
+              : 'Email sign-in code'}
+          </button>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default PasswordStep;

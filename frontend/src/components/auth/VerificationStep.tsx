@@ -1,6 +1,6 @@
 import { PATHS } from '@/constants/paths';
 import { authService } from '@/services/authService';
-import { VerificationStepProps } from '@/types/signup';
+import { VerificationStepProps } from '@/components/auth/types';
 import { useRouter } from 'next/navigation';
 import React, { useCallback } from 'react';
 import OtpInput from 'react-otp-input';

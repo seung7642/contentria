@@ -1,8 +1,4 @@
-import { User } from '../user';
-
-export interface BaseApiResponse {
-  message?: string;
-}
+import { User } from '../../user';
 
 export interface InitiateSignUpPayload {
   email: string;

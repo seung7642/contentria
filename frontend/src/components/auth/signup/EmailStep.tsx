@@ -1,14 +1,14 @@
 import Divider from '@/components/ui/Divider';
 import InputField from '@/components/ui/InputField';
-import { EmailStepProps } from '@/types/signup';
 import React from 'react';
 import GoogleLoginButton from '../GoogleLoginButton';
 import Link from 'next/link';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { EmailStepFormData, emailStepSchema } from '@/lib/schemas/authSchemas';
+import { SignUpEmailStepProps } from './types';
 
-export const EmailStep: React.FC<EmailStepProps> = ({
+export const EmailStep: React.FC<SignUpEmailStepProps> = ({
   formData,
   onUpdateData,
   goToNextStep,

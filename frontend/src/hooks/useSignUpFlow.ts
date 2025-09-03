@@ -1,4 +1,4 @@
-import { SignUpStep } from '@/types/signup';
+import { SignUpStep } from '@/components/auth/types';
 import { useState } from 'react';
 
 export const useSignUpFlow = () => {

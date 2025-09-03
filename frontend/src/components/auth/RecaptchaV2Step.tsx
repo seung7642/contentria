@@ -1,11 +1,13 @@
+'use client';
+
 import BackButton from '@/components/ui/BackButton';
-import { authService } from '@/services/authService';
-import { RecaptchaV2StepProps } from '@/types/signup';
-import { ShieldCheck } from 'lucide-react';
+// import { authService } from '@/services/authService';
+// import { ApiResult } from '@/types/api/result';
+import { RecaptchaV2StepProps01 } from '@/components/auth/types';
 import { useRef } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
 
-const RecaptchaV2Step: React.FC<RecaptchaV2StepProps> = ({
+const RecaptchaV2Step = <TFormData, TStep extends string, TResponse>({
   setStep,
   formData,
   goToPreviousStep,
@@ -13,7 +15,8 @@ const RecaptchaV2Step: React.FC<RecaptchaV2StepProps> = ({
   setIsLoading,
   error,
   setError,
-}) => {
+  onVerify,
+}: RecaptchaV2StepProps01<TFormData, TStep, TResponse>) => {
   const recaptchaV2Ref = useRef<ReCAPTCHA>(null);
   const siteKeyV2 = process.env.NEXT_PUBLIC_RECAPTCHA_V2_CHECKBOX_SITE_KEY;
 
@@ -32,7 +35,9 @@ const RecaptchaV2Step: React.FC<RecaptchaV2StepProps> = ({
       recaptchaV2Token: v2Token,
     };
 
-    const result = await authService.initiateSignUp(signUpDataWithV2);
+    // const result = await authService.initiateSignUp(signUpDataWithV2);
+    const result = await onVerify(v2Token);
+
     if (result.success) {
       if (result.data.nextStep === 'enter_verification_code') {
         setStep('verify-email-code');
