@@ -1,4 +1,3 @@
-// Header.tsx
 'use client';
 
 import Link from 'next/link';
@@ -7,6 +6,7 @@ import { useState, useEffect, useRef } from 'react';
 import ProfileDropdown from './ProfileDropdown';
 import UserAvatar from './UserAvatar';
 import { useAuthStore } from '@/store/authStore';
+import { PATHS } from '@/constants/paths';
 
 const HomeHeader = () => {
   const { user, isAuthenticated, logout } = useAuthStore();
@@ -38,7 +38,13 @@ const HomeHeader = () => {
           <div>
             {isAuthenticated && user ? (
               <div ref={dropdownRef} className="relative">
-                <UserAvatar user={user} onClick={() => setIsDropdownOpen(!isDropdownOpen)} />
+                <button
+                  type="button"
+                  className="focus-ring-2 rounded-full transition-opacity duration-200 hover:opacity-90 focus:outline-none focus:ring-indigo-500 focus:ring-offset-2"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                >
+                  <UserAvatar user={user} size="md" />
+                </button>
                 <ProfileDropdown
                   user={user}
                   isOpen={isDropdownOpen}
@@ -48,7 +54,7 @@ const HomeHeader = () => {
               </div>
             ) : (
               <Link
-                href="/login"
+                href={PATHS.LOGIN}
                 className="my-2 ml-2 rounded-lg bg-indigo-500 px-4 py-3 text-sm font-medium text-white shadow-sm transition-colors duration-200 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
               >
                 Sign in

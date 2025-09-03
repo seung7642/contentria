@@ -14,5 +14,5 @@ export interface SubscribeModalProps {
 
 export interface UserAvatarProps {
   user: User | null;
-  onClick: () => void;
+  size?: 'sm' | 'md';
 }
