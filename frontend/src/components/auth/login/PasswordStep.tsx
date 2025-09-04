@@ -12,7 +12,7 @@ import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { LoginPasswordStepProps } from './types';
 
-const PasswordStep: React.FC<LoginPasswordStepProps> = ({
+const PasswordStep = ({
   formData,
   onUpdateData,
   isLoading,
@@ -21,7 +21,7 @@ const PasswordStep: React.FC<LoginPasswordStepProps> = ({
   setError,
   goToPreviousStep,
   setStep,
-}) => {
+}: LoginPasswordStepProps) => {
   const { executeRecaptcha } = useGoogleReCaptcha();
   const [submissionType, setSubmissionType] = useState<'with_password' | 'without_password' | null>(
     null

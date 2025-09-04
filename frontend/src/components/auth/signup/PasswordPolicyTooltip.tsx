@@ -12,11 +12,11 @@ interface PasswordPolicyTooltipProps {
   isVisible: boolean;
 }
 
-const PasswordPolicyTooltip: React.FC<PasswordPolicyTooltipProps> = ({
+const PasswordPolicyTooltip = ({
   policies,
   currentPasswordValue,
   isVisible, // isVisible prop을 받아서 조건부 렌더링은 부모에서 처리
-}) => {
+}: PasswordPolicyTooltipProps) => {
   if (!isVisible) {
     return null; // isVisible이 false면 아무것도 렌더링하지 않음
   }

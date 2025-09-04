@@ -1,22 +1,19 @@
 'use client';
 
 import BackButton from '@/components/ui/BackButton';
-// import { authService } from '@/services/authService';
-// import { ApiResult } from '@/types/api/result';
-import { RecaptchaV2StepProps01 } from '@/components/auth/types';
+import { RecaptchaV2StepProps } from '@/components/auth/types';
 import { useRef } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
+import { ShieldCheck } from 'lucide-react';
 
 const RecaptchaV2Step = <TFormData, TStep extends string, TResponse>({
-  setStep,
-  formData,
   goToPreviousStep,
   isLoading,
   setIsLoading,
   error,
   setError,
   onVerify,
-}: RecaptchaV2StepProps01<TFormData, TStep, TResponse>) => {
+}: RecaptchaV2StepProps<TFormData, TStep, TResponse>) => {
   const recaptchaV2Ref = useRef<ReCAPTCHA>(null);
   const siteKeyV2 = process.env.NEXT_PUBLIC_RECAPTCHA_V2_CHECKBOX_SITE_KEY;
 
@@ -28,24 +25,9 @@ const RecaptchaV2Step = <TFormData, TStep extends string, TResponse>({
     setIsLoading(true);
     setError(null);
 
-    const signUpDataWithV2 = {
-      email: formData.email,
-      name: formData.name,
-      password: formData.password,
-      recaptchaV2Token: v2Token,
-    };
-
-    // const result = await authService.initiateSignUp(signUpDataWithV2);
     const result = await onVerify(v2Token);
 
-    if (result.success) {
-      if (result.data.nextStep === 'enter_verification_code') {
-        setStep('verify-email-code');
-      } else {
-        setError('An unexpected server response. Please try again.');
-        recaptchaV2Ref?.current?.reset();
-      }
-    } else {
+    if (!result.success) {
       setError(result.error.message);
       recaptchaV2Ref.current?.reset();
     }

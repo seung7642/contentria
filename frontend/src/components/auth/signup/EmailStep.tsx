@@ -8,13 +8,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { EmailStepFormData, emailStepSchema } from '@/lib/schemas/authSchemas';
 import { SignUpEmailStepProps } from './types';
 
-export const EmailStep: React.FC<SignUpEmailStepProps> = ({
+export const EmailStep = ({
   formData,
   onUpdateData,
   goToNextStep,
   isLoading,
   error: apiError, // react-hook-form(RHF) errors와 구분하기 위해 이름 변경
-}) => {
+}: SignUpEmailStepProps) => {
   const {
     register,
     handleSubmit,

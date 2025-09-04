@@ -18,7 +18,7 @@ interface PolicyItem {
   isValid: (password: string) => boolean;
 }
 
-export const PasswordStep: React.FC<SignUpPasswordStepProps> = ({
+export const PasswordStep = ({
   formData,
   onUpdateData,
   goToPreviousStep,
@@ -27,7 +27,7 @@ export const PasswordStep: React.FC<SignUpPasswordStepProps> = ({
   setError: setApiError,
   setIsLoading,
   setStep,
-}) => {
+}: SignUpPasswordStepProps) => {
   const { executeRecaptcha } = useGoogleReCaptcha();
   const {
     register,

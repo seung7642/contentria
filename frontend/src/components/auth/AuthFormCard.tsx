@@ -3,7 +3,7 @@ interface AuthFormCardProps {
   children: React.ReactNode;
 }
 
-const AuthFormCard: React.FC<AuthFormCardProps> = ({ title, children }) => {
+const AuthFormCard = ({ title, children }: AuthFormCardProps) => {
   return (
     <>
       <h2 className="text-center text-3xl font-extrabold text-gray-900">{title}</h2>

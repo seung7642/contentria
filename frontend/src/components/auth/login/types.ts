@@ -2,8 +2,8 @@ import { LoginResponse } from '@/types/api/auth/login';
 import {
   BaseStepProps,
   StepWithNext,
-  RecaptchaV2StepProps01 as BaseRecaptchaV2StepProps,
-  VerificationStepProps01 as BaseVerificationStepProps,
+  RecaptchaV2StepProps as BaseRecaptchaV2StepProps,
+  VerificationStepProps as BaseVerificationStepProps,
 } from '../types';
 
 // 1. Login 플로우에서 사용할 스텝들

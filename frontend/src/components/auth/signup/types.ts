@@ -2,8 +2,8 @@ import { InitiateSignUpResponse } from '@/types/api/auth/signUp';
 import {
   StepWithNext,
   StepWithNavigation,
-  RecaptchaV2StepProps01 as BaseRecaptchaV2StepProps,
-  VerificationStepProps01 as BaseVerificationStepProps,
+  RecaptchaV2StepProps as BaseRecaptchaV2StepProps,
+  VerificationStepProps as BaseVerificationStepProps,
 } from '../types';
 
 // 1. SignUp 플로우에서 사용할 스텝들

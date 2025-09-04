@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { PATHS } from '@/constants/paths';
 import { LoginEmailStepProps } from './types';
 
-const EmailStep: React.FC<LoginEmailStepProps> = ({ formData, onUpdateData, goToNextStep }) => {
+const EmailStep = ({ formData, onUpdateData, goToNextStep }: LoginEmailStepProps) => {
   const {
     register,
     handleSubmit,

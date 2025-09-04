@@ -10,13 +10,7 @@ interface CodeInputProps {
   disabled?: boolean;
 }
 
-const CodeInput: React.FC<CodeInputProps> = ({
-  length,
-  value = '',
-  onChange,
-  onComplete,
-  disabled,
-}) => {
+const CodeInput = ({ length, value = '', onChange, onComplete, disabled }: CodeInputProps) => {
   // 중복 제거: 하나의 함수로 통합
   const createCodeArray = useCallback((val: string, len: number) => {
     const arr = Array(len).fill('');

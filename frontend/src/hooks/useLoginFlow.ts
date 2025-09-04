@@ -1,12 +1,15 @@
 'use client';
 
+import { LoginFormData, LoginStep } from '@/components/auth/login/types';
 import { useState } from 'react';
-
-type LoginStep = 'email' | 'password' | 'recaptcha-v2-challenge' | 'verify-email-code';
 
 export const useLoginFlow = () => {
   const [step, setStep] = useState<LoginStep>('email');
-  const [formData, setFormData] = useState<LoginFormData>({ email: '', password: '' });
+  const [formData, setFormData] = useState<LoginFormData>({
+    email: '',
+    password: '',
+    verificationCode: '',
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

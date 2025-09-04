@@ -1,18 +1,18 @@
 import { PATHS } from '@/constants/paths';
 import { authService } from '@/services/authService';
-import { VerificationStepProps } from '@/components/auth/types';
 import { useRouter } from 'next/navigation';
 import React, { useCallback } from 'react';
 import OtpInput from 'react-otp-input';
+import { VerifiableFormData, VerificationStepProps } from './types';
 
-export const VerificationStep: React.FC<VerificationStepProps> = ({
+export const VerificationStep = <TFormData extends VerifiableFormData, TStep extends string>({
   formData,
   onUpdateData,
   isLoading,
   error,
   setError,
   setIsLoading,
-}) => {
+}: VerificationStepProps<TFormData, TStep>) => {
   const router = useRouter();
 
   // 의존성 배열이 변경되지 않는 한, 리렌더링 시 매번 함수를 새로 생성하지 않고 재사용

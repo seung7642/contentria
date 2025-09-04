@@ -27,7 +27,7 @@ const GoogleLogo = () => (
   </svg>
 );
 
-const GoogleLoginButton: React.FC = () => {
+const GoogleLoginButton = () => {
   const handleGoogleLogin = () => {
     const googleAuthUrl = 'http://localhost:8080/api/oauth2/authorization/google';
     window.location.href = googleAuthUrl;
