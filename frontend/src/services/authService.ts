@@ -1,10 +1,13 @@
 import apiClient from '@/lib/apiClient';
-import { LoginPayload, LoginResponse } from '@/types/api/auth/login';
+import {
+  LoginPayload,
+  LoginResponse,
+  SendOtpPayload,
+  SendOtpResponse,
+} from '@/types/api/auth/login';
 import {
   InitiateSignUpPayload,
   InitiateSignUpResponse,
-  RequestVerificationCodePayload,
-  RequestVerificationCodeResponse,
   VerifyOtpCodePayload,
   VerifyOtpCodeResponse,
 } from '@/types/api/auth/signUp';
@@ -49,31 +52,26 @@ export const authService = {
     });
   },
 
-  async requestVerificationCode(
-    payload: RequestVerificationCodePayload
-  ): Promise<ApiResult<RequestVerificationCodeResponse>> {
-    return withAuthErrorHandling(async () => {
-      const { data } = await apiClient.post<RequestVerificationCodeResponse>(
-        '/api/auth/signup/resend-code',
-        payload
-      );
-      return data;
-    });
-  },
-
   async verifyOtpCode(payload: VerifyOtpCodePayload): Promise<ApiResult<VerifyOtpCodeResponse>> {
     return withAuthErrorHandling(async () => {
       const { data } = await apiClient.post<VerifyOtpCodeResponse>(
-        '/api/auth/signup/verify-code',
+        '/api/auth/verify-code',
         payload
       );
       return data;
     });
   },
 
-  async login(payload: LoginPayload): Promise<ApiResult<LoginResponse>> {
+  async loginWithPassword(payload: LoginPayload): Promise<ApiResult<LoginResponse>> {
     return withAuthErrorHandling(async () => {
       const { data } = await apiClient.post<LoginResponse>('/api/auth/login', payload);
+      return data;
+    });
+  },
+
+  async sendOtpCode(payload: SendOtpPayload): Promise<ApiResult<SendOtpResponse>> {
+    return withAuthErrorHandling(async () => {
+      const { data } = await apiClient.post<SendOtpResponse>('/api/auth/send-otp', payload);
       return data;
     });
   },

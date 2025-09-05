@@ -23,9 +23,9 @@ const PasswordStep = ({
   setStep,
 }: LoginPasswordStepProps) => {
   const { executeRecaptcha } = useGoogleReCaptcha();
-  const [submissionType, setSubmissionType] = useState<'with_password' | 'without_password' | null>(
-    null
-  );
+  const [submissionType, setSubmissionType] = useState<
+    'login_with_password' | 'login_with_otp' | null
+  >(null);
 
   const {
     register,
@@ -36,29 +36,34 @@ const PasswordStep = ({
     defaultValues: { password: formData.password || '' },
   });
 
-  const handleLoginAttempt = async (password: string | null) => {
-    onUpdateData('password', password || '');
+  const processPasswordSubmit: SubmitHandler<PasswordStepFormData> = async (data) => {
+    // handleLoginAttempt(data.password);
+    onUpdateData('password', data.password);
     setError(null);
     setIsLoading(true);
-    setSubmissionType(password ? 'with_password' : 'without_password');
+    setSubmissionType('login_with_password');
 
     if (!executeRecaptcha) {
       setError('reCAPTCHA is not ready. Please try again.');
       setIsLoading(false);
       return;
     }
+    const recaptchaV3Token = await executeRecaptcha('login_with_password');
 
-    const recaptchaV3Token = await executeRecaptcha('login');
-    const result = await authService.login({ email: formData.email, password, recaptchaV3Token });
+    const result = await authService.loginWithPassword({
+      email: formData.email,
+      password: data.password,
+      recaptchaV3Token,
+    });
 
     if (result.success) {
       const { nextStep } = result.data;
       if (nextStep === 'complete') {
         window.location.href = PATHS.DASHBOARD;
-      } else if (nextStep === 'verify_with_recaptcha_v2') {
+      } else if (nextStep === 'enter_recaptcha_v2_step') {
         setStep('recaptcha-v2-challenge');
-      } else if (nextStep == 'enter_verification_code') {
-        setStep('verify-email-code');
+      } else {
+        setError('An unexpected server response.');
       }
     } else {
       setError(result.error.message);
@@ -68,19 +73,52 @@ const PasswordStep = ({
     setSubmissionType(null);
   };
 
-  const processPasswordSubmit: SubmitHandler<PasswordStepFormData> = (data) => {
-    handleLoginAttempt(data.password);
-  };
+  const processWithOtpCode = async () => {
+    // handleLoginAttempt(null);
+    setError(null);
+    setIsLoading(true);
+    setSubmissionType('login_with_otp');
 
-  const processWithoutPassword = () => {
-    handleLoginAttempt(null);
+    if (!executeRecaptcha) {
+      setError('reCAPTCHA is not ready. Please try again.');
+      setIsLoading(false);
+      return;
+    }
+    const recaptchaV3Token = await executeRecaptcha('login_with_otp');
+
+    const result = await authService.sendOtpCode({
+      email: formData.email,
+      recaptchaV3Token,
+    });
+
+    if (result.success) {
+      const { nextStep } = result.data;
+      if (nextStep === 'enter_verification_code_step') {
+        setStep('verify-email-code');
+      } else if (nextStep === 'enter_recaptcha_v2_step') {
+        setStep('recaptcha-v2-challenge');
+      } else {
+        setError('An unexpected server response.');
+      }
+    } else {
+      setError(result.error.message);
+    }
+
+    setIsLoading(false);
+    setSubmissionType(null);
   };
 
   return (
     <>
       <BackButton onClick={goToPreviousStep} />
       <form className="mt-8" onSubmit={handleSubmit(processPasswordSubmit)}>
-        <InputField id="email-display" label="Email" disabled value={formData.email} />
+        <InputField
+          id="email-display"
+          type="email"
+          placeholder="Your email address"
+          disabled
+          value={formData.email}
+        />
 
         <div className="mb-1 mt-6 flex items-center justify-between">
           <label htmlFor="password" className="block text-sm font-medium text-gray-700">
@@ -108,7 +146,7 @@ const PasswordStep = ({
             disabled={isLoading}
             className="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
           >
-            {isLoading && submissionType === 'with_password' ? 'Signing in...' : 'Sign in'}
+            {isLoading && submissionType === 'login_with_password' ? 'Signing in...' : 'Sign in'}
           </button>
         </div>
       </form>
@@ -118,14 +156,12 @@ const PasswordStep = ({
         <div className="mt-6">
           <button
             type="button"
-            onClick={processWithoutPassword}
+            onClick={processWithOtpCode}
             disabled={isLoading}
             className="group relative flex w-full items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
           >
             <Mail className="mr-2 h-4 w-4" />
-            {isLoading && submissionType === 'without_password'
-              ? 'Sending...'
-              : 'Email sign-in code'}
+            {isLoading && submissionType === 'login_with_otp' ? 'Sending...' : 'Email sign-in code'}
           </button>
         </div>
       </div>

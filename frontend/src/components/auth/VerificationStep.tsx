@@ -48,7 +48,7 @@ export const VerificationStep = <TFormData extends VerifiableFormData, TStep ext
     setError(null);
     setIsLoading(true);
 
-    const result = await authService.requestVerificationCode({ email: formData.email });
+    const result = await authService.sendOtpCode({ email: formData.email });
 
     if (result.success) {
       // TODO: "새로운 코드를 전송했습니다." 같은 Toast 메시지를 보여주면 사용자 경험이 더 좋아진다.

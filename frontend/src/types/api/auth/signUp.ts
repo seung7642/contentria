@@ -24,15 +24,6 @@ export interface VerifyCodeResponse {
   token?: string;
 }
 
-export interface RequestVerificationCodePayload {
-  email: string;
-}
-
-export interface RequestVerificationCodeResponse {
-  message?: string;
-  isSuccess: boolean;
-}
-
 export interface VerifyOtpCodePayload {
   email: string;
   verificationCode: string;

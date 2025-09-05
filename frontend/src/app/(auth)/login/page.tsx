@@ -10,18 +10,20 @@ import { VerificationStep } from '@/components/auth/VerificationStep';
 import { PATHS } from '@/constants/paths';
 import { useLoginFlow } from '@/hooks/useLoginFlow';
 import { authService } from '@/services/authService';
+import { LoginResponse } from '@/types/api/auth/login';
+import { ApiResult } from '@/types/api/result';
 
 const LoginPage = () => {
   const loginFlow = useLoginFlow();
 
-  const handleRecaptchaVerify = async (v2Token: string) => {
+  const handleRecaptchaVerify = async (v2Token: string): Promise<ApiResult<LoginResponse>> => {
     const loginData = {
       email: loginFlow.formData.email,
       password: loginFlow.formData.password,
       recaptchaV2Token: v2Token,
     };
 
-    const result = await authService.login(loginData);
+    const result = await authService.loginWithPassword(loginData);
     if (result.success) {
       if (result.data.nextStep === 'complete') {
         window.location.href = PATHS.DASHBOARD;
@@ -47,7 +49,6 @@ const LoginPage = () => {
       setIsLoading: loginFlow.setIsLoading,
       error: loginFlow.error,
       setError: loginFlow.setError,
-      // goToPreviousStep: loginFlow.goToPreviousStep,
       setStep: loginFlow.setStep,
     };
 

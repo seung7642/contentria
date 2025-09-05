@@ -13,3 +13,14 @@ export interface LoginResponse {
   token?: string;
   nextStep: string;
 }
+
+export interface SendOtpPayload {
+  email: string;
+  recaptchaV3Token?: string;
+  recaptchaV2Token?: string | null;
+}
+
+export interface SendOtpResponse {
+  message?: string;
+  nextStep: string;
+}
