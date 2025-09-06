@@ -18,8 +18,8 @@ class SignUpService(
     private val verificationCodeService: VerificationCodeService,
     private val recaptchaService: RecaptchaService,
     private val userService: UserService,
-    private val appProperties: AppProperties,
-    private val jwtService: JwtService
+    private val jwtService: JwtService,
+    appProperties: AppProperties,
 ) {
 
     private val recaptchaProperties = appProperties.auth.recaptcha
@@ -111,6 +111,16 @@ class SignUpService(
             refreshToken = refreshToken,
             user = UserInfoResponse.from(activatedUser)
         )
+    }
+
+    @Transactional
+    fun login(request: LoginRequest): LoginResponse {
+        TODO("Not yet implemented")
+    }
+
+    @Transactional
+    fun sendOtp(request: SendOtpRequest): SendOtpResponse {
+        TODO("Not yet implemented")
     }
 
     companion object {

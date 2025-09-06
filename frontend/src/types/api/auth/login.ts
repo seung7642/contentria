@@ -8,10 +8,11 @@ export interface LoginPayload {
 }
 
 export interface LoginResponse {
-  message?: string;
-  user?: User;
-  token?: string;
+  message: string;
+  accessToken: string;
+  refreshToken: string;
   nextStep: string;
+  user: User | null;
 }
 
 export interface SendOtpPayload {

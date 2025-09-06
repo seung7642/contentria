@@ -31,7 +31,9 @@ const LoginPage = () => {
       });
       if (result.success) {
         if (result.data.nextStep === 'complete') {
-          window.location.href = PATHS.DASHBOARD;
+          setUser(result.data.user);
+          loginFlow.resetForm();
+          router.replace(PATHS.DASHBOARD);
         } else {
           loginFlow.setError('An unexpected server response. Please try again.');
         }
@@ -59,8 +61,8 @@ const LoginPage = () => {
 
   const handleVerificationCodeComplete = (user: User | null) => {
     setUser(user);
-    router.replace(PATHS.DASHBOARD);
     loginFlow.resetForm();
+    router.replace(PATHS.DASHBOARD);
   };
 
   const renderCurrentStep = () => {

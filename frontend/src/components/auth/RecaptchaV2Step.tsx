@@ -26,10 +26,7 @@ const RecaptchaV2Step = <TFormData, TStep extends string>({
     if (!v2Token) {
       return;
     }
-    // setIsLoading(true);
-    // setError(null);
     await onVerify(v2Token);
-    // setIsLoading(false);
   };
 
   const handleOnExpired = () => {

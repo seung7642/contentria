@@ -1,5 +1,9 @@
 package com.contentria.api.auth.controller
 
+import com.contentria.api.auth.dto.LoginRequest
+import com.contentria.api.auth.dto.LoginResponse
+import com.contentria.api.auth.dto.SendOtpRequest
+import com.contentria.api.auth.dto.SendOtpResponse
 import com.contentria.api.auth.dto.SignUpInitiateRequest
 import com.contentria.api.auth.dto.SignUpInitiateResponse
 import com.contentria.api.auth.dto.SignUpResponse
@@ -51,6 +55,18 @@ class AuthController(
     @PostMapping("/verify-code")
     fun verifyCode(@Valid @RequestBody request: VerifyCodeRequest): ResponseEntity<SignUpResponse> {
         val response = signUpService.verifyCode(request)
+        return ResponseEntity.ok(response)
+    }
+
+    @PostMapping("/login")
+    fun login(@Valid @RequestBody request: LoginRequest): ResponseEntity<LoginResponse> {
+        val response = signUpService.login(request)
+        return ResponseEntity.ok(response)
+    }
+
+    @PostMapping("/send-otp")
+    fun sendOtp(@Valid @RequestBody request: SendOtpRequest): ResponseEntity<SendOtpResponse> {
+        val response = signUpService.sendOtp(request)
         return ResponseEntity.ok(response)
     }
 }

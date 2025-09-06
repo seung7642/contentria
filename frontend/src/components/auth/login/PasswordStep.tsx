@@ -11,6 +11,7 @@ import { useState } from 'react';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { LoginPasswordStepProps } from './types';
+import { useRouter } from 'next/navigation';
 
 const PasswordStep = ({
   formData,
@@ -23,6 +24,7 @@ const PasswordStep = ({
   setStep,
   setLoginAttemptType,
 }: LoginPasswordStepProps) => {
+  const router = useRouter();
   const { executeRecaptcha } = useGoogleReCaptcha();
   const [submissionType, setSubmissionType] = useState<
     'login_with_password' | 'login_with_otp' | null
@@ -38,7 +40,6 @@ const PasswordStep = ({
   });
 
   const processPasswordSubmit: SubmitHandler<PasswordStepFormData> = async (data) => {
-    // handleLoginAttempt(data.password);
     onUpdateData('password', data.password);
     setError(null);
     setIsLoading(true);
@@ -60,7 +61,7 @@ const PasswordStep = ({
     if (result.success) {
       const { nextStep } = result.data;
       if (nextStep === 'complete') {
-        window.location.href = PATHS.DASHBOARD;
+        router.push(PATHS.DASHBOARD);
       } else if (nextStep === 'enter_recaptcha_v2_step') {
         setLoginAttemptType('password');
         setStep('recaptcha_v2_challenge');
