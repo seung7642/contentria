@@ -2,37 +2,34 @@
 
 import BackButton from '@/components/ui/BackButton';
 import { RecaptchaV2StepProps } from '@/components/auth/types';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { ShieldCheck } from 'lucide-react';
 
-const RecaptchaV2Step = <TFormData, TStep extends string, TResponse>({
+const RecaptchaV2Step = <TFormData, TStep extends string>({
   goToPreviousStep,
   isLoading,
-  setIsLoading,
   error,
   setError,
   onVerify,
-}: RecaptchaV2StepProps<TFormData, TStep, TResponse>) => {
+}: RecaptchaV2StepProps<TFormData, TStep>) => {
   const recaptchaV2Ref = useRef<ReCAPTCHA>(null);
   const siteKeyV2 = process.env.NEXT_PUBLIC_RECAPTCHA_V2_CHECKBOX_SITE_KEY;
+
+  useEffect(() => {
+    if (error) {
+      recaptchaV2Ref.current?.reset();
+    }
+  }, [error]);
 
   const handleV2TokenSubmit = async (v2Token: string | null) => {
     if (!v2Token) {
       return;
     }
-
-    setIsLoading(true);
-    setError(null);
-
-    const result = await onVerify(v2Token);
-
-    if (!result.success) {
-      setError(result.error.message);
-      recaptchaV2Ref.current?.reset();
-    }
-
-    setIsLoading(false);
+    // setIsLoading(true);
+    // setError(null);
+    await onVerify(v2Token);
+    // setIsLoading(false);
   };
 
   const handleOnExpired = () => {

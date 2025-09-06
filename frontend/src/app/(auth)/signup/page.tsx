@@ -7,12 +7,17 @@ import RecaptchaV2Step from '@/components/auth/RecaptchaV2Step';
 import { VerificationStep } from '@/components/auth/VerificationStep';
 import { useSignUpFlow } from '@/hooks/useSignUpFlow';
 import { authService } from '@/services/authService';
+import { User } from '@/types/user';
+import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/store/authStore';
+import { PATHS } from '@/constants/paths';
 
 const SignUpPage = () => {
   const signUpFlow = useSignUpFlow();
+  const router = useRouter();
+  const setUser = useAuthStore((state) => state.setUser);
 
-  const getTitle = () =>
-    signUpFlow.step === 'verify-email-code' ? 'Verify your email' : 'Sign up';
+  const getTitle = () => (signUpFlow.step === 'verify_otp_code' ? 'Verify your email' : 'Sign up');
 
   const handleRecaptchaVerify = async (v2Token: string) => {
     const signUpData = {
@@ -25,23 +30,30 @@ const SignUpPage = () => {
     const result = await authService.initiateSignUp(signUpData);
     if (result.success) {
       if (result.data.nextStep === 'enter_verification_code') {
-        signUpFlow.setStep('verify-email-code');
+        signUpFlow.setStep('verify_otp_code');
       } else {
         signUpFlow.setError('An unexpected server response. Please try again.');
       }
+    } else {
+      signUpFlow.setError(result.error.message);
     }
-    return result;
+  };
+
+  const handleVerificationCodeComplete = (user: User | null) => {
+    setUser(user);
+    router.replace(PATHS.DASHBOARD);
+    signUpFlow.resetForm();
   };
 
   const renderCurrentStep = () => {
     const commonProps = {
-      setStep: signUpFlow.setStep,
       formData: signUpFlow.formData,
       onUpdateData: signUpFlow.updateFormData,
       isLoading: signUpFlow.isLoading,
       setIsLoading: signUpFlow.setIsLoading,
       error: signUpFlow.error,
       setError: signUpFlow.setError,
+      setStep: signUpFlow.setStep,
       goToNextStep: signUpFlow.goToNextStep,
       goToPreviousStep: signUpFlow.goToPreviousStep,
     };
@@ -49,12 +61,12 @@ const SignUpPage = () => {
     switch (signUpFlow.step) {
       case 'email':
         return <EmailStep {...commonProps} />;
-      case 'password-creation':
+      case 'password':
         return <PasswordStep {...commonProps} />;
-      case 'recaptcha-v2-challenge':
+      case 'recaptcha_v2_challenge':
         return <RecaptchaV2Step {...commonProps} onVerify={handleRecaptchaVerify} />;
-      case 'verify-email-code':
-        return <VerificationStep {...commonProps} onComplete={signUpFlow.resetForm} />;
+      case 'verify_otp_code':
+        return <VerificationStep {...commonProps} onComplete={handleVerificationCodeComplete} />;
       default:
         return null;
     }

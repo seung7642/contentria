@@ -88,9 +88,9 @@ export const PasswordStep = ({
     if (result.success) {
       const { nextStep } = result.data;
       if (nextStep == 'verify_with_recaptcha_v2') {
-        setStep('recaptcha-v2-challenge');
+        setStep('recaptcha_v2_challenge');
       } else if (nextStep == 'enter_verification_code') {
-        setStep('verify-email-code');
+        setStep('verify_otp_code');
       } else {
         setApiError('An unexpected server response. Please try again.');
       }

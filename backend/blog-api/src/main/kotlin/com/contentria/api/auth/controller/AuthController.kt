@@ -48,7 +48,7 @@ class AuthController(
         return ResponseEntity.ok(response)
     }
 
-    @PostMapping("/signup/verify-code")
+    @PostMapping("/verify-code")
     fun verifyCode(@Valid @RequestBody request: VerifyCodeRequest): ResponseEntity<SignUpResponse> {
         val response = signUpService.verifyCode(request)
         return ResponseEntity.ok(response)

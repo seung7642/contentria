@@ -2,12 +2,7 @@ import { SignUpStep } from '@/components/auth/types';
 import { useState } from 'react';
 
 export const useSignUpFlow = () => {
-  const steps: SignUpStep[] = [
-    'email',
-    'password-creation',
-    'recaptcha-v2-challenge',
-    'verify-email-code',
-  ];
+  const steps: SignUpStep[] = ['email', 'password', 'recaptcha_v2_challenge', 'verify_otp_code'];
   const [step, setStep] = useState<SignUpStep>('email');
   const [formData, setFormData] = useState({
     name: '',
@@ -25,8 +20,8 @@ export const useSignUpFlow = () => {
     }
   };
 
-  const setCurrentStep = (newStep: SignUpStep) => {
-    setStep(newStep);
+  const setCurrentStep = (step: SignUpStep) => {
+    setStep(step);
     setError(null);
   };
 
@@ -43,11 +38,11 @@ export const useSignUpFlow = () => {
     if (currentIndex > 0) {
       setStep(steps[currentIndex - 1]);
       setError(null);
-      if (step === 'password-creation') {
+      if (step === 'password') {
         setFormData((prev) => ({ ...prev, password: '' }));
-      } else if (step === 'recaptcha-v2-challenge') {
+      } else if (step === 'recaptcha_v2_challenge') {
         setFormData((prev) => ({ ...prev }));
-      } else if (step === 'verify-email-code') {
+      } else if (step === 'verify_otp_code') {
         setFormData((prev) => ({ ...prev, verificationCode: '' }));
       }
     }

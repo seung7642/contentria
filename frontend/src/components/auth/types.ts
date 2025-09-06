@@ -1,50 +1,7 @@
 import { Dispatch, SetStateAction } from 'react';
-import { LoginResponse } from '../../types/api/auth/login';
-import { InitiateSignUpResponse } from '../../types/api/auth/signUp';
-import { ApiResult } from '../../types/api/result';
+import { User } from '@/types/user';
 
-export type SignUpStep =
-  | 'email'
-  | 'password-creation'
-  | 'recaptcha-v2-challenge'
-  | 'verify-email-code';
-
-export interface SignUpFormData {
-  name: string;
-  email: string;
-  password: string;
-  verificationCode: string;
-}
-
-export interface StepProps {
-  formData: SignUpFormData;
-  onUpdateData: (field: keyof SignUpFormData, value: string) => void;
-  isLoading: boolean;
-  error: string | null;
-  setStep: (step: string) => void;
-  setIsLoading: (loading: boolean) => void;
-  setError: (error: string | null) => void;
-}
-
-export interface EmailStepProps extends StepProps {
-  goToNextStep: () => void;
-}
-
-export interface PasswordStepProps extends StepProps {
-  goToNextStep: () => void;
-  goToPreviousStep: () => void;
-}
-
-// export interface RecaptchaV2StepProps extends StepProps {
-//   goToNextStep: () => void;
-//   goToPreviousStep: () => void;
-//   onVerify: (v2Token: string | null) => Promise<ApiResult<InitiateSignUpResponse | LoginResponse>>;
-// }
-
-// export interface VerificationStepProps extends StepProps {
-//   goToPreviousStep: () => void;
-//   onComplete: () => void;
-// }
+export type SignUpStep = 'email' | 'password' | 'recaptcha_v2_challenge' | 'verify_otp_code';
 
 // 제네릭을 사용하여 어떤 폼 데이터(TFormData)와 스텝(TStep)이든 받을 수 있는 기본 스텝 Props
 export interface BaseStepProps<TFormData, TStep extends string> {
@@ -75,15 +32,15 @@ export interface StepWithNavigation<TFormData, TStep extends string>
     StepWithPrevious<TFormData, TStep> {}
 
 // reCAPTCHA V2 챌린지를 위한 스텝. API 응답 타입을 제네릭으로 받음
-export interface RecaptchaV2StepProps<TFormData, TStep extends string, TResponse>
+export interface RecaptchaV2StepProps<TFormData, TStep extends string>
   extends StepWithPrevious<TFormData, TStep> {
-  onVerify: (v2Token: string) => Promise<ApiResult<TResponse>>;
+  onVerify: (v2Token: string) => void;
 }
 
 // 이메일 코드 검증을 위한 스텝
 export interface VerificationStepProps<TFormData, TStep extends string>
   extends StepWithPrevious<TFormData, TStep> {
-  onComplete: () => void;
+  onComplete: (user: User | null) => void;
 }
 
 export interface VerifiableFormData {

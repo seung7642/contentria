@@ -13,24 +13,14 @@ export interface InitiateSignUpResponse {
   nextStep: string;
 }
 
-export interface VerifyCodePayload {
-  email: string;
-  code: string;
-}
-
-export interface VerifyCodeResponse {
-  message?: string;
-  user?: User;
-  token?: string;
-}
-
 export interface VerifyOtpCodePayload {
   email: string;
   verificationCode: string;
 }
 
 export interface VerifyOtpCodeResponse {
-  message?: string;
-  user?: User;
-  token?: string;
+  message: string;
+  accessToken: string;
+  refreshToken: string;
+  user: User | null;
 }

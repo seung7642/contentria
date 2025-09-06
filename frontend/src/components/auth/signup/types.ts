@@ -1,4 +1,3 @@
-import { InitiateSignUpResponse } from '@/types/api/auth/signUp';
 import {
   StepWithNext,
   StepWithNavigation,
@@ -7,11 +6,7 @@ import {
 } from '../types';
 
 // 1. SignUp 플로우에서 사용할 스텝들
-export type SignUpStep =
-  | 'email'
-  | 'password-creation'
-  | 'recaptcha-v2-challenge'
-  | 'verify-email-code';
+export type SignUpStep = 'email' | 'password' | 'recaptcha_v2_challenge' | 'verify_otp_code';
 
 // 2. SignUp 폼이 가지는 전체 데이터 구조
 export interface SignUpFormData {
@@ -26,10 +21,6 @@ export type SignUpEmailStepProps = StepWithNext<SignUpFormData, SignUpStep>;
 
 export type SignUpPasswordStepProps = StepWithNavigation<SignUpFormData, SignUpStep>;
 
-export type SignUpRecaptchaV2StepProps = BaseRecaptchaV2StepProps<
-  SignUpFormData,
-  SignUpStep,
-  InitiateSignUpResponse
->;
+export type SignUpRecaptchaV2StepProps = BaseRecaptchaV2StepProps<SignUpFormData, SignUpStep>;
 
 export type SignUpVerificationStepProps = BaseVerificationStepProps<SignUpFormData, SignUpStep>;

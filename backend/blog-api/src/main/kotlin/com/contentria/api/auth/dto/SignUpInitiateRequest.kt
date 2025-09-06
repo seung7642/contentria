@@ -13,7 +13,7 @@ data class SignUpInitiateRequest(
     @field:NotBlank(message = "Name cannot be empty")
     val name: String,
 
-    val password: String,
+    val password: String?,
     val recaptchaV2Token: String? = null,
     val recaptchaV3Token: String? = null
 ) {

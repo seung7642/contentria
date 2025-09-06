@@ -12,9 +12,15 @@ export const useLoginFlow = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loginAttemptType, setLoginAttemptType] = useState<'password' | 'otp' | null>(null);
 
   const updateFormData = (field: keyof LoginFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    setError(null);
+  };
+
+  const setCurrentStep = (newStep: LoginStep) => {
+    setStep(newStep);
     setError(null);
   };
 
@@ -25,23 +31,38 @@ export const useLoginFlow = () => {
   };
 
   const goToPreviousStep = () => {
-    if (step === 'password' || step === 'recaptcha-v2-challenge') {
+    if (step === 'password' || step === 'recaptcha_v2_challenge') {
       setStep('email');
-    } else if (step === 'verify-email-code') {
+    } else if (step === 'verify_otp_code') {
       setStep('password');
     }
   };
 
+  const resetForm = () => {
+    setFormData({
+      email: '',
+      password: '',
+      verificationCode: '',
+    });
+    setCurrentStep('email');
+    setError(null);
+    setIsLoading(false);
+    setLoginAttemptType(null);
+  };
+
   return {
     step,
-    setStep,
+    setStep: setCurrentStep,
     formData,
     updateFormData,
+    resetForm,
     isLoading,
     setIsLoading,
     error,
     setError,
     goToNextStep,
     goToPreviousStep,
+    loginAttemptType,
+    setLoginAttemptType,
   };
 };

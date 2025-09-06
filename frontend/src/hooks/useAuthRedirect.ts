@@ -1,31 +1,24 @@
-import { DEFAULT_LOGGED_IN_REDIRECT_URL } from '@/constants/auth';
-import { userService } from '@/services/userService';
+import { PATHS } from '@/constants/paths';
 import { useAuthStore } from '@/store/authStore';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect } from 'react';
 
 export const useAuthRedirect = () => {
   const router = useRouter();
-  const user = useAuthStore((state) => state.user);
-  const setUser = useAuthStore((state) => state.setUser);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const searchParams = useSearchParams();
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   useEffect(() => {
-    const checkAuthStatus = async () => {
-      if (user) {
-        router.replace(DEFAULT_LOGGED_IN_REDIRECT_URL);
-        return;
-      }
-      try {
-        const fetchedUser = await userService.getMe();
-        setUser(fetchedUser);
-        router.replace(DEFAULT_LOGGED_IN_REDIRECT_URL);
-      } catch (error: unknown) {
-        setIsCheckingAuth(false);
-      }
-    };
-    checkAuthStatus();
-  }, [router, user, setUser]);
+    if (isLoading) {
+      return;
+    }
 
-  return isCheckingAuth;
+    if (isAuthenticated) {
+      const redirectUrl = searchParams.get('redirect') || PATHS.DASHBOARD;
+      router.replace(redirectUrl);
+    }
+  }, [router, isLoading, isAuthenticated, searchParams]);
+
+  return isLoading;
 };

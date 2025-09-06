@@ -21,6 +21,7 @@ const PasswordStep = ({
   setError,
   goToPreviousStep,
   setStep,
+  setLoginAttemptType,
 }: LoginPasswordStepProps) => {
   const { executeRecaptcha } = useGoogleReCaptcha();
   const [submissionType, setSubmissionType] = useState<
@@ -61,7 +62,8 @@ const PasswordStep = ({
       if (nextStep === 'complete') {
         window.location.href = PATHS.DASHBOARD;
       } else if (nextStep === 'enter_recaptcha_v2_step') {
-        setStep('recaptcha-v2-challenge');
+        setLoginAttemptType('password');
+        setStep('recaptcha_v2_challenge');
       } else {
         setError('An unexpected server response.');
       }
@@ -94,9 +96,10 @@ const PasswordStep = ({
     if (result.success) {
       const { nextStep } = result.data;
       if (nextStep === 'enter_verification_code_step') {
-        setStep('verify-email-code');
+        setStep('verify_otp_code');
       } else if (nextStep === 'enter_recaptcha_v2_step') {
-        setStep('recaptcha-v2-challenge');
+        setLoginAttemptType('otp');
+        setStep('recaptcha_v2_challenge');
       } else {
         setError('An unexpected server response.');
       }
