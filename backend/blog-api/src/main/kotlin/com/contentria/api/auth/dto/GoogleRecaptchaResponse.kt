@@ -15,4 +15,12 @@ data class GoogleRecaptchaResponse(
 
     val action: String?,
     val score: Double?
-)
+) {
+    fun isValidAction(expectedAction: String): Boolean {
+        return action == expectedAction
+    }
+
+    fun isHighScore(threshold: Double): Boolean {
+        return score != null && score >= threshold
+    }
+}

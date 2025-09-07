@@ -28,21 +28,18 @@ const SignUpPage = () => {
     };
 
     const result = await authService.initiateSignUp(signUpData);
+
     if (result.success) {
-      if (result.data.nextStep === 'enter_verification_code') {
-        signUpFlow.setStep('verify_otp_code');
-      } else {
-        signUpFlow.setError('An unexpected server response. Please try again.');
-      }
+      signUpFlow.setStep('verify_otp_code');
     } else {
-      signUpFlow.setError(result.error.message);
+      signUpFlow.setError(result.error.message || 'Sign up failed. Please try again.');
     }
   };
 
   const handleVerificationCodeComplete = (user: User | null) => {
     setUser(user);
     router.replace(PATHS.DASHBOARD);
-    signUpFlow.resetForm();
+    // signUpFlow.resetForm();
   };
 
   const renderCurrentStep = () => {

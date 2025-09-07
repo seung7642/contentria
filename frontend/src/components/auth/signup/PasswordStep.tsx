@@ -43,8 +43,6 @@ export const PasswordStep = ({
 
   const currentPassword = watch('password', formData.password);
   const [isPolicyVisible, setIsPolicyVisible] = useState(false);
-  // const [isPasswordSubmitClick, setIsPasswordSubmitClick] = useState(false);
-  // const [isRequestCodeClick, setIsRequestCodeClick] = useState(false);
   const [submissionType, setSubmissionType] = useState<'with_password' | 'without_password' | null>(
     null
   );
@@ -76,26 +74,21 @@ export const PasswordStep = ({
 
     const recaptchaToken = await executeRecaptcha(RECAPTCHA_SIGN_UP_ACTION);
 
-    const signUpData = {
+    const result = await authService.initiateSignUp({
       name: formData.name,
       email: formData.email,
       password: password,
       recaptchaV3Token: recaptchaToken,
-    };
-
-    const result = await authService.initiateSignUp(signUpData);
+    });
 
     if (result.success) {
-      const { nextStep } = result.data;
-      if (nextStep == 'verify_with_recaptcha_v2') {
-        setStep('recaptcha_v2_challenge');
-      } else if (nextStep == 'enter_verification_code') {
-        setStep('verify_otp_code');
-      } else {
-        setApiError('An unexpected server response. Please try again.');
-      }
+      setStep('verify_otp_code');
     } else {
-      setApiError(result.error.message);
+      if (result.error.status === 403 && result.error.code === 'C0005') {
+        setStep('recaptcha_v2_challenge');
+      } else {
+        setApiError(result.error.message || 'An unexpected server response. Please try again.');
+      }
     }
 
     setIsLoading(false);

@@ -29,30 +29,34 @@ const LoginPage = () => {
         password: loginFlow.formData.password,
         recaptchaV2Token: v2Token,
       });
+
       if (result.success) {
-        if (result.data.nextStep === 'complete') {
-          setUser(result.data.user);
-          loginFlow.resetForm();
-          router.replace(PATHS.DASHBOARD);
-        } else {
-          loginFlow.setError('An unexpected server response. Please try again.');
-        }
+        setUser(result.data.user);
+        loginFlow.resetForm();
+        router.replace(PATHS.DASHBOARD);
       } else {
-        loginFlow.setError(result.error.message);
+        if (result.error.status === 403 && result.error.code === 'C0005') {
+          loginFlow.setError('reCAPTCHA verification failed. Please try again.');
+        } else {
+          loginFlow.setError(result.error.message || 'Login failed. Please try again.');
+        }
       }
     } else if (loginAttemptType === 'otp') {
       result = await authService.sendOtpCode({
         email: loginFlow.formData.email,
         recaptchaV2Token: v2Token,
       });
+
       if (result.success) {
-        if (result.data.nextStep === 'enter_verification_code') {
-          loginFlow.setStep('verify_otp_code');
-        } else {
-          loginFlow.setError('An unexpected server response. Please try again.');
-        }
+        loginFlow.setStep('verify_otp_code');
       } else {
-        loginFlow.setError(result.error.message);
+        if (result.error.status === 403 && result.error.code === 'C0005') {
+          loginFlow.setError('reCAPTCHA verification failed. Please try again.');
+        } else {
+          loginFlow.setError(
+            result.error.message || 'An unexpected server response. Please try again.'
+          );
+        }
       }
     } else {
       loginFlow.setError('Login flow error: attempt type is unknown.');

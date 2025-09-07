@@ -6,6 +6,7 @@ import com.contentria.api.config.exception.ErrorCode
 import com.contentria.api.config.properties.AppProperties
 import com.contentria.api.user.controller.UserInfoResponse
 import com.contentria.api.user.service.UserService
+import com.contentria.api.utils.IpResolver
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.stereotype.Service
@@ -19,22 +20,18 @@ class SignUpService(
     private val recaptchaService: RecaptchaService,
     private val userService: UserService,
     private val jwtService: JwtService,
+    private val ipResolver: IpResolver,
     appProperties: AppProperties,
 ) {
-
     private val recaptchaProperties = appProperties.auth.recaptcha
 
     @Transactional
     fun initiate(request: SignUpInitiateRequest, httpRequest: HttpServletRequest): SignUpInitiateResponse {
-        val clientIp = getClientIp(httpRequest) ?: throw IllegalArgumentException("Client IP address not found")
+        val clientIp = ipResolver.getClientIp(httpRequest) ?: throw ContentriaException(ErrorCode.CLIENT_IP_NOT_FOUND)
 
-        when (interpretRecaptchaForSignUp(request, clientIp)) {
-            RecaptchaSignUpResult.PROCEED -> {
-                log.info { "reCAPTCHA verification successful for email: ${request.email}" }
-            }
-            RecaptchaSignUpResult.REQUIRE_V2_CHALLENGE -> {
-                return SignUpInitiateResponse("recaptcha_v2_required", "verify_with_recaptcha_v2")
-            }
+        val result = isValidRecaptchaToken(request, clientIp)
+        if (!result) {
+            throw ContentriaException(ErrorCode.RECAPTCHA_VERIFICATION_FAILED)
         }
 
         userService.createUnverifiedUser(request.email, request.name, request.password)
@@ -44,53 +41,31 @@ class SignUpService(
         return SignUpInitiateResponse("success", "enter_verification_code")
     }
 
-    private fun interpretRecaptchaForSignUp(request: SignUpInitiateRequest, clientIp: String?): RecaptchaSignUpResult {
+    private fun isValidRecaptchaToken(request: SignUpInitiateRequest, clientIp: String?): Boolean {
         if (request.hasRecaptchaV2Token()) {
-            val response = recaptchaService.verifyV2(request.recaptchaV2Token!!, clientIp).block()
-            return if (response.success) {
-                RecaptchaSignUpResult.PROCEED
-            } else {
-                log.warn { "reCAPTCHA V2 verification failed. Google Errors: ${response.errorCodes}" }
-                throw ContentriaException(ErrorCode.RECAPTCHA_VERIFICATION_FAILED)
+            val result = recaptchaService.verifyV2(request.recaptchaV2Token!!, clientIp)
+            if (!result.success) {
+                return false
             }
+            return true
+        } else if (request.hasRecaptchaV3Token()) {
+            val result = recaptchaService.verifyV3(request.recaptchaV3Token!!, clientIp)
+            if (!result.success) {
+                log.warn { "reCAPTCHA V3 verification failed. Google Errors: ${result.errorCodes}" }
+                return false
+            }
+            if (result.isValidAction(RECAPTCHA_SIGN_UP_ACTION)) {
+                log.warn { "reCAPTCHA action mismatch. Expected: $RECAPTCHA_SIGN_UP_ACTION, Got: ${result.action}" }
+                return false
+            }
+            if (result.isHighScore(recaptchaProperties.scoreThreshold)) {
+                log.info { "reCAPTCHA score is below threshold. Score: ${result.score}, Threshold: ${recaptchaProperties.scoreThreshold}" }
+                return false
+            }
+            return true
         }
 
-        if (!request.hasRecaptchaV3Token()) {
-            throw ContentriaException(ErrorCode.RECAPTCHA_TOKEN_MISSING)
-        }
-
-        val response = recaptchaService.verifyV3(request.recaptchaV3Token!!, clientIp).block()
-        if (!response.success) {
-            log.warn { "reCAPTCHA V3 verification failed. Google Errors: ${response.errorCodes}" }
-            throw ContentriaException(ErrorCode.RECAPTCHA_VERIFICATION_FAILED)
-        }
-
-        if (response.action != RECAPTCHA_SIGN_UP_ACTION) {
-            log.warn { "reCAPTCHA action mismatch. Expected: $RECAPTCHA_SIGN_UP_ACTION, Got: ${response.action}" }
-            throw ContentriaException(ErrorCode.RECAPTCHA_ACTION_MISMATCH)
-        }
-
-        if (response.score != null && response.score < recaptchaProperties.scoreThreshold) {
-            log.info { "reCAPTCHA score is below threshold. Score: ${response.score}, Threshold: ${recaptchaProperties.scoreThreshold}" }
-            return RecaptchaSignUpResult.REQUIRE_V2_CHALLENGE
-        }
-
-        return RecaptchaSignUpResult.PROCEED
-    }
-
-    private fun getClientIp(request: HttpServletRequest): String? {
-        var ipAddress = request.getHeader("X-Forwarded-For")
-        if (ipAddress.isNullOrBlank() || "unknown".equals(ipAddress, ignoreCase = true)) {
-            ipAddress = request.getHeader("Proxy-Client-IP")
-        }
-        if (ipAddress.isNullOrBlank() || "unknown".equals(ipAddress, ignoreCase = true)) {
-            ipAddress = request.getHeader("WL-Proxy-Client-IP")
-        }
-        if (ipAddress.isNullOrBlank() || "unknown".equals(ipAddress, ignoreCase = true)) {
-            ipAddress = request.remoteAddr
-        }
-        // X-Forwarded-For 헤더는 여러 IP가 콤마로 구분되어 올 수 있으므로 첫 번째 IP를 사용
-        return ipAddress?.split(",")?.firstOrNull()?.trim()
+        return false
     }
 
     @Transactional

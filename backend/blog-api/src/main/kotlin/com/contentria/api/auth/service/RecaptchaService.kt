@@ -19,10 +19,10 @@ class RecaptchaService(
 
     private val recaptchaProperties = appProperties.auth.recaptcha
 
-    fun verifyV3(token: String, clientIp: String?): Mono<GoogleRecaptchaResponse> {
+    fun verifyV3(token: String, clientIp: String?): GoogleRecaptchaResponse {
         if (recaptchaProperties.v3SecretKey.isBlank()) {
             log.warn { "reCAPTCHA v3 secret key is not configured. Verification will be skipped." }
-            return Mono.just(createErrorResponse("missing-v3-secret-key"))
+            return createErrorResponse("missing-v3-secret-key")
         }
 
         val requestBody = GoogleRecaptchaRequest(
@@ -31,13 +31,13 @@ class RecaptchaService(
             remoteip = clientIp
         )
 
-        return callGoogleApi(requestBody)
+        return callGoogleApi(requestBody).block()!!
     }
 
-    fun verifyV2(token: String, clientIp: String?): Mono<GoogleRecaptchaResponse> {
+    fun verifyV2(token: String, clientIp: String?): GoogleRecaptchaResponse {
         if (recaptchaProperties.v2SecretKey.isBlank()) {
             log.warn { "reCAPTCHA v2 secret key is not configured. Verification will be skipped." }
-            return Mono.just(createErrorResponse("missing-v2-secret-key"))
+            return createErrorResponse("missing-v2-secret-key")
         }
 
         val requestBody = GoogleRecaptchaRequest(
@@ -46,7 +46,7 @@ class RecaptchaService(
             remoteip = clientIp
         )
 
-        return callGoogleApi(requestBody)
+        return callGoogleApi(requestBody).block()!!
     }
 
     private fun callGoogleApi(requestBody: GoogleRecaptchaRequest): Mono<GoogleRecaptchaResponse> {

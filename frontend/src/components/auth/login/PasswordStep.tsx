@@ -59,17 +59,14 @@ const PasswordStep = ({
     });
 
     if (result.success) {
-      const { nextStep } = result.data;
-      if (nextStep === 'complete') {
-        router.push(PATHS.DASHBOARD);
-      } else if (nextStep === 'enter_recaptcha_v2_step') {
+      router.replace(PATHS.DASHBOARD);
+    } else {
+      if (result.error.status === 403 && result.error.code === 'C0005') {
         setLoginAttemptType('password');
         setStep('recaptcha_v2_challenge');
       } else {
-        setError('An unexpected server response.');
+        setError(result.error.message);
       }
-    } else {
-      setError(result.error.message);
     }
 
     setIsLoading(false);
@@ -77,7 +74,6 @@ const PasswordStep = ({
   };
 
   const processWithOtpCode = async () => {
-    // handleLoginAttempt(null);
     setError(null);
     setIsLoading(true);
     setSubmissionType('login_with_otp');
@@ -95,17 +91,14 @@ const PasswordStep = ({
     });
 
     if (result.success) {
-      const { nextStep } = result.data;
-      if (nextStep === 'enter_verification_code_step') {
-        setStep('verify_otp_code');
-      } else if (nextStep === 'enter_recaptcha_v2_step') {
+      setStep('verify_otp_code');
+    } else {
+      if (result.error.status === 403 && result.error.code === 'C0005') {
         setLoginAttemptType('otp');
         setStep('recaptcha_v2_challenge');
       } else {
-        setError('An unexpected server response.');
+        setError(result.error.message);
       }
-    } else {
-      setError(result.error.message);
     }
 
     setIsLoading(false);
