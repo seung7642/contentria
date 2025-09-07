@@ -19,8 +19,6 @@ export interface VerifyOtpCodePayload {
 }
 
 export interface VerifyOtpCodeResponse {
-  message: string;
   accessToken: string;
-  refreshToken: string;
-  user: User | null;
+  user: User;
 }

@@ -59,9 +59,14 @@ class AuthController(
     }
 
     @PostMapping("/login")
-    fun login(@Valid @RequestBody request: LoginRequest): ResponseEntity<LoginResponse> {
-        val response = signUpService.login(request)
-        return ResponseEntity.ok(response)
+    fun login(
+        @Valid @RequestBody request: LoginRequest,
+        httpRequest: HttpServletRequest,
+        httpResponse: HttpServletResponse
+    ): ResponseEntity<LoginResponse> {
+        val result = signUpService.login(request)
+        httpResponse.addCookie(cookieUtil.createRefreshTokenCookie("", httpRequest))
+        return ResponseEntity.ok(result)
     }
 
     @PostMapping("/send-otp")

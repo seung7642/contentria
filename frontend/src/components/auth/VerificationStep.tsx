@@ -24,7 +24,7 @@ export const VerificationStep = <TFormData extends VerifiableFormData, TStep ext
       });
 
       if (result.success) {
-        onComplete(result.data.user);
+        onComplete(result.data);
       } else {
         setError(result.error.message || 'Invalid or expired code. Please try again.');
         setIsLoading(false);

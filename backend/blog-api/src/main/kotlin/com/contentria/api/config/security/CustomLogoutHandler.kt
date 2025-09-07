@@ -16,7 +16,7 @@ private val logger = KotlinLogging.logger {}
 @Component
 class CustomLogoutHandler(
     private val refreshTokenService: RefreshTokenService,
-    private val appProperties: AppProperties
+    appProperties: AppProperties
 ) : LogoutHandler {
 
     private val accessTokenCookieName: String = appProperties.auth.cookie.accessTokenName
@@ -29,8 +29,6 @@ class CustomLogoutHandler(
         response: HttpServletResponse,
         authentication: Authentication?
     ) {
-        clearTokens(response, request)
-
         WebUtils.getCookie(request, refreshTokenCookieName)?.value?.let { tokenValue ->
             try {
                 refreshTokenService.deleteRefreshTokenByToken(tokenValue)
@@ -41,6 +39,8 @@ class CustomLogoutHandler(
         } ?: run {
             logger.warn { "Refresh token cookie not found during logout." }
         }
+
+        clearTokens(response, request)
     }
 
     private fun clearTokens(response: HttpServletResponse, request: HttpServletRequest) {

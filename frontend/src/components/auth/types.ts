@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction } from 'react';
-import { User } from '@/types/user';
+import { VerifyOtpCodeResponse } from '@/types/api/auth/signUp';
 
 export type SignUpStep = 'email' | 'password' | 'recaptcha_v2_challenge' | 'verify_otp_code';
 
@@ -7,6 +7,7 @@ export type SignUpStep = 'email' | 'password' | 'recaptcha_v2_challenge' | 'veri
 export interface BaseStepProps<TFormData, TStep extends string> {
   formData: TFormData;
   onUpdateData: <K extends keyof TFormData>(field: K, value: TFormData[K]) => void;
+  resetForm: () => void;
   isLoading: boolean;
   setIsLoading: Dispatch<SetStateAction<boolean>>;
   error: string | null;
@@ -40,7 +41,7 @@ export interface RecaptchaV2StepProps<TFormData, TStep extends string>
 // 이메일 코드 검증을 위한 스텝
 export interface VerificationStepProps<TFormData, TStep extends string>
   extends StepWithPrevious<TFormData, TStep> {
-  onComplete: (user: User | null) => void;
+  onComplete: (data: VerifyOtpCodeResponse) => void;
 }
 
 export interface VerifiableFormData {

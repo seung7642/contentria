@@ -12,10 +12,12 @@ import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { LoginPasswordStepProps } from './types';
 import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/store/authStore';
 
 const PasswordStep = ({
   formData,
   onUpdateData,
+  resetForm,
   isLoading,
   setIsLoading,
   error,
@@ -25,6 +27,7 @@ const PasswordStep = ({
   setLoginAttemptType,
 }: LoginPasswordStepProps) => {
   const router = useRouter();
+  const login = useAuthStore((state) => state.login);
   const { executeRecaptcha } = useGoogleReCaptcha();
   const [submissionType, setSubmissionType] = useState<
     'login_with_password' | 'login_with_otp' | null
@@ -59,6 +62,8 @@ const PasswordStep = ({
     });
 
     if (result.success) {
+      login(result.data.user, result.data.accessToken);
+      resetForm();
       router.replace(PATHS.DASHBOARD);
     } else {
       if (result.error.status === 403 && result.error.code === 'C0005') {

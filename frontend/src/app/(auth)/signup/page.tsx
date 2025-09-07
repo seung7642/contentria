@@ -7,15 +7,15 @@ import RecaptchaV2Step from '@/components/auth/RecaptchaV2Step';
 import { VerificationStep } from '@/components/auth/VerificationStep';
 import { useSignUpFlow } from '@/hooks/useSignUpFlow';
 import { authService } from '@/services/authService';
-import { User } from '@/types/user';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { PATHS } from '@/constants/paths';
+import { VerifyOtpCodeResponse } from '@/types/api/auth/signUp';
 
 const SignUpPage = () => {
   const signUpFlow = useSignUpFlow();
   const router = useRouter();
-  const setUser = useAuthStore((state) => state.setUser);
+  const login = useAuthStore((state) => state.login);
 
   const getTitle = () => (signUpFlow.step === 'verify_otp_code' ? 'Verify your email' : 'Sign up');
 
@@ -36,16 +36,16 @@ const SignUpPage = () => {
     }
   };
 
-  const handleVerificationCodeComplete = (user: User | null) => {
-    setUser(user);
+  const handleVerificationCodeComplete = (data: VerifyOtpCodeResponse) => {
+    login(data.user, data.accessToken);
     router.replace(PATHS.DASHBOARD);
-    // signUpFlow.resetForm();
   };
 
   const renderCurrentStep = () => {
     const commonProps = {
       formData: signUpFlow.formData,
       onUpdateData: signUpFlow.updateFormData,
+      resetForm: signUpFlow.resetForm,
       isLoading: signUpFlow.isLoading,
       setIsLoading: signUpFlow.setIsLoading,
       error: signUpFlow.error,

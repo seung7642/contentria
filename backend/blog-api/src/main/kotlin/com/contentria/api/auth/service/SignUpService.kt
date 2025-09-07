@@ -38,7 +38,7 @@ class SignUpService(
 
         verificationCodeService.send(request.email, request.name)
 
-        return SignUpInitiateResponse("success", "enter_verification_code")
+        return SignUpInitiateResponse("success")
     }
 
     private fun isValidRecaptchaToken(request: SignUpInitiateRequest, clientIp: String?): Boolean {

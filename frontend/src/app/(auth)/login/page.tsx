@@ -9,13 +9,13 @@ import { PATHS } from '@/constants/paths';
 import { useLoginFlow } from '@/hooks/useLoginFlow';
 import { authService } from '@/services/authService';
 import { useAuthStore } from '@/store/authStore';
-import { User } from '@/types/user';
+import { VerifyOtpCodeResponse } from '@/types/api/auth/signUp';
 import { useRouter } from 'next/navigation';
 
 const LoginPage = () => {
   const loginFlow = useLoginFlow();
   const router = useRouter();
-  const setUser = useAuthStore((state) => state.setUser);
+  const login = useAuthStore((state) => state.login);
 
   const getTitle = () => (loginFlow.step === 'verify_otp_code' ? 'Verify your email' : 'Sign in');
 
@@ -31,7 +31,7 @@ const LoginPage = () => {
       });
 
       if (result.success) {
-        setUser(result.data.user);
+        login(result.data.user, result.data.accessToken);
         loginFlow.resetForm();
         router.replace(PATHS.DASHBOARD);
       } else {
@@ -63,8 +63,8 @@ const LoginPage = () => {
     }
   };
 
-  const handleVerificationCodeComplete = (user: User | null) => {
-    setUser(user);
+  const handleVerificationCodeComplete = (data: VerifyOtpCodeResponse) => {
+    login(data.user, data.accessToken);
     loginFlow.resetForm();
     router.replace(PATHS.DASHBOARD);
   };
@@ -73,6 +73,7 @@ const LoginPage = () => {
     const commonProps = {
       formData: loginFlow.formData,
       onUpdateData: loginFlow.updateFormData,
+      resetForm: loginFlow.resetForm,
       isLoading: loginFlow.isLoading,
       setIsLoading: loginFlow.setIsLoading,
       error: loginFlow.error,
