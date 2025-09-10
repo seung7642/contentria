@@ -1,71 +1,77 @@
-import { authService } from '@/services/authService';
-import React, { useCallback } from 'react';
+import React from 'react';
 import OtpInput from 'react-otp-input';
-import { VerifiableFormData, VerificationStepProps } from './types';
 
-export const VerificationStep = <TFormData extends VerifiableFormData, TStep extends string>({
-  formData,
-  onUpdateData,
+interface VerificationStepProps {
+  email: string;
+  verificationCode: string;
+  isLoading: boolean;
+  error: string | null;
+  onCodeChange: (code: string) => void;
+  onResendCode: () => void;
+}
+
+export const VerificationStep = ({
+  email,
+  verificationCode,
   isLoading,
   error,
-  setError,
-  setIsLoading,
-  onComplete,
-}: VerificationStepProps<TFormData, TStep>) => {
+  onCodeChange,
+  onResendCode,
+}: VerificationStepProps) => {
   // 의존성 배열이 변경되지 않는 한, 리렌더링 시 매번 함수를 새로 생성하지 않고 재사용
-  const handleVerificationCodeSubmit = useCallback(
-    async (code: string) => {
-      setIsLoading(true);
-      setError(null);
+  // const handleVerificationCodeSubmit = useCallback(
+  //   async (code: string) => {
+  //     setIsLoading(true);
+  //     setError(null);
 
-      const result = await authService.verifyOtpCode({
-        email: formData.email,
-        verificationCode: code,
-      });
+  //     const result = await authService.verifyOtpCode({
+  //       email: formData.email,
+  //       verificationCode: code,
+  //     });
 
-      if (result.success) {
-        onComplete(result.data);
-      } else {
-        setError(result.error.message || 'Invalid or expired code. Please try again.');
-        setIsLoading(false);
-      }
-    },
-    [setError, setIsLoading, formData.email, onComplete]
-  );
+  //     if (result.success) {
+  //       onComplete(result.data);
+  //     } else {
+  //       setError(result.error.message || 'Invalid or expired code. Please try again.');
+  //       setIsLoading(false);
+  //     }
+  //   },
+  //   [setError, setIsLoading, formData.email, onComplete]
+  // );
 
-  const handleCodeChange = (code: string) => {
-    onUpdateData('verificationCode', code);
-    if (code.length === 6 && !isLoading) {
-      handleVerificationCodeSubmit(code);
-    }
-  };
+  // const handleCodeChange = (code: string) => {
+  //   onUpdateData('verificationCode', code);
+  //   if (code.length === 6 && !isLoading) {
+  //     handleVerificationCodeSubmit(code);
+  //   }
+  // };
 
-  const requestNewCode = async () => {
-    setError(null);
-    setIsLoading(true);
+  // const requestNewCode = async () => {
+  //   setError(null);
+  //   setIsLoading(true);
 
-    const result = await authService.sendOtpCode({ email: formData.email });
+  //   const result = await authService.sendOtpCode({ email: formData.email });
 
-    if (result.success) {
-      // TODO: "새로운 코드를 전송했습니다." 같은 Toast 메시지를 보여주면 사용자 경험이 더 좋아진다.
-      onUpdateData('verificationCode', '');
-    } else {
-      setError(result.error.message || 'Failed to request new code. Please try again.');
-    }
+  //   if (result.success) {
+  //     // TODO: "새로운 코드를 전송했습니다." 같은 Toast 메시지를 보여주면 사용자 경험이 더 좋아진다.
+  //     onUpdateData('verificationCode', '');
+  //   } else {
+  //     setError(result.error.message || 'Failed to request new code. Please try again.');
+  //   }
 
-    setIsLoading(false);
-  };
+  //   setIsLoading(false);
+  // };
 
   return (
     <>
       <div className="mt-4 pl-8 text-sm text-gray-600">
         <p>Enter the code sent to</p>
-        <span className="font-medium text-gray-900">{formData.email}</span>
+        <span className="font-medium text-gray-900">{email}</span>
       </div>
       <div className="mt-4 space-y-6">
         <OtpInput
-          value={formData.verificationCode}
-          onChange={handleCodeChange}
+          value={verificationCode}
+          onChange={onCodeChange}
           numInputs={6}
           shouldAutoFocus={true}
           containerStyle="flex justify-between w-full"
@@ -88,7 +94,7 @@ export const VerificationStep = <TFormData extends VerifiableFormData, TStep ext
         <div className="mt-4 text-center">
           <button
             type="button"
-            onClick={requestNewCode}
+            onClick={onResendCode}
             disabled={isLoading}
             className="text-sm text-indigo-600 hover:text-indigo-500 disabled:opacity-50"
           >

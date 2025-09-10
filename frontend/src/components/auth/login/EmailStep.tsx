@@ -8,26 +8,26 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import GoogleLoginButton from '../GoogleLoginButton';
 import Link from 'next/link';
 import { PATHS } from '@/constants/paths';
-import { LoginEmailStepProps } from './types';
+import { useLoginFlow } from '@/hooks/useLoginFlow';
 
-const EmailStep = ({ formData, onUpdateData, goToNextStep }: LoginEmailStepProps) => {
+const EmailStep = () => {
+  const { formData, isLoading, error, submitEmailStep } = useLoginFlow();
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<EmailStepFormData>({
     resolver: zodResolver(emailStepSchema),
     defaultValues: { email: formData.email },
   });
 
-  const processEmail: SubmitHandler<EmailStepFormData> = async (data) => {
-    onUpdateData('email', data.email);
-    goToNextStep();
+  const onSubmit: SubmitHandler<EmailStepFormData> = async (data) => {
+    submitEmailStep(data);
   };
 
   return (
     <>
-      <form className="mt-8 space-y-6" onSubmit={handleSubmit(processEmail)}>
+      <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
         <InputField
           id="email"
           type="email"
@@ -40,12 +40,13 @@ const EmailStep = ({ formData, onUpdateData, goToNextStep }: LoginEmailStepProps
           errorMessage={errors.email?.message}
         />
         <div>
+          {error && <p className="text-center text-sm text-red-600">{error}</p>}
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isLoading}
             className="fnt-medium group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
           >
-            {isSubmitting ? 'Processing...' : 'Continue'}
+            {isLoading ? 'Processing...' : 'Continue'}
           </button>
         </div>
       </form>

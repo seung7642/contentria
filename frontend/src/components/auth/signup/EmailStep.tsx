@@ -6,15 +6,10 @@ import Link from 'next/link';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { EmailStepFormData, emailStepSchema } from '@/lib/schemas/authSchemas';
-import { SignUpEmailStepProps } from './types';
+import { useSignUpFlow } from '@/hooks/useSignUpFlow';
 
-export const EmailStep = ({
-  formData,
-  onUpdateData,
-  goToNextStep,
-  isLoading,
-  error: apiError, // react-hook-form(RHF) errors와 구분하기 위해 이름 변경
-}: SignUpEmailStepProps) => {
+export const EmailStep = () => {
+  const { formData, isLoading, error: apiError, submitEmailStep } = useSignUpFlow();
   const {
     register,
     handleSubmit,
@@ -29,9 +24,8 @@ export const EmailStep = ({
   });
 
   const onSubmit: SubmitHandler<EmailStepFormData> = (data) => {
-    onUpdateData('name', data.name);
-    onUpdateData('email', data.email);
-    goToNextStep();
+    console.log('click email submit');
+    submitEmailStep(data);
   };
 
   return (

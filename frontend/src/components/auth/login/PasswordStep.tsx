@@ -1,37 +1,23 @@
 import BackButton from '@/components/ui/BackButton';
 import Divider from '@/components/ui/Divider';
 import InputField from '@/components/ui/InputField';
-import { PATHS } from '@/constants/paths';
 import { PasswordStepFormData, passwordStepSchema } from '@/lib/schemas/authSchemas';
-import { authService } from '@/services/authService';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Mail } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
-import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { LoginPasswordStepProps } from './types';
-import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/store/authStore';
+import { useLoginFlow } from '@/hooks/useLoginFlow';
 
-const PasswordStep = ({
-  formData,
-  onUpdateData,
-  resetForm,
-  isLoading,
-  setIsLoading,
-  error,
-  setError,
-  goToPreviousStep,
-  setStep,
-  setLoginAttemptType,
-}: LoginPasswordStepProps) => {
-  const router = useRouter();
-  const login = useAuthStore((state) => state.login);
-  const { executeRecaptcha } = useGoogleReCaptcha();
-  const [submissionType, setSubmissionType] = useState<
-    'login_with_password' | 'login_with_otp' | null
-  >(null);
+const PasswordStep = () => {
+  const {
+    formData,
+    isLoading,
+    error,
+    loginAttemptType,
+    goToPreviousStep,
+    submitPasswordLogin,
+    requestOtpLogin,
+  } = useLoginFlow();
 
   const {
     register,
@@ -43,71 +29,7 @@ const PasswordStep = ({
   });
 
   const processPasswordSubmit: SubmitHandler<PasswordStepFormData> = async (data) => {
-    onUpdateData('password', data.password);
-    setError(null);
-    setIsLoading(true);
-    setSubmissionType('login_with_password');
-
-    if (!executeRecaptcha) {
-      setError('reCAPTCHA is not ready. Please try again.');
-      setIsLoading(false);
-      return;
-    }
-    const recaptchaV3Token = await executeRecaptcha('login_with_password');
-
-    const result = await authService.loginWithPassword({
-      email: formData.email,
-      password: data.password,
-      recaptchaV3Token,
-    });
-
-    if (result.success) {
-      login(result.data.user, result.data.accessToken);
-      resetForm();
-      router.replace(PATHS.DASHBOARD);
-    } else {
-      if (result.error.status === 403 && result.error.code === 'C0005') {
-        setLoginAttemptType('password');
-        setStep('recaptcha_v2_challenge');
-      } else {
-        setError(result.error.message);
-      }
-    }
-
-    setIsLoading(false);
-    setSubmissionType(null);
-  };
-
-  const processWithOtpCode = async () => {
-    setError(null);
-    setIsLoading(true);
-    setSubmissionType('login_with_otp');
-
-    if (!executeRecaptcha) {
-      setError('reCAPTCHA is not ready. Please try again.');
-      setIsLoading(false);
-      return;
-    }
-    const recaptchaV3Token = await executeRecaptcha('login_with_otp');
-
-    const result = await authService.sendOtpCode({
-      email: formData.email,
-      recaptchaV3Token,
-    });
-
-    if (result.success) {
-      setStep('verify_otp_code');
-    } else {
-      if (result.error.status === 403 && result.error.code === 'C0005') {
-        setLoginAttemptType('otp');
-        setStep('recaptcha_v2_challenge');
-      } else {
-        setError(result.error.message);
-      }
-    }
-
-    setIsLoading(false);
-    setSubmissionType(null);
+    submitPasswordLogin(data);
   };
 
   return (
@@ -148,7 +70,7 @@ const PasswordStep = ({
             disabled={isLoading}
             className="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
           >
-            {isLoading && submissionType === 'login_with_password' ? 'Signing in...' : 'Sign in'}
+            {isLoading && loginAttemptType === 'password' ? 'Signing in...' : 'Sign in'}
           </button>
         </div>
       </form>
@@ -158,12 +80,12 @@ const PasswordStep = ({
         <div className="mt-6">
           <button
             type="button"
-            onClick={processWithOtpCode}
+            onClick={requestOtpLogin}
             disabled={isLoading}
             className="group relative flex w-full items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
           >
             <Mail className="mr-2 h-4 w-4" />
-            {isLoading && submissionType === 'login_with_otp' ? 'Sending...' : 'Email sign-in code'}
+            {isLoading && loginAttemptType === 'otp' ? 'Sending...' : 'Email sign-in code'}
           </button>
         </div>
       </div>

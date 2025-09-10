@@ -1,7 +1,18 @@
 import { PATHS } from '@/constants/paths';
+import { ApiError } from '@/errors/ApiError';
 import { useAuthStore } from '@/store/authStore';
 import axios, { AxiosError } from 'axios';
 import createAuthRefreshInterceptor from 'axios-auth-refresh';
+
+interface BackendErrorResponse {
+  message: string;
+  timestamp: string;
+  status: number;
+  error: string;
+  code: string;
+  path?: string;
+  details?: Record<string, string>;
+}
 
 const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
@@ -19,6 +30,36 @@ apiClient.interceptors.request.use(
     return config;
   },
   (error) => Promise.reject(error)
+);
+
+// 2. 응답 인터셉터: 백엔드에서 에러 응답을 보낼 때 에러 객체를 표준화한다.
+apiClient.interceptors.response.use(
+  (response) => response, // 2xx 응답은 그대로 통과
+  (error: AxiosError) => {
+    if (
+      error.response &&
+      error.response.data &&
+      typeof error.response.data === 'object' &&
+      'code' in error.response.data
+    ) {
+      const errorData = error.response.data as BackendErrorResponse;
+
+      return Promise.reject(
+        new ApiError(
+          errorData.message,
+          errorData.timestamp,
+          errorData.status,
+          errorData.error,
+          errorData.code,
+          errorData.path,
+          errorData.details
+        )
+      );
+    }
+
+    // 네트워크 에러 등 백엔드 응답이 없는 경우, Axios의 기본 에러를 그대로 reject
+    return Promise.reject(error);
+  }
 );
 
 // 3. 토큰 갱신 로직 정의 (라이브러리가 401 에러를 감지하면 이 함수를 호출해준다.)

@@ -1,16 +1,17 @@
 import BackButton from '@/components/ui/BackButton';
 import Divider from '@/components/ui/Divider';
 import InputField from '@/components/ui/InputField';
-import { RECAPTCHA_SIGN_UP_ACTION } from '@/constants/auth';
+// import { RECAPTCHA_SIGN_UP_ACTION } from '@/constants/auth';
 import { PasswordStepFormData, passwordStepSchema } from '@/lib/schemas/authSchemas';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Info, Mail } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
-import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
+// import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import PasswordPolicyTooltip from './PasswordPolicyTooltip';
-import { authService } from '@/services/authService';
-import { SignUpPasswordStepProps } from './types';
+// import { authService } from '@/services/authService';
+// import { SignUpPasswordStepProps } from './types';
+import { useSignUpFlow } from '@/hooks/useSignUpFlow';
 
 interface PolicyItem {
   id: string;
@@ -18,17 +19,8 @@ interface PolicyItem {
   isValid: (password: string) => boolean;
 }
 
-export const PasswordStep = ({
-  formData,
-  onUpdateData,
-  goToPreviousStep,
-  isLoading,
-  error: apiError,
-  setError: setApiError,
-  setIsLoading,
-  setStep,
-}: SignUpPasswordStepProps) => {
-  const { executeRecaptcha } = useGoogleReCaptcha();
+export const PasswordStep = () => {
+  const { formData, goToPreviousStep, error, isLoading, submitPasswordStep } = useSignUpFlow();
   const {
     register,
     handleSubmit,
@@ -43,9 +35,7 @@ export const PasswordStep = ({
 
   const currentPassword = watch('password', formData.password);
   const [isPolicyVisible, setIsPolicyVisible] = useState(false);
-  const [submissionType, setSubmissionType] = useState<'with_password' | 'without_password' | null>(
-    null
-  );
+  const [submissionType, setSubmissionType] = useState<'password' | 'otp' | null>(null);
 
   const passwordPolicies = useMemo(
     (): PolicyItem[] => [
@@ -58,49 +48,54 @@ export const PasswordStep = ({
     []
   );
 
-  const handleInitiateSignUp = async (password: string | null) => {
-    onUpdateData('password', password || '');
-    setApiError(null);
-    setIsLoading(true);
+  // const handleInitiateSignUp = async (password: string | null) => {
+  //   onUpdateData('password', password || '');
+  //   setApiError(null);
+  //   setIsLoading(true);
 
-    setSubmissionType(password ? 'with_password' : 'without_password');
+  //   setSubmissionType(password ? 'with_password' : 'without_password');
 
-    if (!executeRecaptcha) {
-      setApiError('reCAPTCHA is not ready. Please try again.');
-      setIsLoading(false);
-      setSubmissionType(null);
-      return;
-    }
+  //   if (!executeRecaptcha) {
+  //     setApiError('reCAPTCHA is not ready. Please try again.');
+  //     setIsLoading(false);
+  //     setSubmissionType(null);
+  //     return;
+  //   }
 
-    const recaptchaToken = await executeRecaptcha(RECAPTCHA_SIGN_UP_ACTION);
+  //   const recaptchaToken = await executeRecaptcha(RECAPTCHA_SIGN_UP_ACTION);
 
-    const result = await authService.initiateSignUp({
-      name: formData.name,
-      email: formData.email,
-      password: password,
-      recaptchaV3Token: recaptchaToken,
-    });
+  //   const result = await authService.initiateSignUp({
+  //     name: formData.name,
+  //     email: formData.email,
+  //     password: password,
+  //     recaptchaV3Token: recaptchaToken,
+  //   });
 
-    if (result.success) {
-      setStep('verify_otp_code');
-    } else {
-      if (result.error.status === 403 && result.error.code === 'C0005') {
-        setStep('recaptcha_v2_challenge');
-      } else {
-        setApiError(result.error.message || 'An unexpected server response. Please try again.');
-      }
-    }
+  //   if (result.success) {
+  //     setStep('verify_otp_code');
+  //   } else {
+  //     if (result.error.status === 403 && result.error.code === 'C0005') {
+  //       setStep('recaptcha_v2_challenge');
+  //     } else {
+  //       setApiError(result.error.message || 'An unexpected server response. Please try again.');
+  //     }
+  //   }
 
-    setIsLoading(false);
-    setSubmissionType(null);
-  };
+  //   setIsLoading(false);
+  //   setSubmissionType(null);
+  // };
 
   const processPasswordSubmit: SubmitHandler<PasswordStepFormData> = (data) => {
-    handleInitiateSignUp(data.password);
+    // handleInitiateSignUp(data.password);
+    console.log('click password submit');
+    setSubmissionType('password');
+    submitPasswordStep(data.password);
   };
 
   const processWithoutPassword = () => {
-    handleInitiateSignUp(null);
+    // handleInitiateSignUp(null);
+    setSubmissionType('otp');
+    submitPasswordStep(null);
   };
 
   return (
@@ -154,14 +149,14 @@ export const PasswordStep = ({
           />
         </div>
 
-        {apiError && <p className="text-center text-sm text-red-600">{apiError}</p>}
+        {error && <p className="text-center text-sm text-red-600">{error}</p>}
         <div className="mt-8">
           <button
             type="submit"
             disabled={isLoading}
             className="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
           >
-            {isLoading && submissionType === 'with_password' ? 'Processing...' : 'Continue'}
+            {isLoading && submissionType === 'password' ? 'Processing...' : 'Continue'}
           </button>
         </div>
       </form>
@@ -176,9 +171,7 @@ export const PasswordStep = ({
             className="group relative flex w-full items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
           >
             <Mail className="mr-2 h-4 w-4" />
-            {isLoading && submissionType === 'without_password'
-              ? 'Sending...'
-              : 'Continue with email code'}
+            {isLoading && submissionType === 'otp' ? 'Sending...' : 'Continue with email code'}
           </button>
         </div>
       </div>

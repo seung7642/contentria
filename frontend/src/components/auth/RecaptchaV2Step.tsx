@@ -1,18 +1,26 @@
 'use client';
 
 import BackButton from '@/components/ui/BackButton';
-import { RecaptchaV2StepProps } from '@/components/auth/types';
+// import { RecaptchaV2StepProps } from '@/components/auth/types';
 import { useEffect, useRef } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { ShieldCheck } from 'lucide-react';
 
-const RecaptchaV2Step = <TFormData, TStep extends string>({
-  goToPreviousStep,
+interface RecaptchaV2StepProps {
+  isLoading: boolean;
+  error: string | null;
+  goToPreviousStep: () => void;
+  onVerify: (token: string) => Promise<void> | void; // 비동기 함수도 받을 수 있도록 Promise 추가
+  onError: (errorMessage: string) => void;
+}
+
+const RecaptchaV2Step = ({
   isLoading,
   error,
-  setError,
+  goToPreviousStep,
   onVerify,
-}: RecaptchaV2StepProps<TFormData, TStep>) => {
+  onError,
+}: RecaptchaV2StepProps) => {
   const recaptchaV2Ref = useRef<ReCAPTCHA>(null);
   const siteKeyV2 = process.env.NEXT_PUBLIC_RECAPTCHA_V2_CHECKBOX_SITE_KEY;
 
@@ -30,11 +38,11 @@ const RecaptchaV2Step = <TFormData, TStep extends string>({
   };
 
   const handleOnExpired = () => {
-    setError('reCAPTCHA challenge expired. Please refresh or try again.');
+    onError('reCAPTCHA challenge expired. Please refresh or try again.');
   };
 
   const handleOnError = () => {
-    setError('Failed to load reCAPTCHA. Please check your network or try again later.');
+    onError('Failed to load reCAPTCHA. Please check your network or try again later.');
   };
 
   if (!siteKeyV2) {

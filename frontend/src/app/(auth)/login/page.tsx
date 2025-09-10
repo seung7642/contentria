@@ -5,106 +5,57 @@ import EmailStep from '@/components/auth/login/EmailStep';
 import PasswordStep from '@/components/auth/login/PasswordStep';
 import RecaptchaV2Step from '@/components/auth/RecaptchaV2Step';
 import { VerificationStep } from '@/components/auth/VerificationStep';
-import { PATHS } from '@/constants/paths';
-import { useLoginFlow } from '@/hooks/useLoginFlow';
-import { authService } from '@/services/authService';
-import { useAuthStore } from '@/store/authStore';
-import { VerifyOtpCodeResponse } from '@/types/api/auth/signUp';
-import { useRouter } from 'next/navigation';
+import { LoginFlowProvider, useLoginFlow } from '@/hooks/useLoginFlow';
 
-const LoginPage = () => {
+const LoginFlow = () => {
   const loginFlow = useLoginFlow();
-  const router = useRouter();
-  const login = useAuthStore((state) => state.login);
 
   const getTitle = () => (loginFlow.step === 'verify_otp_code' ? 'Verify your email' : 'Sign in');
 
-  const handleRecaptchaVerify = async (v2Token: string) => {
-    const { loginAttemptType } = loginFlow;
-
-    let result;
-    if (loginAttemptType === 'password') {
-      result = await authService.loginWithPassword({
-        email: loginFlow.formData.email,
-        password: loginFlow.formData.password,
-        recaptchaV2Token: v2Token,
-      });
-
-      if (result.success) {
-        login(result.data.user, result.data.accessToken);
-        loginFlow.resetForm();
-        router.replace(PATHS.DASHBOARD);
-      } else {
-        if (result.error.status === 403 && result.error.code === 'C0005') {
-          loginFlow.setError('reCAPTCHA verification failed. Please try again.');
-        } else {
-          loginFlow.setError(result.error.message || 'Login failed. Please try again.');
-        }
-      }
-    } else if (loginAttemptType === 'otp') {
-      result = await authService.sendOtpCode({
-        email: loginFlow.formData.email,
-        recaptchaV2Token: v2Token,
-      });
-
-      if (result.success) {
-        loginFlow.setStep('verify_otp_code');
-      } else {
-        if (result.error.status === 403 && result.error.code === 'C0005') {
-          loginFlow.setError('reCAPTCHA verification failed. Please try again.');
-        } else {
-          loginFlow.setError(
-            result.error.message || 'An unexpected server response. Please try again.'
-          );
-        }
-      }
-    } else {
-      loginFlow.setError('Login flow error: attempt type is unknown.');
-    }
-  };
-
-  const handleVerificationCodeComplete = (data: VerifyOtpCodeResponse) => {
-    login(data.user, data.accessToken);
-    loginFlow.resetForm();
-    router.replace(PATHS.DASHBOARD);
-  };
-
   const renderCurrentStep = () => {
-    const commonProps = {
-      formData: loginFlow.formData,
-      onUpdateData: loginFlow.updateFormData,
-      resetForm: loginFlow.resetForm,
-      isLoading: loginFlow.isLoading,
-      setIsLoading: loginFlow.setIsLoading,
-      error: loginFlow.error,
-      setError: loginFlow.setError,
-      setStep: loginFlow.setStep,
-      goToNextStep: loginFlow.goToNextStep,
-      goToPreviousStep: loginFlow.goToPreviousStep,
-      loginAttemptType: loginFlow.loginAttemptType,
-      setLoginAttemptType: loginFlow.setLoginAttemptType,
-    };
-
     switch (loginFlow.step) {
       case 'email':
-        return <EmailStep {...commonProps} />;
+        return <EmailStep />;
       case 'password':
-        return <PasswordStep {...commonProps} />;
+        return <PasswordStep />;
       case 'recaptcha_v2_challenge':
-        return <RecaptchaV2Step {...commonProps} onVerify={handleRecaptchaVerify} />;
+        return (
+          <RecaptchaV2Step
+            isLoading={loginFlow.isLoading}
+            error={loginFlow.error}
+            goToPreviousStep={loginFlow.goToPreviousStep}
+            onVerify={loginFlow.verifyRecaptchaAndProceed}
+            onError={(errorMessage) => loginFlow.setError(errorMessage)}
+          />
+        );
       case 'verify_otp_code':
-        return <VerificationStep {...commonProps} onComplete={handleVerificationCodeComplete} />;
+        return (
+          <VerificationStep
+            email={loginFlow.formData.email}
+            verificationCode={loginFlow.formData.verificationCode}
+            isLoading={loginFlow.isLoading}
+            error={loginFlow.error}
+            onCodeChange={(code) => loginFlow.updateFormData('verificationCode', code)}
+            onResendCode={() => loginFlow.resendLoginOtpCode()}
+          />
+        );
       default:
         return null;
     }
   };
 
+  return <AuthFormCard title={getTitle()}>{renderCurrentStep()}</AuthFormCard>;
+};
+
+const LoginPage = () => {
   return (
-    <div className="flex min-h-screen items-start justify-center bg-gray-50 px-4 pt-60 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8">
-        <AuthFormCard title={getTitle()}>{renderCurrentStep()}</AuthFormCard>
+    <LoginFlowProvider>
+      <div className="flex min-h-screen items-start justify-center bg-gray-50 px-4 pt-60 sm:px-6 lg:px-8">
+        <div className="w-full max-w-md space-y-8">
+          <LoginFlow />
+        </div>
       </div>
-    </div>
+    </LoginFlowProvider>
   );
 };
 

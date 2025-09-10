@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { userService } from '@/services/userService';
+import { ApiError } from '@/errors/ApiError';
 
 const AuthInitializer = ({ children }: { children: React.ReactNode }) => {
   const initializeAuth = useAuthStore((state) => state.initializeAuth);
@@ -10,33 +11,23 @@ const AuthInitializer = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const checkAuthStatus = async () => {
-      const result = await userService.getMe();
-      if (result.success) {
+      try {
+        const user = await userService.getMe();
         console.log('[Auth] User authenticated successfully.');
-        initializeAuth(result.data);
-      } else {
-        const { error } = result;
-
-        if (error.status === 401) {
+        initializeAuth(user);
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 401) {
           console.log('[Auth] No active session found. Initializing as guest.');
           logout();
         } else {
-          console.error(
-            `[AuthInitializer] An unexpected error occurred during auth check:`,
-            error.details
-          );
+          console.error('[Auth] An unexpected error occurred during auth check:', err);
         }
-
         initializeAuth(null);
       }
     };
 
     checkAuthStatus();
   }, [initializeAuth, logout]);
-
-  // if (isLoading) {
-  //   return <Loader2 className="h-12 w-12 animate-spin text-indigo-600" />;
-  // }
 
   return <>{children}</>;
 };
