@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import localFont from 'next/font/local';
 import './globals.css';
 import AuthInitializer from '@/components/auth/AuthInitializer';
+import Providers from '@/components/providers';
 
 const pretendard = localFont({
   src: '../../public/fonts/PretendardVariable.woff2',
@@ -25,7 +26,9 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   return (
     <html lang="ko">
       <body className={pretendard.className}>
-        <AuthInitializer>{children}</AuthInitializer>
+        <Providers>
+          <AuthInitializer>{children}</AuthInitializer>
+        </Providers>
       </body>
     </html>
   );
