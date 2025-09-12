@@ -18,50 +18,6 @@ export const VerificationStep = ({
   onCodeChange,
   onResendCode,
 }: VerificationStepProps) => {
-  // 의존성 배열이 변경되지 않는 한, 리렌더링 시 매번 함수를 새로 생성하지 않고 재사용
-  // const handleVerificationCodeSubmit = useCallback(
-  //   async (code: string) => {
-  //     setIsLoading(true);
-  //     setError(null);
-
-  //     const result = await authService.verifyOtpCode({
-  //       email: formData.email,
-  //       verificationCode: code,
-  //     });
-
-  //     if (result.success) {
-  //       onComplete(result.data);
-  //     } else {
-  //       setError(result.error.message || 'Invalid or expired code. Please try again.');
-  //       setIsLoading(false);
-  //     }
-  //   },
-  //   [setError, setIsLoading, formData.email, onComplete]
-  // );
-
-  // const handleCodeChange = (code: string) => {
-  //   onUpdateData('verificationCode', code);
-  //   if (code.length === 6 && !isLoading) {
-  //     handleVerificationCodeSubmit(code);
-  //   }
-  // };
-
-  // const requestNewCode = async () => {
-  //   setError(null);
-  //   setIsLoading(true);
-
-  //   const result = await authService.sendOtpCode({ email: formData.email });
-
-  //   if (result.success) {
-  //     // TODO: "새로운 코드를 전송했습니다." 같은 Toast 메시지를 보여주면 사용자 경험이 더 좋아진다.
-  //     onUpdateData('verificationCode', '');
-  //   } else {
-  //     setError(result.error.message || 'Failed to request new code. Please try again.');
-  //   }
-
-  //   setIsLoading(false);
-  // };
-
   return (
     <>
       <div className="mt-4 pl-8 text-sm text-gray-600">

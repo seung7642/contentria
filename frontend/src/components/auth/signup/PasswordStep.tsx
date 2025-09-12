@@ -11,7 +11,7 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import PasswordPolicyTooltip from './PasswordPolicyTooltip';
 // import { authService } from '@/services/authService';
 // import { SignUpPasswordStepProps } from './types';
-import { useSignUpFlow } from '@/hooks/useSignUpFlow';
+import { useSignUpFlow } from '@/hooks/useSignUpFlow01';
 
 interface PolicyItem {
   id: string;
@@ -48,52 +48,12 @@ export const PasswordStep = () => {
     []
   );
 
-  // const handleInitiateSignUp = async (password: string | null) => {
-  //   onUpdateData('password', password || '');
-  //   setApiError(null);
-  //   setIsLoading(true);
-
-  //   setSubmissionType(password ? 'with_password' : 'without_password');
-
-  //   if (!executeRecaptcha) {
-  //     setApiError('reCAPTCHA is not ready. Please try again.');
-  //     setIsLoading(false);
-  //     setSubmissionType(null);
-  //     return;
-  //   }
-
-  //   const recaptchaToken = await executeRecaptcha(RECAPTCHA_SIGN_UP_ACTION);
-
-  //   const result = await authService.initiateSignUp({
-  //     name: formData.name,
-  //     email: formData.email,
-  //     password: password,
-  //     recaptchaV3Token: recaptchaToken,
-  //   });
-
-  //   if (result.success) {
-  //     setStep('verify_otp_code');
-  //   } else {
-  //     if (result.error.status === 403 && result.error.code === 'C0005') {
-  //       setStep('recaptcha_v2_challenge');
-  //     } else {
-  //       setApiError(result.error.message || 'An unexpected server response. Please try again.');
-  //     }
-  //   }
-
-  //   setIsLoading(false);
-  //   setSubmissionType(null);
-  // };
-
   const processPasswordSubmit: SubmitHandler<PasswordStepFormData> = (data) => {
-    // handleInitiateSignUp(data.password);
-    console.log('click password submit');
     setSubmissionType('password');
     submitPasswordStep(data.password);
   };
 
   const processWithoutPassword = () => {
-    // handleInitiateSignUp(null);
     setSubmissionType('otp');
     submitPasswordStep(null);
   };
@@ -149,7 +109,7 @@ export const PasswordStep = () => {
           />
         </div>
 
-        {error && <p className="text-center text-sm text-red-600">{error}</p>}
+        {error && <p className="text-center text-sm text-red-600">{error.message}</p>}
         <div className="mt-8">
           <button
             type="submit"

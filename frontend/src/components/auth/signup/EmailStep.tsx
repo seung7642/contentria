@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { EmailStepFormData, emailStepSchema } from '@/lib/schemas/authSchemas';
-import { useSignUpFlow } from '@/hooks/useSignUpFlow';
+import { useSignUpFlow } from '@/hooks/useSignUpFlow01';
 
 export const EmailStep = () => {
   const { formData, isLoading, error: apiError, submitEmailStep } = useSignUpFlow();
@@ -24,7 +24,6 @@ export const EmailStep = () => {
   });
 
   const onSubmit: SubmitHandler<EmailStepFormData> = (data) => {
-    console.log('click email submit');
     submitEmailStep(data);
   };
 
@@ -51,7 +50,7 @@ export const EmailStep = () => {
           {...register('email')}
           errorMessage={errors.email?.message}
         />
-        {apiError && <p className="text-center text-sm text-red-600">{apiError}</p>}
+        {apiError && <p className="text-center text-sm text-red-600">{apiError.message}</p>}
         <div>
           <button
             type="submit"

@@ -5,16 +5,12 @@ import { EmailStep } from '@/components/auth/signup/EmailStep';
 import { PasswordStep } from '@/components/auth/signup/PasswordStep';
 import RecaptchaV2Step from '@/components/auth/RecaptchaV2Step';
 import { VerificationStep } from '@/components/auth/VerificationStep';
-import { SignUpFlowProvider, useSignUpFlow } from '@/hooks/useSignUpFlow';
+import { SignUpFlowProvider, useSignUpFlow } from '@/hooks/useSignUpFlow01';
 
 const SignUpFlow = () => {
   const signUpFlow = useSignUpFlow(); // 이제 이 훅은 Provider를 통해 공유된 상태를 가져온다.
 
   const getTitle = () => (signUpFlow.step === 'verify_otp_code' ? 'Verify your email' : 'Sign up');
-
-  const handleRecaptchaVerify = async (recaptchaV2Token: string) => {
-    signUpFlow.initiateSignUp(recaptchaV2Token);
-  };
 
   const renderCurrentStep = () => {
     switch (signUpFlow.step) {
@@ -26,10 +22,10 @@ const SignUpFlow = () => {
         return (
           <RecaptchaV2Step
             isLoading={signUpFlow.isLoading}
-            error={signUpFlow.error}
+            error={signUpFlow.error?.message || null}
             goToPreviousStep={signUpFlow.goToPreviousStep}
-            onVerify={handleRecaptchaVerify}
-            onError={(errorMessage) => signUpFlow.setError(errorMessage)}
+            onVerify={signUpFlow.submitRecaptchaV2}
+            onError={(errorMessage) => console.error('reCAPTCHA error:', errorMessage)}
           />
         );
       case 'verify_otp_code':
@@ -38,7 +34,7 @@ const SignUpFlow = () => {
             email={signUpFlow.formData.email}
             verificationCode={signUpFlow.formData.verificationCode}
             isLoading={signUpFlow.isLoading}
-            error={signUpFlow.error}
+            error={signUpFlow.error?.message || null}
             onCodeChange={(code) => signUpFlow.updateFormDataAndVerify('verificationCode', code)}
             onResendCode={() => signUpFlow.resendSignUpOtpCode()}
           />
