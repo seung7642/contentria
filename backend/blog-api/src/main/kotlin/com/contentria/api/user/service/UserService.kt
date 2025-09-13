@@ -101,11 +101,6 @@ class UserService(
         val user = userRepository.findByEmail(email)
             ?: throw IllegalArgumentException("User with email $email not found.")
 
-        // 2. 이미 ACTIVE 상태이너가 다른 상태인지 확인한다.
-        if (user.status != UserStatus.UNVERIFIED) {
-            throw IllegalStateException("This user account has already been verified or is in an invalid state.")
-        }
-
         user.status = UserStatus.ACTIVE
 
         return user
