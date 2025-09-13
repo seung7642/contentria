@@ -112,6 +112,15 @@ const useSignUpFlowLogic = () => {
     }
   };
 
+  const startGoogleLogin = () => {
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    if (baseUrl) {
+      window.location.href = `${baseUrl}/api/oauth2/authorization/google`;
+    } else {
+      console.error('API base URL is not configured.');
+    }
+  };
+
   return {
     step,
     formData,
@@ -124,6 +133,7 @@ const useSignUpFlowLogic = () => {
     submitRecaptchaV2,
     resendSignUpOtpCode,
     updateFormDataAndVerify,
+    startGoogleLogin,
   };
 };
 

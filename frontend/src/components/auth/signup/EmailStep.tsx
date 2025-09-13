@@ -9,7 +9,7 @@ import { SignUpEmailStepFormData, signUpEmailStepSchema } from '@/lib/schemas/au
 import { useSignUpFlow } from '@/hooks/useSignUpFlow';
 
 export const EmailStep = () => {
-  const { formData, isLoading, error, submitEmailStep } = useSignUpFlow();
+  const { formData, isLoading, error, submitEmailStep, startGoogleLogin } = useSignUpFlow();
   const {
     register,
     handleSubmit,
@@ -66,7 +66,7 @@ export const EmailStep = () => {
       <div className="mt-6">
         <Divider text="OR" />
         <div className="mt-6">
-          <GoogleLoginButton />
+          <GoogleLoginButton onClick={startGoogleLogin} />
         </div>
       </div>
 
