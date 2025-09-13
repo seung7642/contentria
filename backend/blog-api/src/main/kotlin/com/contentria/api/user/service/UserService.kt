@@ -110,4 +110,8 @@ class UserService(
 
         return user
     }
+
+    fun findByEmail(email: String): User? {
+        return userRepository.findByEmail(email)
+    }
 }

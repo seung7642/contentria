@@ -19,7 +19,7 @@ class VerificationCodeService(
     private lateinit var cacheManager: CacheManager
 
     @Cacheable(cacheNames = [CACHE_NAME], key = "#email", unless = "#result == null")
-    fun send(email: String, name: String): VerificationCodeCacheDto {
+    fun send(email: String, name: String? = null): VerificationCodeCacheDto {
         val code = generateRandomCode()
         mailService.send(email, name, code)
 

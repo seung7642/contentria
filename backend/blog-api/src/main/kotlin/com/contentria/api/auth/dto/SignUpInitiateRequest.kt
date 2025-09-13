@@ -14,9 +14,6 @@ data class SignUpInitiateRequest(
     val name: String,
 
     val password: String?,
-    val recaptchaV2Token: String? = null,
-    val recaptchaV3Token: String? = null
-) {
-    fun hasRecaptchaV2Token(): Boolean = !recaptchaV2Token.isNullOrBlank()
-    fun hasRecaptchaV3Token(): Boolean = !recaptchaV3Token.isNullOrBlank()
-}
+    override val recaptchaV2Token: String? = null,
+    override val recaptchaV3Token: String? = null
+) : RecaptchaRequest

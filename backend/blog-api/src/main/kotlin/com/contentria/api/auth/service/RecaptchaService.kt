@@ -19,7 +19,30 @@ class RecaptchaService(
 
     private val recaptchaProperties = appProperties.auth.recaptcha
 
-    fun verifyV3(token: String, clientIp: String?): GoogleRecaptchaResponse {
+    fun isV2TokenValid(token: String, clientIp: String?): Boolean {
+        val response = verifyV2(token, clientIp)
+        return response.success
+    }
+
+    fun isV3TokenValid(token: String, clientIp: String?, expectedAction: String, scoreThreshold: Double): Boolean {
+        val response = verifyV3(token, clientIp)
+
+        if (!response.success) {
+            log.warn { "reCAPTCHA V3 verification failed. Google Errors: ${response.errorCodes}" }
+            return false
+        }
+        if (response.action != expectedAction) {
+            log.warn { "reCAPTCHA action mismatch. Expected: $expectedAction, Got: ${response.action}" }
+            return false
+        }
+        if ((response.score ?: 0.0) < scoreThreshold) {
+            log.info { "reCAPTCHA score is below threshold. Score: ${response.score}, Threshold: $scoreThreshold" }
+            return false
+        }
+        return true
+    }
+
+    private fun verifyV3(token: String, clientIp: String?): GoogleRecaptchaResponse {
         if (recaptchaProperties.v3SecretKey.isBlank()) {
             log.warn { "reCAPTCHA v3 secret key is not configured. Verification will be skipped." }
             return createErrorResponse("missing-v3-secret-key")
@@ -34,7 +57,7 @@ class RecaptchaService(
         return callGoogleApi(requestBody).block()!!
     }
 
-    fun verifyV2(token: String, clientIp: String?): GoogleRecaptchaResponse {
+    private fun verifyV2(token: String, clientIp: String?): GoogleRecaptchaResponse {
         if (recaptchaProperties.v2SecretKey.isBlank()) {
             log.warn { "reCAPTCHA v2 secret key is not configured. Verification will be skipped." }
             return createErrorResponse("missing-v2-secret-key")

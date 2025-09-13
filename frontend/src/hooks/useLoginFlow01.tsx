@@ -36,14 +36,10 @@ const useLoginFlowLogic = () => {
   const { mutate: verifyOtp, isPending: isVerifying, error: verifyError } = useVerifyOtpMutation();
 
   const isLoading = isLoggingIn || isSendingOtp || isVerifying;
-  const combinedError = loginError || sendOtpError || verifyError;
+  const combinedError = (loginError || sendOtpError || verifyError) as ApiError | null;
 
   useEffect(() => {
-    if (
-      combinedError instanceof ApiError &&
-      combinedError.status === 403 &&
-      combinedError.code === 'C0005'
-    ) {
+    if (combinedError && combinedError.status === 403 && combinedError.code === 'C0005') {
       setStep('recaptcha_v2_challenge');
     }
   }, [combinedError]);

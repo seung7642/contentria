@@ -15,7 +15,7 @@ class MailService(
     private val commonProperties: CommonProperties
 ) {
 
-    fun send(recipientEmail: String, recipientName: String, verificationCode: String) {
+    fun send(recipientEmail: String, recipientName: String?, verificationCode: String) {
         val templateVariables = mapOf(
             "recipient_name" to recipientName,
             "verification_code" to verificationCode,

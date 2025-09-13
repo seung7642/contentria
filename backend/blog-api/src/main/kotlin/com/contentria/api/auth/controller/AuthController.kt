@@ -3,13 +3,12 @@ package com.contentria.api.auth.controller
 import com.contentria.api.auth.dto.LoginRequest
 import com.contentria.api.auth.dto.LoginResponse
 import com.contentria.api.auth.dto.SendOtpRequest
-import com.contentria.api.auth.dto.SendOtpResponse
 import com.contentria.api.auth.dto.SignUpInitiateRequest
 import com.contentria.api.auth.dto.SignUpInitiateResponse
 import com.contentria.api.auth.dto.SignUpResponse
 import com.contentria.api.auth.dto.VerifyCodeRequest
 import com.contentria.api.auth.service.RefreshTokenService
-import com.contentria.api.auth.service.SignUpService
+import com.contentria.api.auth.service.AuthService
 import com.contentria.api.utils.CookieUtil
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletRequest
@@ -24,7 +23,7 @@ private val log = KotlinLogging.logger {}
 @RequestMapping("/auth")
 class AuthController(
     private val refreshTokenService: RefreshTokenService,
-    private val signUpService: SignUpService,
+    private val authService: AuthService,
     private val cookieUtil: CookieUtil
 ) {
 
@@ -48,13 +47,13 @@ class AuthController(
         @Valid @RequestBody request: SignUpInitiateRequest,
         httpRequest: HttpServletRequest
     ): ResponseEntity<SignUpInitiateResponse> {
-        val response = signUpService.initiate(request, httpRequest)
+        val response = authService.initiate(request, httpRequest)
         return ResponseEntity.ok(response)
     }
 
     @PostMapping("/verify-code")
     fun verifyCode(@Valid @RequestBody request: VerifyCodeRequest): ResponseEntity<SignUpResponse> {
-        val response = signUpService.verifyCode(request)
+        val response = authService.verifyCode(request)
         return ResponseEntity.ok(response)
     }
 
@@ -64,14 +63,17 @@ class AuthController(
         httpRequest: HttpServletRequest,
         httpResponse: HttpServletResponse
     ): ResponseEntity<LoginResponse> {
-        val result = signUpService.login(request)
-        httpResponse.addCookie(cookieUtil.createRefreshTokenCookie("", httpRequest))
-        return ResponseEntity.ok(result)
+        val result = authService.login(request, httpRequest)
+
+        httpResponse.addCookie(cookieUtil.createAccessTokenCookie(result.accessToken, httpRequest))
+        httpResponse.addCookie(cookieUtil.createRefreshTokenCookie(result.refreshToken, httpRequest))
+
+        return ResponseEntity.ok(LoginResponse(result.user))
     }
 
     @PostMapping("/send-otp")
-    fun sendOtp(@Valid @RequestBody request: SendOtpRequest): ResponseEntity<SendOtpResponse> {
-        val response = signUpService.sendOtp(request)
-        return ResponseEntity.ok(response)
+    fun sendOtp(@Valid @RequestBody request: SendOtpRequest, httpRequest: HttpServletRequest): ResponseEntity<Unit> {
+        authService.sendOtp(request, httpRequest)
+        return ResponseEntity.noContent().build()
     }
 }

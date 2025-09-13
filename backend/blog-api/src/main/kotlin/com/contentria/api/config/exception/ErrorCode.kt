@@ -30,4 +30,6 @@ enum class ErrorCode(
     USER_NOT_FOUND(HttpStatus.UNAUTHORIZED, "AU0006", "User associated with the token not found. Please log in again."),
     AUTHENTICATION_REQUIRED(HttpStatus.UNAUTHORIZED, "AU0007", "Authentication is required to access this resource."),
     AUTHORIZATION_FAILED(HttpStatus.FORBIDDEN, "AU0008", "You do not have permission to access this resource."),
+    INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "AU0009", "Invalid email or password."),
+    USER_NOT_ACTIVATED(HttpStatus.FORBIDDEN, "AU0010", "User account is not active. Please verify your email or contact support."),
 }
