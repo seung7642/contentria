@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import localFont from 'next/font/local';
 import './globals.css';
 import AuthInitializer from '@/components/auth/AuthInitializer';
-import Providers from '@/components/providers';
+import Providers from '@/components/Providers';
 
 const pretendard = localFont({
   src: '../../public/fonts/PretendardVariable.woff2',

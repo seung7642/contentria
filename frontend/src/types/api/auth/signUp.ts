@@ -10,7 +10,6 @@ export interface InitiateSignUpPayload {
 
 export interface InitiateSignUpResponse {
   status: string;
-  nextStep: string;
 }
 
 export interface VerifyOtpCodePayload {
@@ -19,6 +18,5 @@ export interface VerifyOtpCodePayload {
 }
 
 export interface VerifyOtpCodeResponse {
-  accessToken: string;
   user: User;
 }

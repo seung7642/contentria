@@ -9,7 +9,7 @@ import { PATHS } from '@/constants/paths';
 import { useLoginFlow } from '@/hooks/useLoginFlow01';
 
 const EmailStep = () => {
-  const { formData, isLoading, error, submitEmailStep } = useLoginFlow();
+  const { formData, isLoading, error, submitEmailStep, startGoogleLogin } = useLoginFlow();
   const {
     register,
     handleSubmit,
@@ -52,7 +52,7 @@ const EmailStep = () => {
       <div className="mt-6">
         <Divider text="OR" />
         <div className="mt-6">
-          <GoogleLoginButton />
+          <GoogleLoginButton onClick={startGoogleLogin} />
         </div>
       </div>
       <div className="mt-4 text-center">

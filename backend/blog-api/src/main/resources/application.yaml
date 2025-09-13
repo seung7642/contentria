@@ -19,6 +19,8 @@ spring:
     password:
   jpa:
     hibernate:
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
       ddl-auto: update # 운영 환경에서는 validate 설정 필요. (Flyway 또는 Liquibase 같은 데이터베이스 마이그레이션 도구도 고려)
     show-sql: false
     properties:
@@ -67,12 +69,12 @@ app:
       access-token-expiration: 15m   # access token 만료 시간: 15분
       refresh-token-expiration: 7d   # refresh token 만료 시간: 7일
     cookie:
-      access-token-name: "access_token"
-      refresh-token-name: "refresh_token"
+      access-token-name: "accessToken"
+      refresh-token-name: "refreshToken"
       access-token-path: "/"
       refresh-token-path: "/api/auth"
     oidc:
-      success-redirect-url: http://localhost:3000/dashboard
+      success-redirect-url: http://localhost:3000/login/callback
     verification-code:
       ttl-minutes: 10
       length: 6

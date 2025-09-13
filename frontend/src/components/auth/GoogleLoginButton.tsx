@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import SocialLoginButton from '../ui/SocialLoginButton';
 
 const GoogleLogo = () => (
   <svg
@@ -27,21 +28,16 @@ const GoogleLogo = () => (
   </svg>
 );
 
-const GoogleLoginButton = () => {
-  const handleGoogleLogin = () => {
-    const googleAuthUrl = 'http://localhost:8080/api/oauth2/authorization/google';
-    window.location.href = googleAuthUrl;
-  };
+interface GoogleLoginButtonProps {
+  onClick: () => void;
+  disabled?: boolean;
+}
 
+const GoogleLoginButton = ({ onClick, disabled }: GoogleLoginButtonProps) => {
   return (
-    <button
-      onClick={handleGoogleLogin}
-      type="button" // 기본 type 지정 (form 안에 있을 경우 submit 방지)
-      className="inline-flex w-full items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition duration-150 ease-in-out hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-    >
-      <GoogleLogo />
-      <span>Continue with Google</span>
-    </button>
+    <SocialLoginButton onClick={onClick} disabled={disabled} icon={<GoogleLogo />}>
+      Continue with Google
+    </SocialLoginButton>
   );
 };
 

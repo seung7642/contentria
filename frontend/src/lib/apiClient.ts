@@ -3,6 +3,7 @@ import { ApiError } from '@/errors/ApiError';
 import { useAuthStore } from '@/store/authStore';
 import axios, { AxiosError } from 'axios';
 import createAuthRefreshInterceptor from 'axios-auth-refresh';
+import { getCookie } from 'cookies-next';
 
 interface BackendErrorResponse {
   message: string;
@@ -22,8 +23,7 @@ const apiClient = axios.create({
 // 1. 요청 인터셉터: 모든 요청에 액세스 토큰을 자동으로 추가한다.
 apiClient.interceptors.request.use(
   (config) => {
-    // const accessToken = getCookie('accessToken');
-    const accessToken = useAuthStore.getState().accessToken;
+    const accessToken = getCookie('accessToken');
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
@@ -66,17 +66,13 @@ apiClient.interceptors.response.use(
 const refreshAuthLogic = async (failedRequest: AxiosError) => {
   console.log('Attempting to refresh token...');
   try {
-    const { data } = await axios.post<{ accessToken: string }>(
+    await axios.post<{ accessToken: string }>(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/refresh`,
       {},
       { withCredentials: true }
     );
 
-    const newAccessToken = data.accessToken;
-    const { setAccessToken } = useAuthStore.getState();
-
-    setAccessToken(newAccessToken);
-
+    const newAccessToken = getCookie('accessToken');
     // 실패했던 원래 요청의 헤더를 새 토큰으로 교체한다.
     if (failedRequest.response) {
       failedRequest.response.config.headers['Authorization'] = `Bearer ${newAccessToken}`;

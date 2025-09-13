@@ -18,7 +18,7 @@ export const useLoginWithPasswordMutation = () => {
   return useMutation({
     mutationFn: (payload: LoginPayload) => authService.loginWithPassword(payload),
     onSuccess: (data) => {
-      login(data.user, data.accessToken);
+      login(data.user);
       queryClient.invalidateQueries({ queryKey: ['user', 'me'] });
       router.replace(PATHS.DASHBOARD);
     },
@@ -50,7 +50,7 @@ export const useVerifyOtpMutation = () => {
   return useMutation({
     mutationFn: (payload: VerifyOtpCodePayload) => authService.verifyOtpCode(payload),
     onSuccess: (data) => {
-      login(data.user, data.accessToken);
+      login(data.user);
       queryClient.invalidateQueries({ queryKey: ['user', 'me'] });
       router.replace(PATHS.DASHBOARD);
     },

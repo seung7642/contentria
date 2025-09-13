@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component
 
 @Component
 class CookieUtil(
-    private val appProperties: AppProperties
+    val appProperties: AppProperties
 ) {
     private val accessTokenCookieName: String get() = appProperties.auth.cookie.accessTokenName
     private val refreshTokenCookieName: String get() = appProperties.auth.cookie.refreshTokenName
@@ -17,19 +17,19 @@ class CookieUtil(
     private val refreshTokenMaxAge: Int get() = appProperties.auth.jwt.refreshTokenExpiration.toSeconds().toInt()
 
     fun createAccessTokenCookie(tokenValue: String, request: HttpServletRequest): Cookie {
-        return createCookie(accessTokenCookieName, tokenValue, accessTokenPath, accessTokenMaxAge, request)
+        return createCookie(accessTokenCookieName, tokenValue, accessTokenPath, accessTokenMaxAge, request, false)
     }
 
     fun createRefreshTokenCookie(tokenValue: String, request: HttpServletRequest): Cookie {
-        return createCookie(refreshTokenCookieName, tokenValue, refreshTokenPath, refreshTokenMaxAge, request)
+        return createCookie(refreshTokenCookieName, tokenValue, refreshTokenPath, refreshTokenMaxAge, request, true)
     }
 
     fun clearAccessTokenCookie(request: HttpServletRequest): Cookie {
-        return createCookie(accessTokenCookieName, null, accessTokenPath, 0, request)
+        return createCookie(accessTokenCookieName, null, accessTokenPath, 0, request, false)
     }
 
     fun clearRefreshTokenCookie(request: HttpServletRequest): Cookie {
-        return createCookie(refreshTokenCookieName, null, refreshTokenPath, 0, request)
+        return createCookie(refreshTokenCookieName, null, refreshTokenPath, 0, request, true)
     }
 
     private fun createCookie(
@@ -37,10 +37,11 @@ class CookieUtil(
         value: String?,
         path: String,
         maxAge: Int,
-        request: HttpServletRequest
+        request: HttpServletRequest,
+        isHttpOnlyCookie: Boolean
     ): Cookie {
         return Cookie(name, value).apply {
-            isHttpOnly = true
+            isHttpOnly = isHttpOnlyCookie
             secure = request.isSecure // HTTPS 에서만 쿠키 전송
             this.path = path
             this.maxAge = maxAge

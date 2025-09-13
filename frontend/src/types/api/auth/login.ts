@@ -8,7 +8,6 @@ export interface LoginPayload {
 }
 
 export interface LoginResponse {
-  accessToken: string;
   user: User;
 }
 

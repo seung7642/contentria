@@ -13,6 +13,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.security.core.Authentication
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler
 import org.springframework.stereotype.Component
@@ -64,6 +65,9 @@ class CustomOidcAuthenticationSuccessHandler(
             response.addCookie(cookieUtil.createRefreshTokenCookie(refreshToken, request))
 
             clearAuthenticationAttributes(request) // Clear temporary session data used by Spring Security
+            SecurityContextHolder.clearContext()
+            request.getSession(false)?.invalidate() // OAuth2 로그인 과정에서 생성된 임시 HTTP 세션 무효화
+
             redirectStrategy.sendRedirect(request, response, frontendRedirectUrl)
 
             log.info { "OIDC authentication success handler ended." }
