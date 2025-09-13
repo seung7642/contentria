@@ -1,0 +1,9 @@
+package com.contentria.api.auth.dto
+
+import com.contentria.api.user.controller.UserInfoResponse
+
+data class VerifyCodeResult(
+    val user: UserInfoResponse,
+    val accessToken: String,
+    val refreshToken: String
+)

@@ -5,7 +5,7 @@ import EmailStep from '@/components/auth/login/EmailStep';
 import PasswordStep from '@/components/auth/login/PasswordStep';
 import RecaptchaV2Step from '@/components/auth/RecaptchaV2Step';
 import { VerificationStep } from '@/components/auth/VerificationStep';
-import { LoginFlowProvider, useLoginFlow } from '@/hooks/useLoginFlow01';
+import { LoginFlowProvider, useLoginFlow } from '@/hooks/useLoginFlow';
 
 const LoginFlow = () => {
   const loginFlow = useLoginFlow();

@@ -7,7 +7,7 @@ import { Info, Mail } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import PasswordPolicyTooltip from './PasswordPolicyTooltip';
-import { useSignUpFlow } from '@/hooks/useSignUpFlow01';
+import { useSignUpFlow } from '@/hooks/useSignUpFlow';
 
 interface PolicyItem {
   id: string;

@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Mail } from 'lucide-react';
 import Link from 'next/link';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { useLoginFlow } from '@/hooks/useLoginFlow01';
+import { useLoginFlow } from '@/hooks/useLoginFlow';
 
 const PasswordStep = () => {
   const {

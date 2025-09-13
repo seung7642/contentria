@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SignUpEmailStepFormData, signUpEmailStepSchema } from '@/lib/schemas/authSchemas';
-import { useSignUpFlow } from '@/hooks/useSignUpFlow01';
+import { useSignUpFlow } from '@/hooks/useSignUpFlow';
 
 export const EmailStep = () => {
   const { formData, isLoading, error, submitEmailStep } = useSignUpFlow();

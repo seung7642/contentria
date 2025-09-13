@@ -5,7 +5,6 @@ import com.contentria.api.config.exception.ContentriaException
 import com.contentria.api.config.exception.ErrorCode
 import com.contentria.api.config.properties.AppProperties
 import com.contentria.api.user.controller.UserInfoResponse
-import com.contentria.api.user.domain.UserStatus
 import com.contentria.api.user.service.UserService
 import com.contentria.api.utils.IpResolver
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -32,7 +31,7 @@ class AuthService(
     @Transactional
     fun initiate(request: SignUpInitiateRequest, httpRequest: HttpServletRequest): SignUpInitiateResponse {
         val clientIp = ipResolver.getClientIp(httpRequest) ?: throw ContentriaException(ErrorCode.CLIENT_IP_NOT_FOUND)
-        if (!isValidRecaptchaToken(request, clientIp)) {
+        if (!isValidRecaptchaToken(request, RECAPTCHA_SIGN_UP_ACTION, clientIp)) {
             throw ContentriaException(ErrorCode.RECAPTCHA_VERIFICATION_FAILED)
         }
 
@@ -44,7 +43,7 @@ class AuthService(
     }
 
     @Transactional
-    fun verifyCode(request: VerifyCodeRequest): SignUpResponse {
+    fun verifyCode(request: VerifyCodeRequest): VerifyCodeResult {
         val result = verificationCodeService.verify(request.email, request.verificationCode)
         if (!result) {
             throw ContentriaException(ErrorCode.INVALID_VERIFICATION_CODE)
@@ -55,7 +54,7 @@ class AuthService(
         val accessToken = jwtService.generateAccessToken(activatedUser)
         val refreshToken = jwtService.generateRefreshToken(activatedUser)
 
-        return SignUpResponse(
+        return VerifyCodeResult(
             accessToken = accessToken,
             refreshToken = refreshToken,
             user = UserInfoResponse.from(activatedUser)
@@ -64,19 +63,19 @@ class AuthService(
 
     @Transactional
     fun login(request: LoginRequest, httpRequest: HttpServletRequest): LoginResult {
-        val clientIp = ipResolver.getClientIp(httpRequest) ?: throw ContentriaException(ErrorCode.CLIENT_IP_NOT_FOUND)
-        if (!isValidRecaptchaToken(request, clientIp)) {
-            throw ContentriaException(ErrorCode.RECAPTCHA_VERIFICATION_FAILED)
-        }
-
         val user = userService.findByEmail(request.email)
             ?: throw ContentriaException(ErrorCode.INVALID_CREDENTIALS)
+
+        val clientIp = ipResolver.getClientIp(httpRequest) ?: throw ContentriaException(ErrorCode.CLIENT_IP_NOT_FOUND)
+        if (!isValidRecaptchaToken(request, RECAPTCHA_LOGIN_WITH_PASSWORD_ACTION, clientIp)) {
+            throw ContentriaException(ErrorCode.RECAPTCHA_VERIFICATION_FAILED)
+        }
 
         if (!passwordEncoder.matches(request.password, user.password)) {
             throw ContentriaException(ErrorCode.INVALID_CREDENTIALS)
         }
 
-        if (user.status != UserStatus.ACTIVE) {
+        if (!user.status.isActive()) {
             throw ContentriaException(ErrorCode.USER_NOT_ACTIVATED)
         }
 
@@ -93,21 +92,29 @@ class AuthService(
 
     @Transactional
     fun sendOtp(request: SendOtpRequest, httpRequest: HttpServletRequest) {
+        val user = userService.findByEmail(request.email)
+            ?: throw ContentriaException(ErrorCode.INVALID_CREDENTIALS)
+
         val clientIp = ipResolver.getClientIp(httpRequest) ?: throw ContentriaException(ErrorCode.CLIENT_IP_NOT_FOUND)
-        if (!isValidRecaptchaToken(request, clientIp)) {
+        if (!isValidRecaptchaToken(request, RECAPTCHA_SEND_OTP_ACTION, clientIp)) {
             throw ContentriaException(ErrorCode.RECAPTCHA_VERIFICATION_FAILED)
         }
+
+        if (!user.status.isActive()) {
+            throw ContentriaException(ErrorCode.USER_NOT_ACTIVATED)
+        }
+
         verificationCodeService.send(request.email)
     }
 
-    private fun isValidRecaptchaToken(request: RecaptchaRequest, clientIp: String?): Boolean {
+    private fun isValidRecaptchaToken(request: RecaptchaRequest, action: String, clientIp: String?): Boolean {
         return if (request.hasRecaptchaV2Token()) {
             recaptchaService.isV2TokenValid(request.recaptchaV2Token!!, clientIp)
         } else if (request.hasRecaptchaV3Token()) {
             recaptchaService.isV3TokenValid(
                 request.recaptchaV3Token!!,
                 clientIp,
-                RECAPTCHA_SIGN_UP_ACTION,
+                action,
                 recaptchaProperties.scoreThreshold
             )
         } else {
@@ -117,5 +124,7 @@ class AuthService(
 
     companion object {
         private const val RECAPTCHA_SIGN_UP_ACTION = "signup_initiate"
+        private const val RECAPTCHA_LOGIN_WITH_PASSWORD_ACTION = "login_with_password"
+        private const val RECAPTCHA_SEND_OTP_ACTION = "send_otp_code"
     }
 }

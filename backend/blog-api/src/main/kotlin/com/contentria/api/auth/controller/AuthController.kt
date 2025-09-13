@@ -1,14 +1,8 @@
 package com.contentria.api.auth.controller
 
-import com.contentria.api.auth.dto.LoginRequest
-import com.contentria.api.auth.dto.LoginResponse
-import com.contentria.api.auth.dto.SendOtpRequest
-import com.contentria.api.auth.dto.SignUpInitiateRequest
-import com.contentria.api.auth.dto.SignUpInitiateResponse
-import com.contentria.api.auth.dto.SignUpResponse
-import com.contentria.api.auth.dto.VerifyCodeRequest
-import com.contentria.api.auth.service.RefreshTokenService
+import com.contentria.api.auth.dto.*
 import com.contentria.api.auth.service.AuthService
+import com.contentria.api.auth.service.RefreshTokenService
 import com.contentria.api.utils.CookieUtil
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletRequest
@@ -52,9 +46,17 @@ class AuthController(
     }
 
     @PostMapping("/verify-code")
-    fun verifyCode(@Valid @RequestBody request: VerifyCodeRequest): ResponseEntity<SignUpResponse> {
-        val response = authService.verifyCode(request)
-        return ResponseEntity.ok(response)
+    fun verifyCode(
+        @Valid @RequestBody request: VerifyCodeRequest,
+        httpRequest: HttpServletRequest,
+        httpResponse: HttpServletResponse
+    ): ResponseEntity<VerifyCodeResponse> {
+        val result = authService.verifyCode(request)
+
+        httpResponse.addCookie(cookieUtil.createAccessTokenCookie(result.accessToken, httpRequest))
+        httpResponse.addCookie(cookieUtil.createRefreshTokenCookie(result.refreshToken, httpRequest))
+
+        return ResponseEntity.ok(VerifyCodeResponse(result.user))
     }
 
     @PostMapping("/login")

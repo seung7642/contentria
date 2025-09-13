@@ -1,14 +1,14 @@
-'use client';
-
 import { LoginFormData, LoginStep } from '@/components/auth/login/types';
-import { PATHS } from '@/constants/paths';
-import { SignUpEmailStepFormData, PasswordStepFormData } from '@/lib/schemas/authSchemas';
-import { authService } from '@/services/authService';
-import { useAuthStore } from '@/store/authStore';
+import { PasswordStepFormData, LoginEmailStepFormData } from '@/lib/schemas/authSchemas';
 import { ApiError } from '@/types/api/errors';
-import { useRouter } from 'next/navigation';
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
+import {
+  useLoginWithPasswordMutation,
+  useSendOtpMutation,
+  useVerifyOtpMutation,
+} from './queries/useAuthMutations';
+import { RECAPTCHA_LOGIN_WITH_PASSWORD_ACTION, RECAPTCHA_SEND_OTP_ACTION } from '@/constants/auth';
 
 type LoginFlowContextType = ReturnType<typeof useLoginFlowLogic>;
 
@@ -21,27 +21,32 @@ const useLoginFlowLogic = () => {
     password: '',
     verificationCode: '',
   });
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [loginAttemptType, setLoginAttemptType] = useState<'password' | 'otp' | null>(null);
-  const router = useRouter();
-  const login = useAuthStore((state) => state.login);
   const { executeRecaptcha } = useGoogleReCaptcha();
 
-  const updateFormData = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    setError(null);
-  };
+  const {
+    mutate: loginWithPassword,
+    isPending: isLoggingIn,
+    error: loginError,
+  } = useLoginWithPasswordMutation();
+  const {
+    mutate: sendOtp,
+    isPending: isSendingOtp,
+    error: sendOtpError,
+  } = useSendOtpMutation(() => setStep('verify_otp_code'));
+  const { mutate: verifyOtp, isPending: isVerifying, error: verifyError } = useVerifyOtpMutation();
 
-  const setCurrentStep = (newStep: LoginStep) => {
-    setStep(newStep);
-    setError(null);
-  };
+  const isLoading = isLoggingIn || isSendingOtp || isVerifying;
+  const combinedError = (loginError || sendOtpError || verifyError) as ApiError | null;
 
-  const goToNextStep = () => {
-    if (step === 'email') {
-      setStep('password');
+  useEffect(() => {
+    if (combinedError && combinedError.status === 403 && combinedError.code === 'C0005') {
+      setStep('recaptcha_v2_challenge');
     }
+  }, [combinedError]);
+
+  const updateFormData = (field: keyof LoginFormData, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const goToPreviousStep = () => {
@@ -52,180 +57,94 @@ const useLoginFlowLogic = () => {
     }
   };
 
-  const resetForm = () => {
-    setFormData({
-      email: '',
-      password: '',
-      verificationCode: '',
-    });
-    setCurrentStep('email');
-    setError(null);
-    setIsLoading(false);
-    setLoginAttemptType(null);
-  };
-
-  const submitEmailStep = (data: SignUpEmailStepFormData) => {
+  const submitEmailStep = (data: LoginEmailStepFormData) => {
+    console.log('Email submitted:', data.email);
     updateFormData('email', data.email);
     setStep('password');
   };
 
   const submitPasswordLogin = async (data: PasswordStepFormData) => {
     setLoginAttemptType('password');
-    setIsLoading(true);
-    setError(null);
     if (!executeRecaptcha) {
-      setError('reCAPTCHA is not ready. Please try again.');
-      setIsLoading(false);
       return;
     }
 
     try {
-      const recaptchaV3Token = await executeRecaptcha('password');
-      const result = await authService.loginWithPassword({
+      const recaptchaV3Token = await executeRecaptcha(RECAPTCHA_LOGIN_WITH_PASSWORD_ACTION);
+      loginWithPassword({
         email: formData.email,
         password: data.password,
         recaptchaV3Token,
       });
-      login(result.user, result.accessToken);
-      router.replace(PATHS.DASHBOARD);
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 403 && err.code === 'C0005') {
-        setStep('recaptcha_v2_challenge');
-      } else if (err instanceof ApiError) {
-        setError(err.message);
-      } else {
-        setError('An unexpected error occurred. Please try again.');
-      }
-    } finally {
-      setIsLoading(false);
+    } catch (e) {
+      console.error('reCAPTCHA execution error:', e);
     }
   };
 
   const requestOtpLogin = async () => {
     setLoginAttemptType('otp');
-    setIsLoading(true);
-    setError(null);
     if (!executeRecaptcha) {
-      setError('reCAPTCHA is not ready.');
-      setIsLoading(false);
       return;
     }
 
     try {
-      const recaptchaV3Token = await executeRecaptcha('otp');
-      await authService.sendOtpCode({
+      const recaptchaV3Token = await executeRecaptcha(RECAPTCHA_SEND_OTP_ACTION);
+      sendOtp({
         email: formData.email,
         recaptchaV3Token,
       });
-      setStep('verify_otp_code');
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 403 && err.code === 'C0005') {
-        setStep('recaptcha_v2_challenge');
-      } else if (err instanceof ApiError) {
-        setError(err.message);
-      } else {
-        setError('An unexpected error occurred. Please try again.');
-      }
-    } finally {
-      setIsLoading(false);
+    } catch (e) {
+      console.error('reCAPTCHA execution error:', e);
     }
   };
 
-  const verifyRecaptchaAndProceed = async (v2Token: string) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      if (loginAttemptType === 'password') {
-        const result = await authService.loginWithPassword({
-          email: formData.email,
-          password: formData.password,
-          recaptchaV2Token: v2Token,
-        });
-        login(result.user, result.accessToken);
-        router.replace(PATHS.DASHBOARD);
-      } else if (loginAttemptType === 'otp') {
-        await authService.sendOtpCode({
-          email: formData.email,
-          recaptchaV2Token: v2Token,
-        });
-        setStep('verify_otp_code');
-      }
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 403 && err.code === 'C0005') {
-        setError('reCAPTCHA verification failed. Please try again.');
-      } else if (err instanceof ApiError) {
-        setStep('password');
-        setError(err.message);
-      } else {
-        setError('An unexpected error occurred.');
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const verifyLoginCode = async (code: string) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const result = await authService.verifyOtpCode({
+  const verifyRecaptchaAndProceed = async (recaptchaV2Token: string) => {
+    if (loginAttemptType === 'password') {
+      loginWithPassword({
         email: formData.email,
-        verificationCode: code,
+        password: formData.password,
+        recaptchaV2Token,
       });
-      login(result.user, result.accessToken);
-      router.replace(PATHS.DASHBOARD);
-    } catch (err) {
-      if (err instanceof ApiError) setError(err.message);
-      else setError('Invalid or expired code.');
-    } finally {
-      setIsLoading(false);
+    } else if (loginAttemptType === 'otp') {
+      sendOtp({
+        email: formData.email,
+        recaptchaV2Token,
+      });
     }
   };
 
-  const resendLoginOtpCode = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      await authService.sendOtpCode({ email: formData.email });
-    } catch (err) {
-      if (err instanceof ApiError) {
-        setError(err.message);
-      } else {
-        setError('An unexpected error occurred. Please try again.');
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const updateFormDataAndVerify = (field: string, value: string) => {
+  const updateFormDataAndVerify = (field: keyof LoginFormData, value: string) => {
     updateFormData(field, value);
     if (field === 'verificationCode' && value.length === 6) {
-      verifyLoginCode(value);
+      verifyOtp({ email: formData.email, verificationCode: value });
+    }
+  };
+
+  const resendLoginOtpCode = async () => sendOtp({ email: formData.email });
+
+  const startGoogleLogin = () => {
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    if (baseUrl) {
+      window.location.href = `${baseUrl}/api/oauth2/authorization/google`;
+    } else {
+      console.error('API base URL is not configured.');
     }
   };
 
   return {
     step,
-    setStep: setCurrentStep,
     formData,
-    updateFormData,
-    resetForm,
     isLoading,
-    setIsLoading,
-    error,
-    setError,
-    goToNextStep,
-    goToPreviousStep,
+    error: combinedError,
     loginAttemptType,
-    setLoginAttemptType,
+    goToPreviousStep,
     submitEmailStep,
     submitPasswordLogin,
     requestOtpLogin,
     verifyRecaptchaAndProceed,
-    verifyLoginCode,
-    resendLoginOtpCode,
     updateFormDataAndVerify,
+    resendLoginOtpCode,
+    startGoogleLogin,
   };
 };
 

@@ -6,7 +6,7 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import GoogleLoginButton from '../GoogleLoginButton';
 import Link from 'next/link';
 import { PATHS } from '@/constants/paths';
-import { useLoginFlow } from '@/hooks/useLoginFlow01';
+import { useLoginFlow } from '@/hooks/useLoginFlow';
 
 const EmailStep = () => {
   const { formData, isLoading, error, submitEmailStep, startGoogleLogin } = useLoginFlow();
