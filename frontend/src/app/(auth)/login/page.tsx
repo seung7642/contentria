@@ -5,7 +5,7 @@ import EmailStep from '@/components/auth/login/EmailStep';
 import PasswordStep from '@/components/auth/login/PasswordStep';
 import RecaptchaV2Step from '@/components/auth/RecaptchaV2Step';
 import { VerificationStep } from '@/components/auth/VerificationStep';
-import { LoginFlowProvider, useLoginFlow } from '@/hooks/useLoginFlow';
+import { LoginFlowProvider, useLoginFlow } from '@/hooks/useLoginFlow01';
 
 const LoginFlow = () => {
   const loginFlow = useLoginFlow();
@@ -22,10 +22,10 @@ const LoginFlow = () => {
         return (
           <RecaptchaV2Step
             isLoading={loginFlow.isLoading}
-            error={loginFlow.error}
+            error={loginFlow.error?.message || null}
             goToPreviousStep={loginFlow.goToPreviousStep}
             onVerify={loginFlow.verifyRecaptchaAndProceed}
-            onError={(errorMessage) => loginFlow.setError(errorMessage)}
+            onError={(errorMessage) => console.error('reCAPTCHA error:', errorMessage)}
           />
         );
       case 'verify_otp_code':
@@ -34,8 +34,8 @@ const LoginFlow = () => {
             email={loginFlow.formData.email}
             verificationCode={loginFlow.formData.verificationCode}
             isLoading={loginFlow.isLoading}
-            error={loginFlow.error}
-            onCodeChange={(code) => loginFlow.updateFormData('verificationCode', code)}
+            error={loginFlow.error?.message || null}
+            onCodeChange={(code) => loginFlow.updateFormDataAndVerify('verificationCode', code)}
             onResendCode={() => loginFlow.resendLoginOtpCode()}
           />
         );

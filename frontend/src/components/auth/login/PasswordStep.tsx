@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Mail } from 'lucide-react';
 import Link from 'next/link';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { useLoginFlow } from '@/hooks/useLoginFlow';
+import { useLoginFlow } from '@/hooks/useLoginFlow01';
 
 const PasswordStep = () => {
   const {
@@ -63,7 +63,7 @@ const PasswordStep = () => {
           {...register('password')}
           errorMessage={errors.password?.message}
         />
-        {error && <p className="mt-4 text-center text-sm text-red-600">{error}</p>}
+        {error && <p className="mt-4 text-center text-sm text-red-600">{error.message}</p>}
         <div className="mt-8">
           <button
             type="submit"

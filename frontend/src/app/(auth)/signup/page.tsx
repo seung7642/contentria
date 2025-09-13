@@ -8,7 +8,7 @@ import { VerificationStep } from '@/components/auth/VerificationStep';
 import { SignUpFlowProvider, useSignUpFlow } from '@/hooks/useSignUpFlow01';
 
 const SignUpFlow = () => {
-  const signUpFlow = useSignUpFlow(); // 이제 이 훅은 Provider를 통해 공유된 상태를 가져온다.
+  const signUpFlow = useSignUpFlow();
 
   const getTitle = () => (signUpFlow.step === 'verify_otp_code' ? 'Verify your email' : 'Sign up');
 

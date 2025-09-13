@@ -1,7 +1,6 @@
 'use client';
 
 import BackButton from '@/components/ui/BackButton';
-// import { RecaptchaV2StepProps } from '@/components/auth/types';
 import { useEffect, useRef } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { ShieldCheck } from 'lucide-react';

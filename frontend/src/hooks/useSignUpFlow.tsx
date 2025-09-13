@@ -2,7 +2,7 @@ import { SignUpStep } from '@/components/auth/types';
 import { RECAPTCHA_SIGN_UP_ACTION } from '@/constants/auth';
 import { PATHS } from '@/constants/paths';
 import { ApiError } from '@/errors/ApiError';
-import { EmailStepFormData } from '@/lib/schemas/authSchemas';
+import { SignUpEmailStepFormData } from '@/lib/schemas/authSchemas';
 import { authService } from '@/services/authService';
 import { useAuthStore } from '@/store/authStore';
 import { useRouter } from 'next/navigation';
@@ -77,7 +77,7 @@ const useSignUpFlowLogic = () => {
     setIsLoading(false);
   };
 
-  const submitEmailStep = (data: EmailStepFormData) => {
+  const submitEmailStep = (data: SignUpEmailStepFormData) => {
     updateFormData('name', data.name);
     updateFormData('email', data.email);
     goToNextStep();

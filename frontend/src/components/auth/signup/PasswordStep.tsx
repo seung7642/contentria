@@ -1,16 +1,12 @@
 import BackButton from '@/components/ui/BackButton';
 import Divider from '@/components/ui/Divider';
 import InputField from '@/components/ui/InputField';
-// import { RECAPTCHA_SIGN_UP_ACTION } from '@/constants/auth';
 import { PasswordStepFormData, passwordStepSchema } from '@/lib/schemas/authSchemas';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Info, Mail } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
-// import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import PasswordPolicyTooltip from './PasswordPolicyTooltip';
-// import { authService } from '@/services/authService';
-// import { SignUpPasswordStepProps } from './types';
 import { useSignUpFlow } from '@/hooks/useSignUpFlow01';
 
 interface PolicyItem {

@@ -1,14 +1,12 @@
-'use client';
-
 import { Divider } from '@/components/ui/Divider';
 import InputField from '@/components/ui/InputField';
-import { EmailStepFormData, emailStepSchema } from '@/lib/schemas/authSchemas';
+import { LoginEmailStepFormData, loginEmailStepSchema } from '@/lib/schemas/authSchemas';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import GoogleLoginButton from '../GoogleLoginButton';
 import Link from 'next/link';
 import { PATHS } from '@/constants/paths';
-import { useLoginFlow } from '@/hooks/useLoginFlow';
+import { useLoginFlow } from '@/hooks/useLoginFlow01';
 
 const EmailStep = () => {
   const { formData, isLoading, error, submitEmailStep } = useLoginFlow();
@@ -16,12 +14,13 @@ const EmailStep = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<EmailStepFormData>({
-    resolver: zodResolver(emailStepSchema),
+  } = useForm<LoginEmailStepFormData>({
+    resolver: zodResolver(loginEmailStepSchema),
     defaultValues: { email: formData.email },
   });
 
-  const onSubmit: SubmitHandler<EmailStepFormData> = async (data) => {
+  const onSubmit: SubmitHandler<LoginEmailStepFormData> = (data) => {
+    console.log('Email submitted click');
     submitEmailStep(data);
   };
 
@@ -39,8 +38,8 @@ const EmailStep = () => {
           {...register('email')}
           errorMessage={errors.email?.message}
         />
+        {error && <p className="text-center text-sm text-red-600">{error.message}</p>}
         <div>
-          {error && <p className="text-center text-sm text-red-600">{error}</p>}
           <button
             type="submit"
             disabled={isLoading}

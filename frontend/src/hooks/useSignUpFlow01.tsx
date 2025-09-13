@@ -1,7 +1,7 @@
 import { SignUpStep } from '@/components/auth/types';
 import { RECAPTCHA_SIGN_UP_ACTION } from '@/constants/auth';
 import { ApiError } from '@/errors/ApiError';
-import { EmailStepFormData } from '@/lib/schemas/authSchemas';
+import { SignUpEmailStepFormData } from '@/lib/schemas/authSchemas';
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import {
@@ -74,7 +74,7 @@ const useSignUpFlowLogic = () => {
     }
   };
 
-  const submitEmailStep = (data: EmailStepFormData) => {
+  const submitEmailStep = (data: SignUpEmailStepFormData) => {
     updateFormData('name', data.name);
     updateFormData('email', data.email);
     goToNextStep();

@@ -2,7 +2,7 @@
 
 import { LoginFormData, LoginStep } from '@/components/auth/login/types';
 import { PATHS } from '@/constants/paths';
-import { EmailStepFormData, PasswordStepFormData } from '@/lib/schemas/authSchemas';
+import { SignUpEmailStepFormData, PasswordStepFormData } from '@/lib/schemas/authSchemas';
 import { authService } from '@/services/authService';
 import { useAuthStore } from '@/store/authStore';
 import { ApiError } from '@/types/api/errors';
@@ -64,7 +64,7 @@ const useLoginFlowLogic = () => {
     setLoginAttemptType(null);
   };
 
-  const submitEmailStep = (data: EmailStepFormData) => {
+  const submitEmailStep = (data: SignUpEmailStepFormData) => {
     updateFormData('email', data.email);
     setStep('password');
   };
