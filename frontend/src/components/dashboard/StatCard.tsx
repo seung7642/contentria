@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp } from 'lucide-react';
+import { TrendingDown, TrendingUp } from 'lucide-react';
 
 interface StatCardProps {
   icon: React.ReactNode;
@@ -22,7 +22,11 @@ const StatCard: React.FC<StatCardProps> = ({ icon, title, value, trend, trendUp 
       <div
         className={`mt-3 flex items-center text-sm ${trendUp ? 'text-green-600' : 'text-red-600'}`}
       >
-        <TrendingUp size={16} className="mr-1" />
+        {trendUp ? (
+          <TrendingUp size={16} className="mr-1" />
+        ) : (
+          <TrendingDown size={16} className="mr-1" />
+        )}
         <span>{trend}</span>
       </div>
     </div>

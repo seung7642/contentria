@@ -3,18 +3,38 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { LayoutDashboard, FileText, Store, BarChart4, Settings, Menu, X, Home } from 'lucide-react';
+import { LayoutDashboard, FileText, Settings, Menu, X, Home } from 'lucide-react';
+import { useUserQuery } from '@/hooks/queries/useUserQuery';
+import SidebarMenuItem from './DashboardSidebarMenuItem';
 
 const DashboardSidebar = () => {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  const { data: user, isPending: isUserLoading } = useUserQuery();
+  const hasBlog = !!user?.blogSlug;
+
   const navItems = [
-    { path: '/dashboard', label: '대시보드', icon: <LayoutDashboard size={20} /> },
-    { path: '/dashboard/posts', label: '글 관리', icon: <FileText size={20} /> },
-    { path: '/dashboard/ads', label: '광고 관리', icon: <Store size={20} /> },
-    { path: '/dashboard/revenue', label: '수익 관리', icon: <BarChart4 size={20} /> },
-    { path: '/dashboard/settings', label: '설정', icon: <Settings size={20} /> },
+    {
+      path: '/dashboard',
+      label: '대시보드',
+      icon: <LayoutDashboard size={20} />,
+      requiresBlog: false,
+    },
+    {
+      path: '/dashboard/posts',
+      label: '글 관리',
+      icon: <FileText size={20} />,
+      requiresBlog: true,
+    },
+    // { path: '/dashboard/ads', label: '광고 관리', icon: <Store size={20} /> },
+    // { path: '/dashboard/revenue', label: '수익 관리', icon: <BarChart4 size={20} /> },
+    {
+      path: '/dashboard/settings',
+      label: '설정',
+      icon: <Settings size={20} />,
+      requiresBlog: true,
+    },
   ];
 
   return (
@@ -68,17 +88,13 @@ const DashboardSidebar = () => {
           <ul className="space-y-1">
             {navItems.map((item) => (
               <li key={item.path}>
-                <Link
-                  href={item.path}
-                  className={`flex items-center rounded-lg px-3 py-2 ${
-                    pathname === item.path
-                      ? 'bg-indigo-50 font-medium text-indigo-600'
-                      : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-                >
-                  <span className="mr-3">{item.icon}</span>
-                  <span>{item.label}</span>
-                </Link>
+                <SidebarMenuItem
+                  path={item.path}
+                  label={item.label}
+                  icon={item.icon}
+                  isActive={pathname === item.path}
+                  disabled={isUserLoading ? item.requiresBlog : item.requiresBlog && !hasBlog}
+                />
               </li>
             ))}
           </ul>

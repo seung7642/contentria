@@ -165,7 +165,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 2. ✨ Content Feed Section (신규) ✨ */}
+      {/* 2. ✨ Content Feed Section (신규) ✨
       <section className="bg-gray-50 py-20 md:py-24">
         <div className="container mx-auto max-w-6xl px-6">
           <div className="mb-16 text-center">
@@ -178,7 +178,7 @@ export default function HomePage() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* 3. Features Section (레이아웃 순서 변경) */}
       <section className="bg-white py-20 md:py-24">
@@ -220,7 +220,7 @@ export default function HomePage() {
       </section>
 
       {/* 4. ✨ Final CTA Section (신규) ✨ */}
-      <section className="bg-indigo-700">
+      {/* <section className="bg-indigo-700">
         <div className="container mx-auto max-w-4xl px-6 py-20 text-center">
           <h2 className="text-3xl font-bold text-white md:text-4xl">이제, 당신의 차례입니다</h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-indigo-200">
@@ -236,7 +236,7 @@ export default function HomePage() {
             </Link>
           </div>
         </div>
-      </section>
+      </section> */}
     </div>
   );
 }
