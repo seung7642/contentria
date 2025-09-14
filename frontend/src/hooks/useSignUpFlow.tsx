@@ -30,9 +30,10 @@ const useSignUpFlowLogic = () => {
     mutate: initiateSignUp,
     isPending: isInitiating,
     error: initiateError,
+    reset: resetInitiateSignUp,
   } = useInitiateSignUpMutation(() => setStep('verify_otp_code'));
-  const { mutate: verifyOtp, isPending: isVerifying, error: verifyError } = useVerifyOtpMutation();
   const { mutate: resendOtp, isPending: isResending, error: resendError } = useSendOtpMutation();
+  const { mutate: verifyOtp, isPending: isVerifying, error: verifyError } = useVerifyOtpMutation();
 
   const isLoading = isInitiating || isVerifying || isResending;
   const combinedError = (initiateError || verifyError || resendError) as ApiError | null;
@@ -40,8 +41,9 @@ const useSignUpFlowLogic = () => {
   useEffect(() => {
     if (combinedError && combinedError.status === 403 && combinedError.code === 'C0005') {
       setStep('recaptcha_v2_challenge');
+      resetInitiateSignUp();
     }
-  }, [combinedError]);
+  }, [combinedError, resetInitiateSignUp]);
 
   const updateFormData = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -126,6 +128,10 @@ const useSignUpFlowLogic = () => {
     formData,
     isLoading,
     error: combinedError,
+    initiateError,
+    verifyError,
+    resendError,
+    updateFormData,
     goToNextStep,
     goToPreviousStep,
     submitEmailStep,

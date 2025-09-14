@@ -28,11 +28,13 @@ const useLoginFlowLogic = () => {
     mutate: loginWithPassword,
     isPending: isLoggingIn,
     error: loginError,
+    reset: resetLoginWithPassword,
   } = useLoginWithPasswordMutation();
   const {
     mutate: sendOtp,
     isPending: isSendingOtp,
     error: sendOtpError,
+    reset: resetSendOtp,
   } = useSendOtpMutation(() => setStep('verify_otp_code'));
   const { mutate: verifyOtp, isPending: isVerifying, error: verifyError } = useVerifyOtpMutation();
 
@@ -42,8 +44,10 @@ const useLoginFlowLogic = () => {
   useEffect(() => {
     if (combinedError && combinedError.status === 403 && combinedError.code === 'C0005') {
       setStep('recaptcha_v2_challenge');
+      resetLoginWithPassword();
+      resetSendOtp();
     }
-  }, [combinedError]);
+  }, [combinedError, resetLoginWithPassword, resetSendOtp]);
 
   const updateFormData = (field: keyof LoginFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));

@@ -1,9 +1,21 @@
 import { PATHS } from '@/constants/paths';
+import { ApiError } from '@/errors/ApiError';
 import { authService } from '@/services/authService';
 import { useAuthStore } from '@/store/authStore';
-import { LoginPayload, SendOtpPayload } from '@/types/api/auth/login';
-import { InitiateSignUpPayload, VerifyOtpCodePayload } from '@/types/api/auth/signUp';
+import {
+  LoginPayload,
+  LoginResponse,
+  SendOtpPayload,
+  SendOtpResponse,
+} from '@/types/api/auth/login';
+import {
+  InitiateSignUpPayload,
+  InitiateSignUpResponse,
+  VerifyOtpCodePayload,
+  VerifyOtpCodeResponse,
+} from '@/types/api/auth/signUp';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { AxiosError } from 'axios';
 import { useRouter } from 'next/navigation';
 
 /**
@@ -15,7 +27,7 @@ export const useLoginWithPasswordMutation = () => {
   const router = useRouter();
   const login = useAuthStore((state) => state.login);
 
-  return useMutation({
+  return useMutation<LoginResponse, ApiError | AxiosError, LoginPayload>({
     mutationFn: (payload: LoginPayload) => authService.loginWithPassword(payload),
     onSuccess: (data) => {
       login(data.user);
@@ -30,10 +42,13 @@ export const useLoginWithPasswordMutation = () => {
  * onSuccess 콜백을 통해 특정 UI 로직을 실행할 수 있다.
  */
 export const useInitiateSignUpMutation = (onSuccessCallback?: () => void) => {
-  return useMutation({
+  return useMutation<InitiateSignUpResponse, ApiError | AxiosError, InitiateSignUpPayload>({
     mutationFn: (payload: InitiateSignUpPayload) => authService.initiateSignUp(payload),
     onSuccess: () => {
       onSuccessCallback?.();
+    },
+    onError: (error, variables, context) => {
+      console.error('Error during initiateSignUp:', error, variables, context);
     },
   });
 };
@@ -47,7 +62,7 @@ export const useVerifyOtpMutation = () => {
   const router = useRouter();
   const login = useAuthStore((state) => state.login);
 
-  return useMutation({
+  return useMutation<VerifyOtpCodeResponse, ApiError | AxiosError, VerifyOtpCodePayload>({
     mutationFn: (payload: VerifyOtpCodePayload) => authService.verifyOtpCode(payload),
     onSuccess: (data) => {
       login(data.user);
@@ -62,7 +77,7 @@ export const useVerifyOtpMutation = () => {
  * onSuccess 콜백을 통해 특정 UI 로직을 실행할 수 있다.
  */
 export const useSendOtpMutation = (onSuccessCallback?: () => void) => {
-  return useMutation({
+  return useMutation<SendOtpResponse, ApiError | AxiosError, SendOtpPayload>({
     mutationFn: (payload: SendOtpPayload) => authService.sendOtpCode(payload),
     onSuccess: () => {
       onSuccessCallback?.();
