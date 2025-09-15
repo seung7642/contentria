@@ -23,10 +23,11 @@ import StatCard from './StatCard';
 const DashboardContent = () => {
   const [timeRange, setTimeRange] = useState<TimeRange>('2weeks');
   const { data: user } = useUserQuery();
+  const slug = user?.slugs?.[0];
 
-  const { data: stats, isLoading: isStatsLoading } = useDashboadStatsQuery();
-  const { data: popularPosts, isLoading: isPostsLoading } = usePopularPostsQuery();
-  const { data: trafficData, isLoading: isTrafficLoading } = useTrafficChartQuery(timeRange);
+  const { data: stats, isLoading: isStatsLoading } = useDashboadStatsQuery(slug!);
+  const { data: popularPosts, isLoading: isPostsLoading } = usePopularPostsQuery(slug!);
+  const { data: trafficData, isLoading: isTrafficLoading } = useTrafficChartQuery(slug!, timeRange);
 
   return (
     <div className="space-y-6">
