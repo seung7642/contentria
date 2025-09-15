@@ -3,5 +3,5 @@ export interface User {
   name: string;
   email: string;
   profileImage: string | null;
-  blogSlug: string | null;
+  slugs: string[] | null;
 }

@@ -1,6 +1,6 @@
 package com.contentria.api.post
 
-import com.contentria.api.blog.Blog
+import com.contentria.api.blog.domain.Blog
 import com.contentria.api.category.Category
 import com.contentria.api.comment.Comment
 import com.contentria.api.media.Media

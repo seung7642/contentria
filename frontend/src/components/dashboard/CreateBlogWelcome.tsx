@@ -24,10 +24,10 @@ const CreateBlogWelcome = () => {
     resolver: zodResolver(schema),
   });
 
-  const { mutate, isPending, error } = useCreateBlogMutation();
+  const { mutate: createBlog, isPending, error } = useCreateBlogMutation();
 
   const onSubmit: SubmitHandler<FormValues> = (data) => {
-    mutate(data);
+    createBlog(data);
   };
 
   return (

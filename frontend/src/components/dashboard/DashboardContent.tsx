@@ -24,7 +24,6 @@ const DashboardContent = () => {
   const [timeRange, setTimeRange] = useState<TimeRange>('2weeks');
   const { data: user } = useUserQuery();
 
-  // 이 훅들은 blogSlug가 있을 때만 활성화된다. (이전 단계에서 enabled 옵션 설정함)
   const { data: stats, isLoading: isStatsLoading } = useDashboadStatsQuery();
   const { data: popularPosts, isLoading: isPostsLoading } = usePopularPostsQuery();
   const { data: trafficData, isLoading: isTrafficLoading } = useTrafficChartQuery(timeRange);

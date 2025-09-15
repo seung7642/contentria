@@ -3,6 +3,7 @@ package com.contentria.api.user.controller
 import com.contentria.api.config.exception.ContentriaException
 import com.contentria.api.config.exception.ErrorCode
 import com.contentria.api.user.security.CustomUserDetails
+import com.contentria.api.user.service.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.Authentication
@@ -14,7 +15,9 @@ private val log = KotlinLogging.logger {}
 
 @RestController
 @RequestMapping("/users")
-class UserController {
+class UserController(
+    private val userService: UserService
+) {
 
     @GetMapping("/me")
     fun getMyInfo(authentication: Authentication): ResponseEntity<UserInfoResponse> {
@@ -24,12 +27,7 @@ class UserController {
                 throw ContentriaException(ErrorCode.UNEXPECTED_AUTHENTICATION_PRINCIPAL)
             }
 
-        val response = UserInfoResponse(
-            userId = userDetails.userId,
-            email = userDetails.email,
-            name = userDetails.displayName,
-            profileImage = userDetails.profileImageUrl
-        )
-        return ResponseEntity.ok(response)
+        val userInfo = userService.getCurrentUserInfo(userDetails.userId)
+        return ResponseEntity.ok(userInfo)
     }
 }

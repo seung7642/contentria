@@ -1,4 +1,4 @@
-package com.contentria.api.blog
+package com.contentria.api.blog.domain
 
 import com.contentria.api.category.Category
 import com.contentria.api.post.Post
@@ -21,13 +21,9 @@ import java.util.UUID
 class Blog(
     @Id
     @Column(columnDefinition = "UUID")
-    var id: UUID = UUID.randomUUID(),
+    var id: String = UUID.randomUUID().toString(),
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    var user: User,
-
-    @Column(length = 100, unique = true, nullable = false)
+    @Column(length = 30, unique = true, nullable = false)
     var slug: String,
 
     @Column(length = 255, nullable = false)
@@ -35,6 +31,16 @@ class Blog(
 
     @Column(columnDefinition = "TEXT")
     var description: String? = null,
+
+    @Column(nullable = false)
+    var createdAt: ZonedDateTime = ZonedDateTime.now(),
+
+    @Column(nullable = false)
+    var updatedAt: ZonedDateTime = ZonedDateTime.now(),
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    var user: User,
 
     @OneToMany(mappedBy = "blog", cascade = [CascadeType.ALL], orphanRemoval = true)
     var posts: MutableList<Post> = mutableListOf(),
@@ -44,10 +50,4 @@ class Blog(
 
     @OneToMany(mappedBy = "blog", cascade = [CascadeType.ALL], orphanRemoval = true)
     var subscriptions: MutableList<Subscription> = mutableListOf(),
-
-    @Column(nullable = false)
-    var createdAt: ZonedDateTime = ZonedDateTime.now(),
-
-    @Column(nullable = false)
-    var updatedAt: ZonedDateTime = ZonedDateTime.now(),
 )

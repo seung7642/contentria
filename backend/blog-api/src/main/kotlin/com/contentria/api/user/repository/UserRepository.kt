@@ -15,4 +15,7 @@ interface UserRepository : JpaRepository<User, String> {
     fun findByEmailWithRoles(@Param("email") email: String): User?
 
     fun existsByEmail(email: String): Boolean
+
+    @Query("SELECT u FROM User u WHERE u.id = :id AND u.status = com.contentria.api.user.domain.UserStatus.ACTIVE")
+    fun findActiveById(@Param("id") id: String): User?
 }

@@ -8,12 +8,6 @@ import { Loader2 } from 'lucide-react';
 const DashboardPage = () => {
   const { data: user, isPending: isUserLoading } = useUserQuery();
 
-  // useEffect(() => {
-  //   if (!isUserLoading && (isUserError || !user)) {
-  //     router.replace(PATHS.LOGIN);
-  //   }
-  // }, [user, router, isUserLoading, isUserError]);
-
   if (isUserLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
@@ -22,7 +16,7 @@ const DashboardPage = () => {
     );
   }
 
-  return user?.blogSlug ? <DashboardContent /> : <CreateBlogWelcome />;
+  return user?.slugs?.length ? <DashboardContent /> : <CreateBlogWelcome />;
 };
 
 export default DashboardPage;

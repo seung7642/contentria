@@ -12,7 +12,7 @@ const DashboardSidebar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const { data: user, isPending: isUserLoading } = useUserQuery();
-  const hasBlog = !!user?.blogSlug;
+  const hasBlog = user?.slugs?.length;
 
   const navItems = [
     {

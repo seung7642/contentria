@@ -19,7 +19,7 @@ enum class ErrorCode(
 
     // Sign Up
     INVALID_VERIFICATION_CODE(HttpStatus.BAD_REQUEST, "SU0000", "Invalid or expired verification code"),
-    ALREADY_EXISTS_EMAIL(HttpStatus.CONFLICT, "SU0001", "This email is already in use"),
+    ALREADY_EXISTS_EMAIL(HttpStatus.CONFLICT, "SU0001", "This email is already in use."),
 
     // Auth
     UNEXPECTED_AUTHENTICATION_PRINCIPAL(HttpStatus.INTERNAL_SERVER_ERROR, "AU0000", "Could not resolve user details from the current authentication session."),
@@ -33,5 +33,8 @@ enum class ErrorCode(
     AUTHORIZATION_FAILED(HttpStatus.FORBIDDEN, "AU0008", "You do not have permission to access this resource."),
     INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "AU0009", "Invalid email or password."),
     USER_NOT_ACTIVATED(HttpStatus.FORBIDDEN, "AU0010", "User account is not active. Please verify your email or contact support."),
+    REQUIRED_ROLE_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR, "AU0011", "Required role not found in the system. Please contact support."),
 
+    // Blog
+    DUPLICATE_BLOG_SLUG(HttpStatus.CONFLICT, "BL0000", "Blog slug already in use. Please choose a different one."),
 }

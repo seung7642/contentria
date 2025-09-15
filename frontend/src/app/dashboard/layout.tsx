@@ -5,9 +5,8 @@ import React, { useEffect } from 'react';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import { useRouter } from 'next/navigation';
-import { useUserQuery } from '@/hooks/queries/useUserQuery';
 import { PATHS } from '@/constants/paths';
-import { Loader2 } from 'lucide-react';
+import { useAuthStore } from '@/store/authStore';
 
 export default function DashboardLayout({
   children,
@@ -15,21 +14,13 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }>) {
   const router = useRouter();
-  const { data: user, isPending: isUserLoading, isError: isUserError } = useUserQuery();
+  const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
-    if (!isUserLoading && (isUserError || !user)) {
+    if (!user) {
       router.replace(PATHS.LOGIN);
     }
-  }, [isUserLoading, isUserError, user, router]);
-
-  if (isUserLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-10 w-10 animate-spin text-indigo-600" />
-      </div>
-    );
-  }
+  }, [user, router]);
 
   return (
     <div className={`flex min-h-screen flex-col bg-gray-50`}>

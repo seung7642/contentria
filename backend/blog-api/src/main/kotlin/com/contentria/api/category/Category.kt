@@ -1,6 +1,6 @@
 package com.contentria.api.category
 
-import com.contentria.api.blog.Blog
+import com.contentria.api.blog.domain.Blog
 import com.contentria.api.post.Post
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column

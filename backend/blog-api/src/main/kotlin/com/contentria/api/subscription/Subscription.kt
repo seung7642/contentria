@@ -1,6 +1,6 @@
 package com.contentria.api.subscription
 
-import com.contentria.api.blog.Blog
+import com.contentria.api.blog.domain.Blog
 import com.contentria.api.user.domain.User
 import jakarta.persistence.Column
 import jakarta.persistence.Entity

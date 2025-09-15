@@ -55,12 +55,14 @@ class GlobalExceptionHandler {
         request: WebRequest
     ): ResponseEntity<ErrorResponse> {
         val requestUri = (request as ServletWebRequest).request.requestURI
-        val errorCode = ErrorCode.ALREADY_EXISTS_EMAIL
+        val errorCode = ErrorCode.INVALID_INPUT_VALUE
+        val errorMessage = e.bindingResult.fieldErrors.firstOrNull()?.defaultMessage
+            ?: errorCode.message
 
         val errorResponse = ErrorResponse(
             status = errorCode.status.value(),
             error = errorCode.status.reasonPhrase,
-            message = errorCode.message,
+            message = errorMessage,
             path = requestUri,
             code = errorCode.code
         )
