@@ -27,7 +27,7 @@ class UserController(
                 throw ContentriaException(ErrorCode.UNEXPECTED_AUTHENTICATION_PRINCIPAL)
             }
 
-        val userInfo = userService.getCurrentUserInfo(userDetails.userId)
+        val userInfo = userService.getCurrentUserInfo(userDetails.userId!!)
         return ResponseEntity.ok(userInfo)
     }
 }

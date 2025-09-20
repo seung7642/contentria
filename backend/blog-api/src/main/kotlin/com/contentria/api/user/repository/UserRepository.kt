@@ -5,9 +5,10 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
+import java.util.UUID
 
 @Repository
-interface UserRepository : JpaRepository<User, String> {
+interface UserRepository : JpaRepository<User, UUID> {
 
     fun findByEmail(email: String): User?
 
@@ -17,5 +18,5 @@ interface UserRepository : JpaRepository<User, String> {
     fun existsByEmail(email: String): Boolean
 
     @Query("SELECT u FROM User u WHERE u.id = :id AND u.status = com.contentria.api.user.domain.UserStatus.ACTIVE")
-    fun findActiveById(@Param("id") id: String): User?
+    fun findActiveById(@Param("id") id: UUID): User?
 }

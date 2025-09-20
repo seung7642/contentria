@@ -32,7 +32,7 @@ class JwtService(
     fun generateAccessToken(user: User): String {
         val expiration = Instant.now().plus(appProperties.auth.jwt.accessTokenExpiration)
         val extraClaims = mapOf(
-            "userId" to user.id,
+            "userId" to user.id!!,
             "roles" to user.getAuthorities().map { it.authority }
         )
         return generateToken(user.email, extraClaims, Date.from(expiration))

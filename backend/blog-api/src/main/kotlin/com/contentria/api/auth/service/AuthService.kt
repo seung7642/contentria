@@ -80,7 +80,7 @@ class AuthService(
         }
 
         val accessToken = jwtService.generateAccessToken(user)
-        val refreshToken = refreshTokenService.createOrUpdateOpaqueRefreshToken(user.id)
+        val refreshToken = refreshTokenService.createOrUpdateOpaqueRefreshToken(user.id!!)
 
         log.info { "User logged in successfully: ${user.email}" }
         return LoginResult(

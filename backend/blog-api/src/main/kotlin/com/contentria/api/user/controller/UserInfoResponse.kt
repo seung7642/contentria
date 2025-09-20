@@ -1,9 +1,10 @@
 package com.contentria.api.user.controller
 
 import com.contentria.api.user.domain.User
+import java.util.UUID
 
 data class UserInfoResponse(
-    val userId: String,
+    val userId: UUID?,
     val email: String,
     val name: String?,
     val profileImage: String?,

@@ -15,6 +15,7 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
@@ -118,15 +119,15 @@ class UserService(
     }
 
     @Transactional(readOnly = true)
-    fun findActiveUserById(userId: String): User {
+    fun findActiveUserById(userId: UUID): User {
         return userRepository.findActiveById(userId)
             ?: throw ContentriaException(ErrorCode.USER_NOT_FOUND)
     }
 
-    fun getCurrentUserInfo(userId: String): UserInfoResponse {
+    fun getCurrentUserInfo(userId: UUID): UserInfoResponse {
         val user = findActiveUserById(userId)
 
-        val blogSlugs = blogRepository.findSlugsByUserId(user.id)
+        val blogSlugs = blogRepository.findSlugsByUserId(user.id!!)
 
         return UserInfoResponse(
             userId = user.id,

@@ -4,12 +4,13 @@ import com.contentria.api.user.domain.AuthProvider
 import com.contentria.api.user.domain.User
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
+import java.util.UUID
 
 data class CustomUserDetails(
     private val user: User
 ) : UserDetails {
 
-    val userId: String get() = user.id
+    val userId: UUID? get() = user.id
     val email: String get() = user.email
     val profileImageUrl: String? get() = user.pictureUrl
     val displayName: String? get() = user.username

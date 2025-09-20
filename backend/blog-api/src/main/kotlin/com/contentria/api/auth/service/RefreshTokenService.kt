@@ -36,7 +36,7 @@ class RefreshTokenService(
         val newAccessToken = jwtService.generateAccessToken(user)
 
         // 4. Refresh Token Rotation
-        val newOpaqueRefreshToken = createOrUpdateOpaqueRefreshToken(user.id)
+        val newOpaqueRefreshToken = createOrUpdateOpaqueRefreshToken(user.id!!)
 
         // 5. 결과 DTO 반환
         return RefreshedTokensDto(
@@ -46,7 +46,7 @@ class RefreshTokenService(
     }
 
     @Transactional
-    fun createOrUpdateOpaqueRefreshToken(userId: String): String {
+    fun createOrUpdateOpaqueRefreshToken(userId: UUID): String {
         val user = userRepository.findByIdOrNull(userId)
             ?: throw ContentriaException(ErrorCode.USER_NOT_FOUND)
 

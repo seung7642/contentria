@@ -59,7 +59,7 @@ class CustomOidcAuthenticationSuccessHandler(
         try {
             val user: User = userService.upsertGoogleUser(googleUserInfo)
             val accessToken = jwtService.generateAccessToken(user)
-            val refreshToken = refreshTokenService.createOrUpdateOpaqueRefreshToken(user.id)
+            val refreshToken = refreshTokenService.createOrUpdateOpaqueRefreshToken(user.id!!)
 
             response.addCookie(cookieUtil.createAccessTokenCookie(accessToken, request))
             response.addCookie(cookieUtil.createRefreshTokenCookie(refreshToken, request))
