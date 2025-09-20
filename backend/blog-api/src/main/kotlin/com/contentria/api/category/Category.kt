@@ -1,29 +1,22 @@
 package com.contentria.api.category
 
 import com.contentria.api.blog.domain.Blog
-import com.contentria.api.post.Post
-import jakarta.persistence.CascadeType
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.FetchType
-import jakarta.persistence.Id
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
-import jakarta.persistence.OneToMany
-import jakarta.persistence.Table
-import java.time.ZonedDateTime
-import java.util.UUID
+import com.contentria.api.user.domain.BaseEntity
+import com.contentria.common.jpa.GeneratedUuidV7
+import jakarta.persistence.*
+import java.util.*
 
 @Entity
 @Table(name = "categories")
 class Category(
     @Id
-    @Column(columnDefinition = "UUID")
-    var id: UUID = UUID.randomUUID(),
+    @GeneratedValue
+    @GeneratedUuidV7
+    @Column(columnDefinition = "uuid")
+    var id: UUID? = null,
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "blog_id", nullable = false)
-    var blog: Blog,
+    @Column(length = 100, nullable = false)
+    var name: String,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
@@ -34,15 +27,7 @@ class Category(
     @OneToMany(mappedBy = "parent", cascade = [CascadeType.PERSIST, CascadeType.MERGE])
     var children: MutableList<Category> = mutableListOf(),
 
-    @Column(length = 100, nullable = false)
-    var name: String,
-
-    @OneToMany(mappedBy = "category", cascade = [CascadeType.PERSIST, CascadeType.MERGE])
-    var posts: MutableList<Post> = mutableListOf(),
-
-    @Column(nullable = false)
-    var createdAt: ZonedDateTime = ZonedDateTime.now(),
-
-    @Column(nullable = false)
-    var updatedAt: ZonedDateTime = ZonedDateTime.now(),
-)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "blog_id", nullable = false)
+    var blog: Blog,
+) : BaseEntity()

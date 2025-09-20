@@ -1,16 +1,18 @@
 package com.contentria.api.user.domain
 
+import com.contentria.common.jpa.GeneratedUuidV7
 import jakarta.persistence.*
 import org.springframework.security.core.GrantedAuthority
-import java.time.ZonedDateTime
 import java.util.*
 
 @Entity
 @Table(name = "users")
 class User(
     @Id
-    @Column(length = 36)
-    val id: String = UUID.randomUUID().toString(),
+    @GeneratedValue
+    @GeneratedUuidV7
+    @Column(columnDefinition = "uuid")
+    val id: UUID? = null,
 
     @Column(nullable = false, unique = true)
     var email: String,
@@ -36,17 +38,10 @@ class User(
     @OneToMany(mappedBy = "user", cascade = [(CascadeType.ALL)], orphanRemoval = true)
     var userRoles: MutableSet<UserRole> = mutableSetOf(),
 
-    var createdAt: ZonedDateTime = ZonedDateTime.now(),
+) : BaseEntity() {
 
-    var updatedAt: ZonedDateTime = ZonedDateTime.now()
-) {
-    @PreUpdate
-    fun preUpdate() {
-        updatedAt = ZonedDateTime.now()
-    }
-
-    fun addRole(role: Role, createdBy: String? = null): UserRole {
-        val userRole = UserRole(user = this, role = role, createdBy = createdBy)
+    fun addRole(role: Role): UserRole {
+        val userRole = UserRole(user = this, role = role)
         userRoles.add(userRole)
         return userRole
     }

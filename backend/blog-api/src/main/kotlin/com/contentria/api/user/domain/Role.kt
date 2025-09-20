@@ -1,5 +1,6 @@
 package com.contentria.api.user.domain
 
+import com.contentria.common.jpa.GeneratedUuidV7
 import jakarta.persistence.*
 import org.springframework.security.core.GrantedAuthority
 import java.util.*
@@ -8,15 +9,18 @@ import java.util.*
 @Table(name = "roles")
 class Role(
     @Id
-    @Column(length = 36)
-    val id: String = UUID.randomUUID().toString(),
+    @GeneratedValue
+    @GeneratedUuidV7
+    @Column(columnDefinition = "uuid")
+    val id: UUID? = null,
 
     @Column(nullable = false, unique = true, length = 50)
     val name: String,
 
     @Column(length = 255)
     val description: String? = null,
-) : GrantedAuthority {
+
+) : GrantedAuthority, BaseEntity() {
 
     override fun getAuthority(): String = name
 

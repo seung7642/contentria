@@ -40,6 +40,9 @@ dependencies {
     implementation("com.giffing.bucket4j.spring.boot.starter:bucket4j-spring-boot-starter:0.13.0")
     implementation("com.github.ben-manes.caffeine:jcache:3.2.2")
 
+    // UUID
+    implementation("com.github.f4b6a3:uuid-creator:6.1.0")
+
     // 테스트 종속성 - 명시적으로 JUnit 프레임워크 지정
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")

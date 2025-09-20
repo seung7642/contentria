@@ -4,6 +4,7 @@ plugins {
 
 dependencies {
     // Spring Boot 기본
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
@@ -12,6 +13,9 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.3")
+
+    // UUID
+    implementation("com.github.f4b6a3:uuid-creator:6.1.0")
 
     implementation("com.mailgun:mailgun-java:1.1.6")
 
