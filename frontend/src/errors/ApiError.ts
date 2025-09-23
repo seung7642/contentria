@@ -25,3 +25,13 @@ export class ApiError extends Error {
     this.details = details;
   }
 }
+
+export interface BackendErrorResponse {
+  message: string;
+  timestamp: string;
+  status: number;
+  error: string;
+  code: string;
+  path: string;
+  details?: Record<string, string>;
+}

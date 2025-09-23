@@ -1,81 +1,57 @@
 import Image from 'next/image';
 import CategoryItem from './CategoryItem';
+import { BlogInfo, CategoryNode, OwnerInfo } from '@/types/api/blogs';
+import { getHighResGoogleProfileImage } from '@/lib/utils';
 
-export type Category = {
-  id: string;
-  name: string;
-  children?: Category[];
-};
+interface SidebarProps {
+  blog: BlogInfo;
+  owner: OwnerInfo;
+  categories: CategoryNode[];
+}
 
-const categories: Category[] = [
-  {
-    id: '프로젝트',
-    name: '프로젝트',
-    children: [
-      {
-        id: 'web',
-        name: '웹 개발',
-        children: [
-          { id: 'frontend', name: '프론트엔드' },
-          { id: 'backend', name: '백엔드' },
-        ],
-      },
-      {
-        id: 'mobile',
-        name: '모바일 앱',
-      },
-    ],
-  },
-  {
-    id: '생활',
-    name: '생활',
-    children: [
-      { id: 'daily', name: '일상' },
-      { id: 'travel', name: '여행' },
-    ],
-  },
-];
+const Sidebar = ({ blog, owner, categories }: SidebarProps) => {
+  const profileImageUrl =
+    getHighResGoogleProfileImage(owner.pictureUrl, 256) ?? '/images/default-profile.png';
+  const blogDescription = blog.description ?? '블로그에 오신 것을 환영합니다.';
 
-const Sidebar: React.FC = () => {
   return (
     <aside className="m-2 flex w-80 flex-col overflow-auto rounded border border-gray-200 bg-gray-100 p-4">
       {/* 프로필 박스 */}
       <div className="mb-6 rounded-lg bg-white p-4 shadow">
         <div className="flex flex-col items-center">
-          <div className="mb-4 flex h-56 w-56 items-center justify-center rounded-lg bg-gray-300">
+          <div className="relative mb-4 flex h-56 w-56 items-center justify-center overflow-hidden rounded-lg bg-gray-300">
             <Image
-              src={`/images/default-profile.png`}
+              src={profileImageUrl}
               alt="profile"
-              width={250}
-              height={250}
+              fill // 부모 요소에 맞게 이미지를 채운다. (부모 요소에 position: relative 필요)
+              style={{ objectFit: 'cover' }} // 이미지 비율을 유지하며 채운다.
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // 반응형 이미지 크기 설정
+              priority // 사이드바 이미지는 중요하므로 우선적으로 로드한다.
               className="rounded-lg"
             />
           </div>
-          <h2 className="mb-2 text-lg">이승호</h2>
-          <p className="text-center text-sm text-gray-600">반갑습니다.</p>
+          <h2 className="mb-2 text-lg">{owner.username}</h2>
+          <p className="text-center text-sm text-gray-600">{blogDescription}</p>
         </div>
       </div>
 
       {/* 카테고리 박스 */}
-      <div className="mb-6 rounded-lg bg-white p-4 shadow">
-        <h2 className="mb-4 text-center text-xl font-bold">글 분류</h2>
-        <ul>
-          {categories.map((category) => (
-            // <li key={category.id} className="mb-2">
-            //   <Link href={`/category/${category.id}`} className="text-blue-300 hover:underline">
-            //     {category.name}
-            //   </Link>
-            // </li>
-            <CategoryItem key={category.id} category={category} />
-          ))}
-        </ul>
-      </div>
+      {categories.length > 0 && (
+        <div className="mb-6 rounded-lg bg-white p-4 shadow">
+          <h2 className="mb-4 text-center text-xl font-bold">글 분류</h2>
+          <ul>
+            {categories.map((category) => (
+              <CategoryItem key={category.id ?? 'uncategorized'} category={category} />
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* 아이콘 박스 */}
       <div className="mt-auto border-t border-gray-200 pt-4">
         <div className="flex justify-around">
           <a
-            href="https://github.com/seung7642"
+            href="https://github.com"
             target="_blank"
             rel="noopener noreferrer"
             className="text-gray-600 hover:text-gray-900"

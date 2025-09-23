@@ -10,7 +10,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing
 
 @SpringBootApplication
 @EnableConfigurationProperties(GoogleProperties::class, AppProperties::class)
-@EnableJpaAuditing
 @ComponentScan(basePackages = ["com.contentria.common", "com.contentria.api"])
 class BlogApiApplication
 

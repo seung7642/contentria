@@ -1,4 +1,4 @@
-package com.contentria.common.jpa
+package com.contentria.common.config.jpa
 
 import org.hibernate.annotations.IdGeneratorType
 

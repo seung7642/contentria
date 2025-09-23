@@ -1,6 +1,7 @@
 package com.contentria.api.post.repository
 
 import com.contentria.api.blog.domain.Blog
+import com.contentria.api.blog.dto.PostSummaryDto
 import com.contentria.api.post.Post
 import com.contentria.api.post.PostStatus
 import com.contentria.api.post.dto.CategoryPostCountDto
@@ -25,4 +26,30 @@ interface PostRepository : JpaRepository<Post, UUID> {
         GROUP BY p.category.id
     """)
     fun countPostsByCategoryId(@Param("blog") blog: Blog): List<CategoryPostCountDto>
+
+    @Query("""
+        SELECT new com.contentria.api.blog.dto.PostSummaryDto(
+            p.id,
+            p.slug,
+            p.title,
+            CASE 
+                WHEN p.metaDescription IS NOT NULL AND TRIM(p.metaDescription) <> '' THEN p.metaDescription
+                ELSE CONCAT(SUBSTRING(CAST(p.contentMarkdown AS string), 1, 100), '...')
+            END,
+            p.metaTitle,
+            p.metaDescription,
+            p.featuredImageUrl,
+            p.publishedAt,
+            c.name,
+            p.likeCount,
+            p.viewCount
+        )
+        FROM Post p
+        JOIN p.blog b
+        LEFT JOIN p.category c
+        WHERE b.slug = :blogSlug AND p.status = 'PUBLISHED'
+        ORDER BY p.publishedAt DESC
+    """)
+    fun findPostSummariesByBlogSlug(blogSlug: String, pageable: Pageable): Page<PostSummaryDto>
+
 }

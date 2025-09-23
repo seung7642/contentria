@@ -1,6 +1,5 @@
 import { LoginFormData, LoginStep } from '@/components/auth/login/types';
 import { PasswordStepFormData, LoginEmailStepFormData } from '@/lib/schemas/authSchemas';
-import { ApiError } from '@/types/api/errors';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import {
@@ -9,6 +8,7 @@ import {
   useVerifyOtpMutation,
 } from './queries/useAuthMutations';
 import { RECAPTCHA_LOGIN_WITH_PASSWORD_ACTION, RECAPTCHA_SEND_OTP_ACTION } from '@/constants/auth';
+import { ApiError } from '@/errors/ApiError';
 
 type LoginFlowContextType = ReturnType<typeof useLoginFlowLogic>;
 

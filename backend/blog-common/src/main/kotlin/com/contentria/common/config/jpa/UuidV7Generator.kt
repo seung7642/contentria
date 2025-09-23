@@ -1,4 +1,4 @@
-package com.contentria.common.jpa
+package com.contentria.common.config.jpa
 
 import com.github.f4b6a3.uuid.UuidCreator
 import org.hibernate.engine.spi.SharedSessionContractImplementor

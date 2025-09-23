@@ -2,12 +2,15 @@ package com.contentria.api.category
 
 import com.contentria.api.blog.domain.Blog
 import com.contentria.api.user.domain.BaseEntity
-import com.contentria.common.jpa.GeneratedUuidV7
+import com.contentria.common.config.jpa.GeneratedUuidV7
 import jakarta.persistence.*
 import java.util.*
 
 @Entity
-@Table(name = "categories")
+@Table(
+    name = "categories",
+    uniqueConstraints = [UniqueConstraint(columnNames = ["blog_id", "slug"])]
+)
 class Category(
     @Id
     @GeneratedValue
@@ -17,6 +20,9 @@ class Category(
 
     @Column(length = 100, nullable = false)
     var name: String,
+
+    @Column(nullable = false)
+    var slug: String,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")

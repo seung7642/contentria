@@ -1,6 +1,6 @@
 package com.contentria.api.user.domain
 
-import com.contentria.common.jpa.GeneratedUuidV7
+import com.contentria.common.config.jpa.GeneratedUuidV7
 import jakarta.persistence.*
 import org.springframework.security.core.GrantedAuthority
 import java.util.*

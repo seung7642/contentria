@@ -13,5 +13,7 @@ interface BlogRepository : JpaRepository<Blog, UUID> {
     fun existsBySlug(slug: String): Boolean
 
     @Query("SELECT b.slug FROM Blog b WHERE b.user.id = :userId")
-    fun findSlugsByUserId(@Param("userId") userId: String): List<String>
+    fun findSlugsByUserId(@Param("userId") userId: UUID): List<String>
+
+    fun findBySlug(slug: String): Blog?
 }

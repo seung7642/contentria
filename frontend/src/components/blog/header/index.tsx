@@ -1,4 +1,4 @@
 // index.tsx - 메인 내보내기 지점
-import Header from './Header';
+import BlogHeader from './BlogHeader';
 
-export default Header;
+export default BlogHeader;

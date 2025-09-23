@@ -14,10 +14,14 @@ spring:
   config:
     import: optional:file:.env[.properties]
   datasource:
-    url: ${DATABASE_URL}
+#    url: ${DATABASE_URL}
+#    driver-class-name: org.postgresql.Driver
+#    username: ${DATABASE_USER}
+#    password: ${DATABASE_PASSWORD}
+    url: jdbc:postgresql://localhost:5432/postgres
     driver-class-name: org.postgresql.Driver
-    username: ${DATABASE_USER}
-    password: ${DATABASE_PASSWORD}
+    username: contentria_user
+    password: contentria
   jpa:
     hibernate:
 #      naming:

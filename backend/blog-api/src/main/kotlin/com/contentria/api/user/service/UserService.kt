@@ -11,11 +11,10 @@ import com.contentria.api.user.repository.RoleRepository
 import com.contentria.api.user.repository.UserRepository
 import com.contentria.api.user.security.GoogleUserInfo
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.UUID
+import java.util.*
 
 private val logger = KotlinLogging.logger {}
 
@@ -48,7 +47,7 @@ class UserService(
         } ?: run {
             logger.info { "Creating a new user for Google account email [${googleUserInfo.email}]" }
             val userRole = roleRepository.findByName("ROLE_USER")
-                ?: throw IllegalArgumentException("Required role 'ROLE_USER' not found in the database. Please ensure it is initialized.")
+                ?: throw ContentriaException(ErrorCode.REQUIRED_ROLE_NOT_FOUND)
 
             val newUser = User.createGoogleUser(
                 email = googleUserInfo.email,
@@ -67,7 +66,7 @@ class UserService(
                 savedUser
             } catch (e: Exception) {
                 logger.error(e) { "Failed to save new Google user with email [${googleUserInfo.email}]: ${e.message}" }
-                throw RuntimeException("Failed to save new Google user with email [${googleUserInfo.email}]", e)
+                throw ContentriaException(ErrorCode.INTERNAL_SERVER_ERROR)
             }
         }
     }

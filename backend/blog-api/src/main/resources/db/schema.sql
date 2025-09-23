@@ -68,6 +68,7 @@ CREATE INDEX idx_blogs_user_id ON blogs(user_id);
 CREATE TABLE categories (
     id UUID PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
+    slug VARCHAR(255) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     -- 부모 카테고리 ID (최상위 카테고리는 NULL)
@@ -75,6 +76,7 @@ CREATE TABLE categories (
     parent_id UUID,
     blog_id UUID NOT NULL,
 
+    CONSTRAINT up_categories_blog_slug UNIQUE (blog_id, slug),
     -- 블로그 삭제 시 카테고리도 삭제된다. (CASCADE)
     CONSTRAINT fk_categories_blog FOREIGN KEY (blog_id) REFERENCES blogs(id) ON DELETE CASCADE,
     -- 부모 카테고리 삭제 시 자식 카테고리가 있으면 삭제 방지 (RESTRICT)
@@ -95,8 +97,8 @@ CREATE TABLE posts (
     title VARCHAR(255) NOT NULL,
     content_markdown TEXT,
     content_html TEXT,
-    meta_title VARCHAR(255),
-    meta_description VARCHAR(500),
+    meta_title VARCHAR(255), -- SEO(검색 엔진), 소셜 미디어 공유를 위한 컬럼
+    meta_description VARCHAR(500), -- SEO(검색 엔진), 소셜 미디어 공유를 위한 컬럼
     featured_image_url TEXT,
     status VARCHAR(20) NOT NULL DEFAULT 'DRAFT', -- 'DRAFT', 'PUBLISHED', 'ARCHIVED', 'PUBLISHED'
     like_count INT NOT NULL DEFAULT 0,

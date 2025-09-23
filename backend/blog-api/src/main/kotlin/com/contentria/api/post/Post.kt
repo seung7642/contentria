@@ -3,7 +3,7 @@ package com.contentria.api.post
 import com.contentria.api.blog.domain.Blog
 import com.contentria.api.category.Category
 import com.contentria.api.user.domain.BaseEntity
-import com.contentria.common.jpa.GeneratedUuidV7
+import com.contentria.common.config.jpa.GeneratedUuidV7
 import jakarta.persistence.*
 import java.time.ZonedDateTime
 import java.util.*

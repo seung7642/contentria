@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
     ],
+    // 주로 사용할 이미지 크기 설정
+    imageSizes: [16, 32, 48, 96, 128, 256, 384],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
   },
 
   // 헤더 설정 추가
@@ -32,6 +35,15 @@ const nextConfig: NextConfig = {
             value: "frame-ancestors 'self' https://accounts.google.com",
           },
         ],
+      },
+    ];
+  },
+
+  async rewrites() {
+    return [
+      {
+        source: '/@:slug',
+        destination: '/user/:slug',
       },
     ];
   },

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Footer } from '@/components/blog/Footer';
-import Header from '@/components/blog/header';
+import BlogHeader from '@/components/blog/header';
 import Sidebar from '@/components/blog/Sidebar';
 import TableOfContents from '@/components/blog/TableOfContents';
 
@@ -18,7 +18,7 @@ export default function BlogLayout({
 
   return (
     <div className={`grid h-screen grid-rows-[auto_1fr_auto]`}>
-      <Header />
+      <BlogHeader />
       <div className="grid grid-cols-[auto_minmax(auto,_1200px)_auto]">
         <Sidebar />
         <main className="mx-auto w-full max-w-4xl overflow-auto p-4">
