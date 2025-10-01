@@ -1,4 +1,4 @@
-package com.contentria.api.post
+package com.contentria.api.post.domain
 
 import com.contentria.api.blog.domain.Blog
 import com.contentria.api.category.Category

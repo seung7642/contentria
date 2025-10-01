@@ -1,9 +1,9 @@
-package com.contentria.api.blog.dto
+package com.contentria.api.post.repository
 
 import java.time.ZonedDateTime
 import java.util.UUID
 
-data class PostSummaryDto(
+data class PostSummaryProjection(
     val id: UUID,
     val slug: String,
     val title: String,

@@ -38,4 +38,7 @@ enum class ErrorCode(
     // Blog
     DUPLICATE_BLOG_SLUG(HttpStatus.CONFLICT, "BL0000", "Blog slug already in use. Please choose a different one."),
     NOT_FOUND_BLOG(HttpStatus.NOT_FOUND, "AU0012", "Not found blog. Please contact support."),
+
+    // Post
+    NOT_FOUND_POST(HttpStatus.NOT_FOUND, "PO0000", "Not found post. Please contact support."),
 }

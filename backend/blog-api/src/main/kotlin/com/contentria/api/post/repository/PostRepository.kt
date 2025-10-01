@@ -1,9 +1,7 @@
 package com.contentria.api.post.repository
 
 import com.contentria.api.blog.domain.Blog
-import com.contentria.api.blog.dto.PostSummaryDto
-import com.contentria.api.post.Post
-import com.contentria.api.post.PostStatus
+import com.contentria.api.post.domain.Post
 import com.contentria.api.post.dto.CategoryPostCountDto
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -11,12 +9,10 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
-import java.util.UUID
+import java.util.*
 
 @Repository
 interface PostRepository : JpaRepository<Post, UUID> {
-
-    fun findAllByBlogAndStatus(blog: Blog, status: PostStatus, pageable: Pageable): Page<Post>
 
     // 카테고리별 게시물 수를 한번의 쿼리로 효율적으로 계산
     @Query("""
@@ -28,7 +24,7 @@ interface PostRepository : JpaRepository<Post, UUID> {
     fun countPostsByCategoryId(@Param("blog") blog: Blog): List<CategoryPostCountDto>
 
     @Query("""
-        SELECT new com.contentria.api.blog.dto.PostSummaryDto(
+        SELECT new com.contentria.api.post.repository.PostSummaryProjection(
             p.id,
             p.slug,
             p.title,
@@ -50,6 +46,18 @@ interface PostRepository : JpaRepository<Post, UUID> {
         WHERE b.slug = :blogSlug AND p.status = 'PUBLISHED'
         ORDER BY p.publishedAt DESC
     """)
-    fun findPostSummariesByBlogSlug(blogSlug: String, pageable: Pageable): Page<PostSummaryDto>
+    fun findPostSummariesByBlogSlug(blogSlug: String, pageable: Pageable): Page<PostSummaryProjection>
+
+    @Query("""
+        SELECT p
+        FROM Post p
+        JOIN FETCH p.blog b
+        LEFT JOIN FETCH p.category c
+        JOIN FETCH b.user u
+        WHERE b.slug = :blogSlug
+            AND p.slug = :postSlug 
+            AND p.status = com.contentria.api.post.domain.PostStatus.PUBLISHED
+    """)
+    fun findPublishedByBlogsWithDetails(blogSlug: String, postSlug: String): Post?
 
 }
