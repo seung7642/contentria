@@ -1,8 +1,7 @@
 package com.contentria.api.blog.dto
 
-import com.contentria.api.blog.domain.Blog
 import java.time.ZonedDateTime
-import java.util.UUID
+import java.util.*
 
 data class CreateBlogResponse(
     val id: UUID,
@@ -12,13 +11,13 @@ data class CreateBlogResponse(
     val createdAt: ZonedDateTime
 ) {
     companion object {
-        fun from(blog: Blog): CreateBlogResponse {
+        fun from(info: CreateBlogInfo): CreateBlogResponse {
             return CreateBlogResponse(
-                id = blog.id!!,
-                slug = blog.slug,
-                title = blog.title,
-                description = blog.description,
-                createdAt = blog.createdAt
+                id = info.id,
+                slug = info.slug,
+                title = info.title,
+                description = info.description,
+                createdAt = info.createdAt
             )
         }
     }

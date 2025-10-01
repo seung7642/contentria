@@ -12,4 +12,10 @@ data class CreateBlogRequest(
         message = "Slug can only contain lowercase letters, numbers, and hyphens",
     )
     val slug: String,
-)
+) {
+    fun toCommand(): CreateBlogCommand {
+        return CreateBlogCommand(
+            slug = this.slug,
+        )
+    }
+}

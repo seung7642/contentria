@@ -31,7 +31,7 @@ class PostService(
 
         return PostDetailAndOwnerInfo(
             post = PostDetailInfo.from(post),
-            owner = OwnerInfo.from01(post.blog.user)
+            owner = OwnerInfo.from(post.blog.user)
         )
     }
 }

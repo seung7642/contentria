@@ -1,4 +1,4 @@
-package com.contentria.api.post
+package com.contentria.api.post.domain
 
 enum class PostStatus {
     DRAFT,        // 임시저장

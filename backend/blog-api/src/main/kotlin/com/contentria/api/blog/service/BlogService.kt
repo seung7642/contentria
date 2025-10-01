@@ -7,20 +7,18 @@ import com.contentria.api.category.Category
 import com.contentria.api.category.repository.CategoryRepository
 import com.contentria.api.config.exception.ContentriaException
 import com.contentria.api.config.exception.ErrorCode
-import com.contentria.api.post.Post
+import com.contentria.api.post.domain.Post
+import com.contentria.api.post.domain.PostStatus
 import com.contentria.api.post.repository.PostRepository
-import com.contentria.api.post.PostStatus
 import com.contentria.api.user.service.UserService
 import com.vladsch.flexmark.html.HtmlRenderer
 import com.vladsch.flexmark.parser.Parser
 import com.vladsch.flexmark.util.data.MutableDataSet
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.ZonedDateTime
-import java.util.UUID
-import kotlin.collections.mutableListOf
+import java.util.*
 
 private val log = KotlinLogging.logger {}
 
@@ -32,8 +30,17 @@ class BlogService(
     private val postRepository: PostRepository
 ) {
 
+    private val markdownParser: Parser
+    private val htmlRenderer: HtmlRenderer
+
+    init {
+        val options = MutableDataSet()
+        markdownParser = Parser.builder(options).build()
+        htmlRenderer = HtmlRenderer.builder(options).build()
+    }
+
     @Transactional
-    fun createBlog(userId: UUID, request: CreateBlogRequest): CreateBlogResponse {
+    fun createBlog(userId: UUID, request: CreateBlogCommand): CreateBlogInfo {
         val user = userService.findActiveUserById(userId)
 
         if (blogRepository.existsBySlug(request.slug)) {
@@ -50,7 +57,7 @@ class BlogService(
         addSampleContentFor(savedBlog)
 
         log.info { "Creating a new blog. email:${user.email}, slug:${savedBlog.slug}" }
-        return CreateBlogResponse.from(savedBlog)
+        return CreateBlogInfo.from(savedBlog)
     }
 
     private fun addSampleContentFor(blog: Blog) {
@@ -136,36 +143,26 @@ class BlogService(
     }
 
     private fun convertMarkdownToHtml(markdown: String): String {
-        val options = MutableDataSet()
-        val parser = Parser.builder(options).build()
-        val renderer = HtmlRenderer.builder(options).build()
-        val document = parser.parse(markdown)
-        return renderer.render(document)
+        val document = markdownParser.parse(markdown)
+        return htmlRenderer.render(document)
     }
 
     @Transactional(readOnly = true)
-    fun getBlogDetailBySlug(slug: String, pageable: Pageable): BlogLayoutResponse {
-        // 1. 블로그와 소유자 정보 조회 (없으면 404 에러)
+    fun getBlogDetailBySlug(slug: String): BlogLayoutInfo {
         val blog = blogRepository.findBySlug(slug)
             ?: throw ContentriaException(ErrorCode.NOT_FOUND_BLOG)
-        val owner = blog.user
+        val user = blog.user
 
-        // 2. 카테고리 트리 구조 생성
         val categories = buildCategoryTree(blog)
 
-        // 3. 게시글 목록 페이지네이션으로 조회 및 DTO 변환
-        val postsPage = postRepository.findAllByBlogAndStatus(blog, PostStatus.PUBLISHED, pageable)
-            .map { it.toSummaryDto() }
-
-        // 4. 최종 응답 DTO 조립
-        return BlogLayoutResponse(
-            blog = blog.toInfoDto(),
-            owner = OwnerInfoDto.from(owner),
+        return BlogLayoutInfo(
+            blog = BlogInfo.from(blog),
+            owner = OwnerInfo.from(user),
             categories = categories
         )
     }
 
-    private fun buildCategoryTree(blog: Blog): List<CategoryNodeDto> {
+    private fun buildCategoryTree(blog: Blog): List<CategoryNodeInfo> {
         val allCategories = categoryRepository.findAllByBlog(blog)
 
         val postCounts: Map<UUID, Long> = postRepository.countPostsByCategoryId(blog)
@@ -175,10 +172,10 @@ class BlogService(
 
         // to는 Pair를 생성, associate는 Pair 리스트를 Map으로 변환
         val nodeMap = allCategories.associate {
-            it.id to CategoryNodeDto(it.id, it.name, it.slug, postCounts[it.id] ?: 0, mutableListOf())
+            it.id to CategoryNodeInfo(it.id, it.name, it.slug, postCounts[it.id] ?: 0, mutableListOf())
         }
 
-        val rootNodes = mutableListOf<CategoryNodeDto>()
+        val rootNodes = mutableListOf<CategoryNodeInfo>()
         allCategories.forEach { category ->
             val node = nodeMap.getValue(category.id)
 
@@ -192,11 +189,11 @@ class BlogService(
 
         rootNodes.forEach { updateTotalPostCount(it) }
 
-        val allViewCategory = CategoryNodeDto(null, "전체보기", "total", totalPostCount, emptyList())
+        val allViewCategory = CategoryNodeInfo(null, "전체보기", "total", totalPostCount, emptyList())
         return listOf(allViewCategory) + rootNodes
     }
 
-    private fun updateTotalPostCount(node: CategoryNodeDto): Long {
+    private fun updateTotalPostCount(node: CategoryNodeInfo): Long {
         if (node.children.isEmpty()) {
             return node.postCount
         }
@@ -204,20 +201,4 @@ class BlogService(
         node.postCount += childrenTotal
         return node.postCount
     }
-
-    // Entity -> DTO 변환을 위한 확장 함수
-    private fun Blog.toInfoDto() = BlogInfoDto(this.title, this.slug, this.description)
-    private fun Post.toSummaryDto() = PostSummaryDto(
-        id = this.id!!,
-        slug = this.slug,
-        title = this.title,
-        summary = this.metaDescription?.takeIf { it.isNotBlank() } ?: (this.contentMarkdown.take(100) + "..."),
-        metaTitle = this.metaTitle,
-        metaDescription = this.metaDescription,
-        featuredImageUrl = this.featuredImageUrl,
-        publishedAt = this.publishedAt ?: ZonedDateTime.now(),
-        categoryName = this.category?.name,
-        likeCount = this.likeCount,
-        viewCount = this.viewCount
-    )
 }
