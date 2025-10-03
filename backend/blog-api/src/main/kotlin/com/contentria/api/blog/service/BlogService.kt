@@ -70,7 +70,7 @@ class BlogService(
         val backendCategory = categoryRepository.save(Category(name = "백엔드", slug = "backend", blog = blog, parent = techCategory))
         val dailyCategory = categoryRepository.save(Category(name = "일상", slug = "daily", blog = blog, parent = null))
 
-        val dailyPostMarkdown = readMarkdownContent("claspath:samples/backend-post.md")
+        val dailyPostMarkdown = readMarkdownContent("classpath:samples/backend-post.md")
         val backendPostMarkdown = readMarkdownContent("classpath:samples/daily-post.md")
 
         val postsToCreate = listOf(
