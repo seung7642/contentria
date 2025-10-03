@@ -2,7 +2,7 @@ package com.contentria.api.post.repository
 
 import com.contentria.api.blog.domain.Blog
 import com.contentria.api.post.domain.Post
-import com.contentria.api.post.dto.CategoryPostCountDto
+import com.contentria.api.post.dto.CategoryPostCountProjection
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
@@ -16,12 +16,14 @@ interface PostRepository : JpaRepository<Post, UUID> {
 
     // 카테고리별 게시물 수를 한번의 쿼리로 효율적으로 계산
     @Query("""
-        SELECT new com.contentria.api.post.dto.CategoryPostCountDto(p.category.id, COUNT(p))
+        SELECT new com.contentria.api.post.dto.CategoryPostCountProjection(p.category.id, COUNT(p))
         FROM Post p
-        WHERE p.blog = :blog AND p.status = 'PUBLISHED' AND p.category.id IS NOT NULL
+        WHERE p.blog = :blog 
+            AND p.status = com.contentria.api.post.domain.PostStatus.PUBLISHED 
+            AND p.category.id IS NOT NULL
         GROUP BY p.category.id
     """)
-    fun countPostsByCategoryId(@Param("blog") blog: Blog): List<CategoryPostCountDto>
+    fun countPostsByCategoryId(@Param("blog") blog: Blog): List<CategoryPostCountProjection>
 
     @Query("""
         SELECT new com.contentria.api.post.repository.PostSummaryProjection(
@@ -43,7 +45,7 @@ interface PostRepository : JpaRepository<Post, UUID> {
         FROM Post p
         JOIN p.blog b
         LEFT JOIN p.category c
-        WHERE b.slug = :blogSlug AND p.status = 'PUBLISHED'
+        WHERE b.slug = :blogSlug AND p.status = com.contentria.api.post.domain.PostStatus.PUBLISHED
         ORDER BY p.publishedAt DESC
     """)
     fun findPostSummariesByBlogSlug(blogSlug: String, pageable: Pageable): Page<PostSummaryProjection>
