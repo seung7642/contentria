@@ -6,7 +6,7 @@ export default function Footer() {
       <div className="mx-auto flex justify-between px-12 py-2">
         <div className="flex flex-col">
           <p className="mb-4 text-sm text-gray-500">
-            © {new Date().getFullYear()} Blog Service. All rights reserved.
+            © {new Date().getFullYear()} Contentria. All rights reserved.
           </p>
           <p className="text-sm text-gray-500">
             이메일: <span className="hover:text-indigo-600">help@contentria.com</span>

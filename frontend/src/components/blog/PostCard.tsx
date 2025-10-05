@@ -1,3 +1,6 @@
+'use client';
+
+import { formatPostDate } from '@/lib/dateFormatUtil';
 import { ThumbsUp } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -17,12 +20,13 @@ export interface PostSummary {
 }
 
 interface PostCardProps {
+  blogSlug: string;
   post: PostSummary;
 }
 
-const PostCard = ({ post }: PostCardProps) => {
+const PostCard = ({ blogSlug, post }: PostCardProps) => {
   return (
-    <Link href={`/posts/${post.id}`} key={post.id} className="block">
+    <Link href={`/@${blogSlug}/${post.id}`} key={post.id} className="block">
       <div className="flex h-32 overflow-hidden rounded-lg bg-white shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
         <div className="flex w-1/6 flex-col items-center border-r p-4">
           <Image
@@ -36,9 +40,9 @@ const PostCard = ({ post }: PostCardProps) => {
           <div>
             <div className="mb-2 flex items-start justify-between">
               <h2 className="mb-2 text-2xl font-semibold">{post.title}</h2>
-              <span className="text-sm text-gray-500">{post.publishedAt}</span>
+              <span className="text-sm text-gray-500">{formatPostDate(post.publishedAt)}</span>
             </div>
-            <p className="text-gray-600">{post.summary}</p>
+            {/* <p className="text-gray-600">{post.summary}</p> */}
           </div>
           <div className="flex justify-end space-x-4">
             <div className="flex items-center text-gray-500">

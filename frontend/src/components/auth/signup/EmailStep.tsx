@@ -1,5 +1,5 @@
-import Divider from '@/components/ui/Divider';
-import InputField from '@/components/ui/InputField';
+import Divider from '@/components/common/Divider';
+import InputField from '@/components/common/InputField';
 import React from 'react';
 import GoogleLoginButton from '../GoogleLoginButton';
 import Link from 'next/link';

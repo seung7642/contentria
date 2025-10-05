@@ -26,7 +26,8 @@ export async function generateMetadata({ params }: UserBlogPageProps): Promise<M
   }
 
   return {
-    title: `${blogData.blog.title} by ${blogData.owner.username}`,
+    // title: `${blogData.blog.title} by ${blogData.owner.username}`,
+    title: 'Contentria',
     description: `${blogData.owner.username}님의 블로그입니다. 다양한 글들을 만나보세요.`,
   };
 }
@@ -53,7 +54,7 @@ export default async function BlogPage({ params }: UserBlogPageProps) {
       <h1 className="mb-6 text-3xl font-bold">글 목록</h1>
       <div className="space-y-6">
         {initialPosts.map((post) => (
-          <PostCard key={post.id} post={post} />
+          <PostCard key={post.id} blogSlug={blogSlug} post={post} />
         ))}
         {initialPosts.length === 0 && <p className="text-gray-500">아직 작성된 글이 없습니다.</p>}
       </div>

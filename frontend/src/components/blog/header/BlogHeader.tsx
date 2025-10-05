@@ -48,7 +48,7 @@ const BlogHeader = ({ blogName, blogSlug }: BlogHeaderProps) => {
   return (
     <header className="sticky top-0 z-30 w-full border-b bg-white/80 shadow-sm backdrop-blur-sm">
       <div className="flex items-center justify-between px-4 py-3 sm:px-6">
-        {/* 왼쪽 영역: 로고 및 블로그 이름 */}
+        {/* 좌측 영역 */}
         <div className="flex min-w-0 items-center">
           {/* ✨ 3. 로고 추가 (next/image로 최적화) */}
           <Link href="/" className="flex flex-shrink-0 items-center space-x-2">
@@ -59,11 +59,15 @@ const BlogHeader = ({ blogName, blogSlug }: BlogHeaderProps) => {
               height={32}
               priority // 헤더 로고는 항상 중요
             />
-            <span className="text-lg font-bold text-gray-800">Contentria</span>
           </Link>
         </div>
 
-        {/* 오른쪽 영역: 버튼 및 프로필 */}
+        {/* 중앙 영역 */}
+        <h1 className="text-2xl font-bold">
+          <Link href="/">Contentria</Link>
+        </h1>
+
+        {/* 우측 영역 */}
         <div className="flex items-center space-x-2 md:space-x-4">
           <button
             onClick={openSubscribeModal}

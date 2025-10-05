@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 
 import ProfileDropdown from './ProfileDropdown';
 import UserAvatar from './UserAvatar';
@@ -29,11 +30,25 @@ const HomeHeader = () => {
   return (
     <header className="border-b shadow-sm">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
-        <div className="w-24"></div>
+        {/* 좌측 영역 */}
+        <div className="flex min-w-0 items-center">
+          <Link href="/" className="flex flex-shrink-0 items-center space-x-2">
+            <Image
+              src="/contentria-icon.png"
+              alt="Contentria 로고"
+              width={32} // 헤더에 맞는 적절한 크기 지정
+              height={32}
+              priority // 헤더 로고는 항상 중요
+            />
+          </Link>
+        </div>
+
+        {/* 중앙 영역 */}
         <h1 className="text-2xl font-bold">
-          <Link href="/">Blog</Link>
+          <Link href="/">Contentria</Link>
         </h1>
 
+        {/* 우측 영역 */}
         <div className="flex items-center space-x-2">
           <div>
             {isAuthenticated && user ? (
@@ -57,7 +72,7 @@ const HomeHeader = () => {
                 href={PATHS.LOGIN}
                 className="my-2 ml-2 rounded-lg bg-indigo-500 px-4 py-3 text-sm font-medium text-white shadow-sm transition-colors duration-200 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
               >
-                Sign in
+                로그인
               </Link>
             )}
           </div>

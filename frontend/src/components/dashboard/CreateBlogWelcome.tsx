@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertTriangle, Loader2 } from 'lucide-react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import z from 'zod';
-import InputWithAddon from '../ui/InputWithAddon';
+import InputWithAddon from '../common/InputWithAddon';
 
 const schema = z.object({
   slug: z

@@ -1,6 +1,6 @@
-import BackButton from '@/components/ui/BackButton';
-import Divider from '@/components/ui/Divider';
-import InputField from '@/components/ui/InputField';
+import BackButton from '@/components/common/BackButton';
+import Divider from '@/components/common/Divider';
+import InputField from '@/components/common/InputField';
 import { PasswordStepFormData, passwordStepSchema } from '@/lib/schemas/authSchemas';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Info, Mail } from 'lucide-react';

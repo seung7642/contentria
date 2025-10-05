@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import SocialLoginButton from '../ui/SocialLoginButton';
+import SocialLoginButton from '../common/SocialLoginButton';
 
 const GoogleLogo = () => (
   <svg

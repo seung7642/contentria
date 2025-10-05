@@ -3,9 +3,20 @@ import reactPlugin from 'eslint-plugin-react';
 import hooksPlugin from 'eslint-plugin-react-hooks';
 import ts from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
-import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
+import eslintPluginPrettierRecommended, { ignores } from 'eslint-plugin-prettier/recommended';
 
 export default [
+  {
+    ignores: [
+      'tailwind.config.ts',
+      'next.config.ts',
+      'node_modules/**',
+      '.next/**',
+      'out/**',
+      'public/**',
+      ...ignores,
+    ],
+  },
   {
     plugins: {
       react: reactPlugin,

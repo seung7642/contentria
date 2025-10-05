@@ -5,7 +5,7 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2 } from 'lucide-react';
-import InputField from '@/components/ui/InputField';
+import InputField from '@/components/common/InputField';
 
 import { useUserQuery } from '@/hooks/queries/useUserQuery';
 import { useUpdateProfileMutation } from '@/hooks/queries/useUserMutations';

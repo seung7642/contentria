@@ -1,6 +1,6 @@
 'use client';
 
-import BackButton from '@/components/ui/BackButton';
+import BackButton from '@/components/common/BackButton';
 import { useEffect, useRef } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { ShieldCheck } from 'lucide-react';

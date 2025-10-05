@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, Edit3, LayoutDashboard, Rss } from 'lucide-react';
+import { Edit3, LayoutDashboard, Rss } from 'lucide-react';
 import { TypeAnimation } from 'react-type-animation';
 import { memo, useEffect, useRef, useState } from 'react';
 import { useAuthStore } from '@/store/authStore';

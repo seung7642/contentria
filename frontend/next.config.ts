@@ -45,6 +45,10 @@ const nextConfig: NextConfig = {
         source: '/@:slug',
         destination: '/user/:slug',
       },
+      {
+        source: '/@:blogSlug/:postSlug',
+        destination: '/user/:blogSlug/posts/:postSlug',
+      },
     ];
   },
 };

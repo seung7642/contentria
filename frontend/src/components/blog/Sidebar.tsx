@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import CategoryItem from './CategoryItem';
 import { BlogInfo, CategoryNode, OwnerInfo } from '@/types/api/blogs';
-import { getHighResGoogleProfileImage } from '@/lib/utils';
+import { getHighResGoogleProfileImage } from '@/lib/imageUtil';
 
 interface SidebarProps {
   blog: BlogInfo;
@@ -30,7 +30,8 @@ const Sidebar = ({ blog, owner, categories }: SidebarProps) => {
               className="rounded-lg"
             />
           </div>
-          <h2 className="mb-2 text-lg">{owner.username}</h2>
+          {/* <h2 className="mb-2 text-lg">{owner.username}</h2> */}
+          <h2 className="mb-2 text-lg">닉네임</h2>
           <p className="text-center text-sm text-gray-600">{blogDescription}</p>
         </div>
       </div>
