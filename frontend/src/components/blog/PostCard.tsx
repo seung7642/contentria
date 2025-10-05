@@ -25,8 +25,10 @@ interface PostCardProps {
 }
 
 const PostCard = ({ blogSlug, post }: PostCardProps) => {
+  const postUrl = `/@${blogSlug}/${post.slug}`;
+
   return (
-    <Link href={`/@${blogSlug}/${post.id}`} key={post.id} className="block">
+    <Link href={postUrl} key={post.id} className="block">
       <div className="flex h-32 overflow-hidden rounded-lg bg-white shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
         <div className="flex w-1/6 flex-col items-center border-r p-4">
           <Image

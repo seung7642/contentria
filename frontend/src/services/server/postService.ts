@@ -1,6 +1,6 @@
 import apiServer from '@/lib/server/apiServer';
 import { Page } from '@/types/api/common';
-import { PostSummary } from '@/types/api/posts';
+import { PostDetailResponse, PostSummary } from '@/types/api/posts';
 
 export async function getBlogPosts(
   slug: string,
@@ -22,4 +22,13 @@ export async function getBlogPosts(
     },
   });
   return postsPage;
+}
+
+export async function getPostDetail(
+  blogSlug: string,
+  postSlug: string
+): Promise<PostDetailResponse | null> {
+  const path = `/api/blogs/${blogSlug}/posts/${postSlug}`;
+  const response = await apiServer.get<PostDetailResponse>(path);
+  return response;
 }

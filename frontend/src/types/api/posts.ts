@@ -11,3 +11,26 @@ export interface PostSummary {
   likeCount: number;
   viewCount: number;
 }
+
+export interface PostDetail {
+  id: string;
+  slug: string;
+  title: string;
+  summary: string;
+  contentHtml: string;
+  metaTitle: string | null;
+  metaDescription: string | null;
+  featuredImageUrl: string | null;
+  publishedAt: string;
+  categoryName: string;
+}
+
+export interface OwnerInfo {
+  username: string;
+  pictureUrl: string | null;
+}
+
+export interface PostDetailResponse {
+  post: PostDetail;
+  owner: OwnerInfo;
+}
