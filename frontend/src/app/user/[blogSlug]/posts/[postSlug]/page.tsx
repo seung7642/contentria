@@ -32,7 +32,6 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
     notFound();
   }
 
-  console.log('postDetailResponse:', postDetailResponse);
   const { post } = postDetailResponse;
 
   return (

@@ -4,15 +4,18 @@ import React, { useEffect } from 'react';
 
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { PATHS } from '@/constants/paths';
 import { useAuthStore } from '@/store/authStore';
+import Footer from '@/components/home/Footer';
+import EditorHeader from '@/components/dashboard/EditorHeader';
 
-export default function DashboardLayout({
-  children,
-}: Readonly<{
+interface DashboardLayoutProps {
   children: React.ReactNode;
-}>) {
+}
+
+export default function DashboardLayout({ children }: DashboardLayoutProps) {
+  const pathname = usePathname();
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
 
@@ -22,15 +25,34 @@ export default function DashboardLayout({
     }
   }, [user, router]);
 
-  return (
-    <div className={`flex min-h-screen flex-col bg-gray-50`}>
-      <DashboardHeader />
-      <div className="mx-auto mt-10 w-full max-w-7xl flex-1">
-        <div className="flex flex-col justify-center md:flex-row">
-          <DashboardSidebar />
-          <div className="max-w-5xl flex-1 px-4 py-6 md:px-6">{children}</div>
-        </div>
+  const isEditorMode = pathname.startsWith('/dashboard/posts/new');
+
+  if (isEditorMode) {
+    return (
+      <div className="flex h-screen flex-col bg-gray-50">
+        <DashboardHeader />
+        <main className="flex flex-1 flex-col overflow-y-auto">{children}</main>
+        <Footer />
       </div>
+    );
+  }
+
+  return (
+    <div className="grid h-screen grid-rows-[auto_1fr_auto] bg-gray-50">
+      {/* 1. 헤더 */}
+      <DashboardHeader />
+
+      {/* 2. 중앙 컨텐츠 (사이드바 + 메인) */}
+      <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-6 p-4 md:grid-cols-[auto_1fr]">
+        {/* 사이드바 영역 */}
+        <DashboardSidebar />
+
+        {/* 메인 컨텐츠 영역 */}
+        <main className="overflow-y-auto p-6 shadow-sm">{children}</main>
+      </div>
+
+      {/* 3. 푸터 */}
+      <Footer />
     </div>
   );
 }

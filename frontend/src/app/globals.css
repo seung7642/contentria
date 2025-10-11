@@ -130,3 +130,40 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* ----------------------------------------------------- */
+/* MDXEditor */
+/* ----------------------------------------------------- */
+.prose {
+  font-family: var(--font-pretendard);
+  max-width: 100%;
+  /* min-height: 900px; */
+  height: 100%;
+}
+.prose .cm-content {
+  font-family: var(--font-ibm-plex-mono);
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+.prose [data-lexical-decorator] > table [data-tool-cell] {
+  padding: 1px;
+  border: 0;
+  line-height: 1rem;
+  vertical-align: middle;
+}
+.prose [data-lexical-decorator] > table {
+  table-layout: fixed;
+}
+
+.prose [data-lexical-decorator] > table td {
+  vertical-align: middle;
+}
+.prose [data-lexical-decorator] > table > tbody > tr,
+.prose [data-lexical-decorator] > table > tfoot,
+.prose [data-lexical-decorator] > table > thead {
+  border: 0;
+}
+
+.mdxeditor-toolbar._toolbarRoot_1e2ox_162 {
+  background-color: oklch(96.2% 0.018 272.314);
+}

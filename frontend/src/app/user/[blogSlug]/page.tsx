@@ -19,9 +19,6 @@ interface UserBlogPageProps {
 export async function generateMetadata({ params }: UserBlogPageProps): Promise<Metadata> {
   const { blogSlug } = await params;
 
-  // 메타데이터 생성을 위해서도 데이터를 한번 가져온다.
-  // Next.js는 동일한 인자의 fetch 요청을 자동으로 중복 제거(deduplication)하므로
-  // 페이지 컴포넌트에서 한번 더 호출해도 네트워크 요청은 한번만 발생한다.
   const blogData = await getBlogLayout(blogSlug);
   if (!blogData) {
     return {
@@ -31,8 +28,7 @@ export async function generateMetadata({ params }: UserBlogPageProps): Promise<M
   }
 
   return {
-    // title: `${blogData.blog.title} by ${blogData.owner.username}`,
-    title: 'Contentria',
+    title: `${blogData.blog.title}`,
     description: `${blogData.owner.username}님의 블로그입니다. 다양한 글들을 만나보세요.`,
   };
 }
@@ -49,10 +45,6 @@ export default async function BlogPage({ params, searchParams }: UserBlogPagePro
     notFound();
   }
 
-  console.log('BlogPage params:', params, 'currentPage:', currentPage);
-
-  // 서비스 함수를 호출하여 데이터를 가져온다.
-  // 이 과정에서 401 에러가 발생하면 apiServer가 자동으로 로그인 페이지로 리다이렉트한다.
   const [layoutData, postsPage] = await Promise.all([
     getBlogLayout(blogSlug),
     getBlogPosts(blogSlug),

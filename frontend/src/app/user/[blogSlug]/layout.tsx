@@ -17,19 +17,26 @@ interface BlogLayoutProps {
 
 export default async function BlogLayout({ children, sidebar, params }: BlogLayoutProps) {
   const pageHeadings: { id: string; text: string; level: number }[] = [];
-  const layoutData = await getBlogLayout((await params).blogSlug);
+  const { blogSlug } = await params;
+  const layoutData = await getBlogLayout(blogSlug);
   const blogName = layoutData?.blog.slug ?? 'Blog';
 
   return (
-    <div className={`grid h-screen grid-rows-[auto_1fr_auto]`}>
-      <BlogHeader blogName={blogName} blogSlug={(await params).blogSlug} />
-      <div className="grid grid-cols-[auto_minmax(auto,_1200px)_auto]">
+    <div className="grid h-screen grid-rows-[auto_1fr_auto]">
+      <BlogHeader blogName={blogName} blogSlug={blogSlug} />
+
+      {/* 중간 영역*/}
+      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto]">
+        {/* 사이드바 */}
         {sidebar}
-        <main className="mx-auto w-full max-w-4xl overflow-auto p-4">
-          <div className="flex-grow p-4">{children}</div>
-        </main>
+
+        {/* 메인 콘텐츠: 최대 너비 제한 */}
+        <main className="mx-auto w-full max-w-4xl overflow-auto p-4">{children}</main>
+
+        {/* 목차 */}
         <TableOfContents headings={pageHeadings}></TableOfContents>
       </div>
+
       <Footer />
     </div>
   );

@@ -40,7 +40,7 @@ const DashboardContent = () => {
           </p>
         </div>
         <Link
-          href="/dashboard/posts/create"
+          href="/dashboard/posts/new"
           className="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-white transition hover:bg-indigo-700"
         >
           새 글 작성

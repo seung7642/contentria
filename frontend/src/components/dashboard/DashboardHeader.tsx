@@ -67,7 +67,7 @@ const DashboardHeader = () => {
         {/* 왼쪽 영역: 블로그 제목 & 검색 전환 */}
         <div className="flex items-center md:w-64">
           <Link href="/dashboard" className="text-xl font-bold md:hidden">
-            Blog
+            Contentria
           </Link>
 
           <div className={`relative ${isSearchVisible ? 'block' : 'hidden'} md:block`}>
@@ -92,7 +92,7 @@ const DashboardHeader = () => {
         </div>
 
         {/* 중앙 영역: 블로그 제목 (데스크톱에서만) */}
-        <h1 className="hidden text-2xl font-bold md:block">Blog</h1>
+        <h1 className="hidden text-2xl font-bold md:block">Contentria</h1>
 
         {/* 오른쪽 영역: 버튼 및 프로필 */}
         <div className="flex items-center space-x-2">
