@@ -8,6 +8,7 @@ logging:
     com.giffing.bucket4j: INFO
     org.springframework.security.web: INFO
     org.hibernate.sql: DEBUG
+    org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator: WARN
 spring:
   application:
     name: backend
@@ -31,7 +32,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
   security:
     oauth2:
       client:
