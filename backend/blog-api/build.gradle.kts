@@ -43,6 +43,9 @@ dependencies {
     // Markdown parser
     implementation("com.vladsch.flexmark:flexmark-all:0.64.8")
 
+    // HTML parser
+    implementation("org.jsoup:jsoup:1.21.2")
+
     // 테스트 종속성 - 명시적으로 JUnit 프레임워크 지정
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")

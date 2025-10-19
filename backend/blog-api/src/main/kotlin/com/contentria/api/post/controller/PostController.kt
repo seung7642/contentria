@@ -1,8 +1,11 @@
 package com.contentria.api.post.controller
 
+import com.contentria.api.post.dto.CreateNewPostRequest
+import com.contentria.api.post.dto.CreateNewPostResponse
 import com.contentria.api.post.dto.PostDetailResponse
 import com.contentria.api.post.dto.PostSummaryResponse
 import com.contentria.api.post.service.PostService
+import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -30,5 +33,13 @@ class PostController(
     ): ResponseEntity<PostDetailResponse> {
         val postDetailAndOwnerInfo = postService.getPostDetail(blogSlug, postSlug)
         return ResponseEntity.ok(PostDetailResponse.from(postDetailAndOwnerInfo))
+    }
+
+    @PostMapping("/posts")
+    fun createNewPost(
+        @Valid @RequestBody request: CreateNewPostRequest
+    ): ResponseEntity<CreateNewPostResponse> {
+        val createNewPostInfo = postService.createNewPost(request.toCommand())
+        return ResponseEntity.ok(CreateNewPostResponse.from(createNewPostInfo))
     }
 }

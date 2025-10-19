@@ -41,4 +41,10 @@ enum class ErrorCode(
 
     // Post
     NOT_FOUND_POST(HttpStatus.NOT_FOUND, "PO0000", "Not found post. Please contact support."),
+
+    // Markdown
+    MARKDOWN_PROCESSING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MD0000", "An error occurred while processing the markdown content."),
+    EMPTY_MARKDOWN_CONTENT(HttpStatus.BAD_REQUEST, "MD0001", "Markdown content cannot be empty."),
+    MARKDOWN_CONTENT_TOO_LARGE(HttpStatus.BAD_REQUEST, "MD0002", "Markdown content exceeds the maximum allowed length."),
+    ;
 }

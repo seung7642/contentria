@@ -2,7 +2,7 @@ package com.contentria.api.post.repository
 
 import com.contentria.api.blog.domain.Blog
 import com.contentria.api.post.domain.Post
-import com.contentria.api.post.dto.CategoryPostCountProjection
+import com.contentria.api.post.repository.CategoryPostCountProjection
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
@@ -16,7 +16,7 @@ interface PostRepository : JpaRepository<Post, UUID> {
 
     // 카테고리별 게시물 수를 한번의 쿼리로 효율적으로 계산
     @Query("""
-        SELECT new com.contentria.api.post.dto.CategoryPostCountProjection(p.category.id, COUNT(p))
+        SELECT new com.contentria.api.post.repository.CategoryPostCountProjection(p.category.id, COUNT(p))
         FROM Post p
         WHERE p.blog = :blog 
             AND p.status = com.contentria.api.post.domain.PostStatus.PUBLISHED 

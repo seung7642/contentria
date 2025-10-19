@@ -101,7 +101,7 @@ class BlogService(
 
     private fun readMarkdownContent(resourcePath: String): String {
         val resource = resourceLoader.getResource(resourcePath)
-        return resource.inputStream.use { it.readBytes().toString(StandardCharsets.UTF_8) }
+        return resource.inputStream.bufferedReader(StandardCharsets.UTF_8).use { it.readText() }
     }
 
     private fun convertMarkdownToHtml(markdown: String): String {

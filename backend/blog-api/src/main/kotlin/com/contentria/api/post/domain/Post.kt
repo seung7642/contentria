@@ -25,11 +25,11 @@ class Post(
     @Column(length = 255, nullable = false)
     var title: String,
 
-    @Lob
+//    @Lob
     @Column(columnDefinition = "TEXT")
     var contentMarkdown: String,
 
-    @Lob
+//    @Lob
     @Column(columnDefinition = "TEXT")
     var contentHtml: String,
 
