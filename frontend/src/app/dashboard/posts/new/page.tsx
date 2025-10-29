@@ -42,6 +42,7 @@ import {
   UndoRedo,
 } from '@mdxeditor/editor';
 import { ForwardRefEditor } from '@/components/dashboard/ForwardRefEditor';
+import { useAuthStore } from '@/store/authStore';
 
 type AdmonitionKind = 'note' | 'tip' | 'danger' | 'info' | 'caution';
 
@@ -58,10 +59,10 @@ function whenInAdmonition(editorInFocus: EditorInFocus | null) {
 
 const NewPostPage = () => {
   const editorRef = useRef<MDXEditorMethods>(null); // MDXEditor의 인스턴스에 접근하기 위한 ref 생성
+  const [title, setTitle] = useState('');
+  const user = useAuthStore((state) => state.user);
 
   const initialMarkdown = `
-# 머릿말
-
 여기에 **마크다운** 문법을 사용하여 글을 작성할 수 있습니다.
 
 - 리스트 아이템 1
@@ -78,7 +79,68 @@ function helloWorld() {
   console.log("Hello, world!");
 }
 \`\`\`
+
+### 다음은 테이블 예시입니다.
+
+| 이름  | 나이 | 성별 |
+| --- | -- | -- |
+| OOO | 20 | 남  |
+| OOO | 50 | 여  |
+
+
+\n\n
+해당 내용은 샘플 마크다운 내용입니다. 당신의 이야기로 수정해보세요!
 `;
+
+  const handleEditorAreaClick = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+
+    // 툴바 클릭은 무시
+    if (target.closest('.mdxeditor-toolbar')) {
+      return;
+    }
+
+    // contenteditable 내부 클릭은 무시
+    if (
+      target.getAttribute('contenteditable') === 'true' ||
+      target.closest('[contenteditable="true"]')
+    ) {
+      return;
+    }
+
+    editorRef.current?.focus();
+
+    // 약간의 지연 후 커서 위치 조정 (focus가 완료된 후)
+    setTimeout(() => {
+      const editorContainer = target.closest('.mdxeditor') as HTMLElement;
+      const editableEl = editorContainer?.querySelector('[contenteditable="true"]') as HTMLElement;
+
+      if (editableEl) {
+        const clickY = e.clientY;
+
+        // 실제 콘텐츠의 마지막 위치 찾기
+        const allElements = Array.from(editableEl.querySelectorAll('*'));
+        const lastVisibleElement = allElements
+          .reverse()
+          .find((el) => el.textContent?.trim() && el.getBoundingClientRect().height > 0);
+
+        if (lastVisibleElement) {
+          const lastRect = lastVisibleElement.getBoundingClientRect();
+
+          // 콘텐츠 아래 영역 클릭 시 커서를 끝으로
+          if (clickY > lastRect.bottom + 10) {
+            // 10px 여유
+            const range = document.createRange();
+            const sel = window.getSelection();
+            range.selectNodeContents(editableEl);
+            range.collapse(false);
+            sel?.removeAllRanges();
+            sel?.addRange(range);
+          }
+        }
+      }
+    }, 10);
+  };
 
   const handleSave = () => {
     console.log(editorRef.current?.getMarkdown());
@@ -87,14 +149,26 @@ function helloWorld() {
   };
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col justify-center p-4 md:p-8">
-      <h1 className="mb-6 text-3xl font-bold">새 포스트 작성</h1>
-      <div className="justify-center rounded-md border bg-white">
+    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col p-4 md:p-8">
+      <div className="mb-4">
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="제목을 입력하세요"
+          className="w-full rounded-md border border-gray-300 bg-white px-4 py-3 text-2xl font-semibold placeholder-gray-400 transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+        />
+      </div>
+      <div
+        className="flex flex-1 cursor-text flex-col rounded-md border bg-white [&_.mdxeditor-toolbar]:cursor-default"
+        onClick={handleEditorAreaClick}
+      >
         <ForwardRefEditor
           ref={editorRef}
           markdown={initialMarkdown}
           onChange={console.log}
-          className="prose flex-1"
+          spellCheck={false}
+          className="prose max-w-none flex-1"
           plugins={[
             headingsPlugin({ allowedHeadingLevels: [1, 2, 3] }),
             quotePlugin(),

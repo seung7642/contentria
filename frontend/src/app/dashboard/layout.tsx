@@ -8,7 +8,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { PATHS } from '@/constants/paths';
 import { useAuthStore } from '@/store/authStore';
 import Footer from '@/components/home/Footer';
-import EditorHeader from '@/components/dashboard/EditorHeader';
+import HomeHeader from '@/components/home/homeHeader/HomeHeader';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -29,11 +29,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   if (isEditorMode) {
     return (
-      <div className="flex h-screen flex-col bg-gray-50">
-        <DashboardHeader />
-        <main className="flex flex-1 flex-col overflow-y-auto">{children}</main>
+      <>
+        <div className="flex min-h-screen flex-col bg-gray-50 antialiased">
+          <DashboardHeader />
+          <main className="flex flex-1 flex-col">{children}</main>
+        </div>
         <Footer />
-      </div>
+      </>
     );
   }
 
