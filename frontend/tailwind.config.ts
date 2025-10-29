@@ -1,5 +1,6 @@
 import type { Config } from 'tailwindcss';
 import typography from '@tailwindcss/typography';
+import type { PluginAPI } from 'tailwindcss/types/config';
 
 const config: Config = {
   darkMode: ['class'],
@@ -10,6 +11,9 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        pretendard: ['var(--font-pretendard)'],
+      },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
@@ -62,40 +66,11 @@ const config: Config = {
           '5': 'hsl(var(--chart-5))',
         },
       },
-      typography: ({ theme }) => ({
+      typography: (theme: PluginAPI['theme']) => ({
         DEFAULT: {
           css: {
-            maxWidth: '65ch',
-            'h1, h2, h3, h4': {
-              'border-bottom': '1px solid #e5e7eb',
-              'padding-bottom': '0.5rem',
-              'margin-bottom': '1rem',
-            },
-            'code::before': {
-              content: '""',
-            },
-            'code::after': {
-              content: '""',
-            },
-            code: {
-              // backgroundColor: theme('colors.gray.100'),
-              // color: theme('colors.gray.400'),
-              fontWeight: '400',
-              'border-radius': '0.25rem',
-              padding: '0.25rem 0.5rem',
-            },
-            pre: {
-              // backgroundColor: theme('colors.gray.800'),
-              // color: theme('colors.gray.100'),
-              'border-radius': '0.5rem',
-              padding: '1rem',
-            },
-            'pre code': {
-              // backgroundColor: 'transparent',
-              color: 'inherit',
-              fontSize: '0.875rem',
-              lineHeight: '1.7142857',
-            },
+            fontFamily: theme('fontFamily.pretendard'),
+            lineHeight: '1.4',
           },
         },
       }),
