@@ -17,6 +17,7 @@ interface BlogLayoutProps {
 
 /**
  * props로 sidebar slots가 전달된다. 참고로, children도 slots이다.
+ * - https://nextjs.org/docs/app/api-reference/file-conventions/parallel-routes#slots
  */
 export default async function BlogLayout({ children, sidebar, params }: BlogLayoutProps) {
   const pageHeadings: { id: string; text: string; level: number }[] = [];
