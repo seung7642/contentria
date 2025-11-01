@@ -15,6 +15,9 @@ interface BlogLayoutProps {
   params: Promise<{ blogSlug: string }>;
 }
 
+/**
+ * props로 sidebar slots가 전달된다. 참고로, children도 slots이다.
+ */
 export default async function BlogLayout({ children, sidebar, params }: BlogLayoutProps) {
   const pageHeadings: { id: string; text: string; level: number }[] = [];
   const { blogSlug } = await params;
@@ -22,24 +25,25 @@ export default async function BlogLayout({ children, sidebar, params }: BlogLayo
   const blogName = layoutData?.blog.slug ?? 'Blog';
 
   return (
-    <div className="grid h-screen grid-rows-[auto_1fr_auto]">
-      <BlogHeader blogName={blogName} blogSlug={blogSlug} />
+    <>
+      <div className="flex min-h-screen flex-col">
+        <BlogHeader blogName={blogName} blogSlug={blogSlug} />
 
-      {/* 중간 영역*/}
-      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto]">
-        {/* 사이드바 */}
-        {sidebar}
+        {/* 중간 영역*/}
+        <div className="grid flex-1 grid-cols-[auto_minmax(0,1fr)_auto] overflow-auto">
+          {/* 사이드바 */}
+          {sidebar}
 
-        {/* 메인 콘텐츠: 최대 너비 제한 */}
-        <main className="m-4 mx-auto w-full max-w-4xl overflow-auto border border-gray-400 p-4">
-          {children}
-        </main>
+          {/* 메인 콘텐츠: 최대 너비 제한 */}
+          <main className="m-4 mx-auto w-full max-w-4xl overflow-auto border border-gray-400 p-4">
+            {children}
+          </main>
 
-        {/* 목차 */}
-        <TableOfContents headings={pageHeadings}></TableOfContents>
+          {/* 목차 */}
+          <TableOfContents headings={pageHeadings}></TableOfContents>
+        </div>
       </div>
-
       <Footer />
-    </div>
+    </>
   );
 }

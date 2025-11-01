@@ -15,30 +15,27 @@ const Sidebar = ({ blog, owner, categories }: SidebarProps) => {
   const blogDescription = blog.description ?? '블로그에 오신 것을 환영합니다.';
 
   return (
-    <aside className="m-2 flex w-80 flex-col overflow-auto rounded border border-gray-200 bg-gray-100 p-4">
+    <aside className="m-2 flex w-full max-w-xs flex-col overflow-auto rounded border border-gray-200 bg-gray-50 p-4 shadow-sm lg:max-w-sm">
       {/* 프로필 박스 */}
-      <div className="mb-6 rounded-lg bg-white p-4 shadow">
-        <div className="flex flex-col items-center">
-          <div className="relative mb-4 flex h-56 w-56 items-center justify-center overflow-hidden rounded-lg bg-gray-300">
-            <Image
-              src={profileImageUrl}
-              alt="profile"
-              fill // 부모 요소에 맞게 이미지를 채운다. (부모 요소에 position: relative 필요)
-              style={{ objectFit: 'cover' }} // 이미지 비율을 유지하며 채운다.
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // 반응형 이미지 크기 설정
-              priority // 사이드바 이미지는 중요하므로 우선적으로 로드한다.
-              className="rounded-lg"
-            />
-          </div>
-          {/* <h2 className="mb-2 text-lg">{owner.username}</h2> */}
-          <h2 className="mb-2 text-lg">닉네임</h2>
-          <p className="text-center text-sm text-gray-600">{blogDescription}</p>
+      <div className="mb-6 flex flex-col items-center border bg-white p-4">
+        <div className="relative mb-4 flex h-48 w-48 justify-center overflow-hidden rounded-lg bg-gray-300 md:h-56 md:w-56">
+          <Image
+            src={profileImageUrl}
+            alt="profile"
+            fill // 부모 요소에 맞게 이미지를 채운다. (부모 요소에 position: relative 필요)
+            style={{ objectFit: 'cover' }} // 이미지 비율을 유지하며 채운다.
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // 반응형 이미지 크기 설정
+            priority // 사이드바 이미지는 중요하므로 우선적으로 로드한다.
+            className="rounded-lg"
+          />
         </div>
+        <h2 className="mb-2 text-lg">닉네임</h2>
+        <p className="text-center text-sm text-gray-600">{blogDescription}</p>
       </div>
 
       {/* 카테고리 박스 */}
       {categories.length > 0 && (
-        <div className="mb-6 rounded-lg bg-white p-4 shadow">
+        <div className="mb-6 border bg-white p-4">
           <h2 className="mb-4 text-center text-xl font-bold">글 분류</h2>
           <ul>
             {categories.map((category) => (
