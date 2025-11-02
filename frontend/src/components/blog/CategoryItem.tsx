@@ -44,7 +44,7 @@ const CategoryItem = ({ category }: CategoryItemProps) => {
             {category.name}
           </span>
           {/* 게시글 수를 뱃지 형태로 표시하여 가독성 향상 */}
-          <span className="5 ml-2 rounded-full bg-gray-200 px-2 py-0 text-xs font-semibold text-gray-600">
+          <span className="5 ml-2 rounded-full bg-indigo-100 px-2 py-0 text-xs font-semibold text-gray-600">
             {category.postCount}
           </span>
         </Link>

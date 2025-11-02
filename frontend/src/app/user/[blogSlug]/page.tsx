@@ -64,16 +64,21 @@ export default async function BlogPage({ params, searchParams }: UserBlogPagePro
 
   return (
     <div>
-      <h1 className="mb-6 text-3xl font-bold">글 목록</h1>
-      <div className="space-y-6">
-        {initialPosts.map((post) => (
-          <PostCard key={post.id} blogSlug={blogSlug} post={post} />
-        ))}
-        {initialPosts.length === 0 && <p className="text-gray-500">아직 작성된 글이 없습니다.</p>}
+      <h1 className="mb-8 text-3xl font-bold">최신 글</h1>
+      <div className="space-y-4">
+        {initialPosts.length > 0 ? (
+          initialPosts.map((post) => <PostCard key={post.id} blogSlug={blogSlug} post={post} />)
+        ) : (
+          <div className="flex h-40 items-center justify-center rounded-lg border-2 border-dashed border-gray-300">
+            <p className="text-center text-gray-500">아직 작성된 글이 없습니다.</p>
+          </div>
+        )}
       </div>
 
       {totalPages > 0 && (
-        <BlogPagination currentPage={currentPage} totalPages={totalPages} blogSlug={blogSlug} />
+        <div className="mt-10">
+          <BlogPagination currentPage={currentPage} totalPages={totalPages} blogSlug={blogSlug} />
+        </div>
       )}
     </div>
   );

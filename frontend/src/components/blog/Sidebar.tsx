@@ -36,7 +36,7 @@ const Sidebar = ({ blog, owner, categories }: SidebarProps) => {
       {/* 카테고리 박스 */}
       {categories.length > 0 && (
         <div className="mb-6 border bg-white p-4">
-          <h2 className="mb-4 text-center text-xl font-bold">글 분류</h2>
+          <h2 className="mb-4 text-center text-xl font-bold text-indigo-600">카테고리</h2>
           <ul>
             {categories.map((category) => (
               <CategoryItem key={category.id ?? 'uncategorized'} category={category} />
