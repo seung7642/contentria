@@ -63,7 +63,7 @@ export default async function BlogPage({ params, searchParams }: UserBlogPagePro
   const totalPages = postsPage?.totalPages ?? 0;
 
   return (
-    <div>
+    <div className="mx-auto w-full max-w-4xl px-4 py-6">
       <h1 className="mb-8 text-3xl font-bold">최신 글</h1>
       <div className="space-y-4">
         {initialPosts.length > 0 ? (

@@ -41,7 +41,7 @@ const TableOfContents = ({ headings }: TableOfContentsProps) => {
       </h2>
       <ul className="space-y-2">
         {headings.map((heading) => (
-          <li key={heading.id} style={{ paddingLeft: `${(heading.level - 2) * 1}rem` }}>
+          <li key={heading.id} style={{ paddingLeft: `${(heading.level - 1) * 1}rem` }}>
             <a
               href={`#${heading.id}`}
               className={`block text-sm transition-colors hover:text-gray-900 ${

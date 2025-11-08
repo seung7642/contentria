@@ -36,10 +36,7 @@ export default async function BlogLayout({ children, sidebar, params }: BlogLayo
           {sidebar}
 
           {/* 메인 콘텐츠: 최대 너비 제한 */}
-          <main className="mx-auto w-full max-w-4xl px-4 py-6">{children}</main>
-
-          {/* 목차 */}
-          <TableOfContents headings={pageHeadings}></TableOfContents>
+          <main className="w-full px-4 py-6">{children}</main>
         </div>
       </div>
       <Footer />

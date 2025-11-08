@@ -6,6 +6,7 @@ import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeSlug from 'rehype-slug';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
+import rehypeShiftHeading from 'rehype-shift-heading';
 // import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 // import { prism } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import SyntaxHighlighter from 'react-syntax-highlighter';
@@ -44,7 +45,7 @@ const getHeadingsFromMarkdown = async (markdown: string): Promise<Heading[]> => 
 
   visit(tree, 'heading', (node) => {
     const textNode = node.children[0];
-    if (node.depth >= 2 && node.depth <= 3 && textNode && 'value' in textNode) {
+    if (node.depth >= 1 && node.depth <= 2 && textNode && 'value' in textNode) {
       // slug는 rehype-slug가 생성하는 방식과 동일하게 만든다.
       const id = textNode.value
         .toLowerCase()
@@ -116,50 +117,56 @@ greet('World');
   const headings = await getHeadingsFromMarkdown(markdown);
 
   return (
-    <div className="relative flex w-full justify-center">
-      <article className="prose max-w-none flex-1">
-        {/* <h1 className="mb-4 text-4xl font-bold">{post.title}</h1> */}
+    <div className="relative mx-auto flex w-full max-w-7xl justify-center">
+      <div className="w-full max-w-4xl">
+        <article className="prose max-w-none flex-shrink-0">
+          {/* <h1 className="mb-4 text-4xl font-bold">{post.title}</h1> */}
 
-        {/* 작성자 정보 및 발행일 */}
-        {/* <div className="mb-8 flex items-center space-x-4 text-gray-500"> */}
-        {/* <span>{author.username}</span> */}
-        {/* <span>•</span> */}
-        {/* <span>{new Date(post.publishedAt).toLocaleDateString()}</span> */}
-        {/* </div> */}
+          {/* 작성자 정보 및 발행일 */}
+          {/* <div className="mb-8 flex items-center space-x-4 text-gray-500"> */}
+          {/* <span>{author.username}</span> */}
+          {/* <span>•</span> */}
+          {/* <span>{new Date(post.publishedAt).toLocaleDateString()}</span> */}
+          {/* </div> */}
 
-        {/* 본문 내용 (HTML 렌더링) */}
-        {/* <div
+          {/* 본문 내용 (HTML 렌더링) */}
+          {/* <div
         className="prose max-w-none" // tailwindcss-typography 플러그인 필요
         dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.contentHtml) }}
       /> */}
-        <Markdown
-          remarkPlugins={[remarkGfm]}
-          rehypePlugins={[rehypeSlug, [rehypeAutolinkHeadings, { behavior: 'wrap' }]]}
-          components={{
-            code(props) {
-              const { children, className, node, ref, ...rest } = props;
-              const match = /language-(\w+)/.exec(className || '');
-              return match ? (
-                <SyntaxHighlighter
-                  {...rest}
-                  PreTag="div"
-                  children={String(children).replace(/\n$/, '')}
-                  language={match[1]}
-                  style={dracula}
-                />
-              ) : (
-                <code {...rest} className={className}>
-                  {children}
-                </code>
-              );
-            },
-          }}
-        >
-          {markdown}
-        </Markdown>
-      </article>
+          <Markdown
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[
+              rehypeSlug,
+              [rehypeAutolinkHeadings, { behavior: 'wrap' }],
+              [rehypeShiftHeading, { shift: 1 }],
+            ]}
+            components={{
+              code(props) {
+                const { children, className, node, ref, ...rest } = props;
+                const match = /language-(\w+)/.exec(className || '');
+                return match ? (
+                  <SyntaxHighlighter
+                    {...rest}
+                    PreTag="div"
+                    children={String(children).replace(/\n$/, '')}
+                    language={match[1]}
+                    style={dracula}
+                  />
+                ) : (
+                  <code {...rest} className={className}>
+                    {children}
+                  </code>
+                );
+              },
+            }}
+          >
+            {markdown}
+          </Markdown>
+        </article>
+      </div>
       {headings.length > 0 && (
-        <div className="ml-8 hidden w-64 lg:block">
+        <div className="ml-8 hidden w-64 flex-shrink-0 lg:block">
           <TableOfContents headings={headings} />
         </div>
       )}
