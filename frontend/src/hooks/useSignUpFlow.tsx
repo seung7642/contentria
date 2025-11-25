@@ -1,6 +1,6 @@
 import { SignUpStep } from '@/components/auth/types';
 import { RECAPTCHA_SIGN_UP_ACTION } from '@/constants/auth';
-import { ApiError } from '@/errors/ApiError';
+import { ApiError } from '@/types/api/errors';
 import { SignUpEmailStepFormData } from '@/lib/schemas/authSchemas';
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
@@ -8,7 +8,7 @@ import {
   useInitiateSignUpMutation,
   useSendOtpMutation,
   useVerifyOtpMutation,
-} from './queries/useAuthMutations';
+} from './mutations/useAuthMutations';
 
 // 훅의 반환 타입을 정의 (React Context 사용 시 필요)
 type SignUpFlowContextType = ReturnType<typeof useSignUpFlowLogic>;

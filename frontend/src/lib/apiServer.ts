@@ -1,19 +1,12 @@
 import { PATHS } from '@/constants/paths';
-import { ApiError, BackendErrorResponse } from '@/errors/ApiError';
+import { ApiError, BackendErrorResponse } from '@/types/api/errors';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-
-interface FetchOptions extends RequestInit {
-  next?: {
-    revalidate?: number | false;
-    tags?: string[];
-  };
-}
 
 const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8080';
 
 const apiServer = {
-  async get<T>(path: string, options?: FetchOptions): Promise<T | null> {
+  async get<T>(path: string, options?: RequestInit): Promise<T | null> {
     const endpoint = `${API_BASE_URL}${path}`;
     const cookieStore = await cookies();
     const accessToken = cookieStore.get('accessToken')?.value;
@@ -27,8 +20,8 @@ const apiServer = {
     try {
       const response = await fetch(endpoint, {
         method: 'GET',
-        ...options,
         headers,
+        ...options,
       });
 
       if (!response.ok) {
@@ -65,6 +58,35 @@ const apiServer = {
         throw error;
       }
       console.error(`[apiServer GET Error] for path ${path}:`, error);
+      return null;
+    }
+  },
+
+  async post<T>(path: string, body: string, options?: RequestInit): Promise<T | ApiError | null> {
+    const endpoint = `${API_BASE_URL}${path}`;
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        body: JSON.stringify(body),
+        ...options,
+      });
+
+      if (!response.ok) {
+        const backendError = (await response.json()) as BackendErrorResponse;
+        const apiError = new ApiError(
+          backendError.message,
+          backendError.timestamp,
+          backendError.status,
+          backendError.error,
+          backendError.code,
+          backendError.path,
+          backendError.details
+        );
+        return apiError;
+      }
+      return response.json() as T;
+    } catch (error) {
+      console.error(`[apiServer POST Error] for path ${path}:`, error);
       return null;
     }
   },

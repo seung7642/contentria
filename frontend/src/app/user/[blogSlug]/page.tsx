@@ -1,23 +1,23 @@
 import BlogPagination from '@/components/blog/BlogPagination';
 import PostCard from '@/components/blog/PostCard';
-import { getBlogLayout } from '@/services/server/blogService';
-import { getBlogPosts } from '@/services/server/postService';
+import { getBlogLayout } from '@/services/blogService';
+import { getBlogPosts } from '@/services/postService';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 // Next.js 15 버전부터 params와 searchParams는 비동기 처리가 가능하다.
 interface UserBlogPageProps {
-  params: Promise<{
+  params: {
     blogSlug: string;
-  }>;
-  searchParams: Promise<{
+  };
+  searchParams: {
     page?: string;
-  }>;
+  };
 }
 
 // SEO를 위한 동적 메타데이터 생성 (매우 중요!)
 export async function generateMetadata({ params }: UserBlogPageProps): Promise<Metadata> {
-  const { blogSlug } = await params;
+  const { blogSlug } = params;
 
   const blogData = await getBlogLayout(blogSlug);
   if (!blogData) {
@@ -34,8 +34,8 @@ export async function generateMetadata({ params }: UserBlogPageProps): Promise<M
 }
 
 export default async function BlogPage({ params, searchParams }: UserBlogPageProps) {
-  const { blogSlug } = await params;
-  const { page } = await searchParams;
+  const { blogSlug } = params;
+  const { page } = searchParams;
 
   // 페이지 번호 파싱 (1-based를 0-based로 변환)
   const currentPage = page ? Math.max(0, parseInt(page, 10) - 1) : 0;

@@ -1,19 +1,14 @@
 import { PATHS } from '@/constants/paths';
-import { ApiError } from '@/errors/ApiError';
+import { ApiError } from '@/types/api/errors';
 import { authService } from '@/services/authService';
 import { useAuthStore } from '@/store/authStore';
-import {
-  LoginPayload,
-  LoginResponse,
-  SendOtpPayload,
-  SendOtpResponse,
-} from '@/types/api/auth/login';
+import { LoginPayload, LoginResponse, SendOtpPayload, SendOtpResponse } from '@/types/api/auth';
 import {
   InitiateSignUpPayload,
   InitiateSignUpResponse,
   VerifyOtpCodePayload,
   VerifyOtpCodeResponse,
-} from '@/types/api/auth/signUp';
+} from '@/types/api/auth';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { useRouter } from 'next/navigation';

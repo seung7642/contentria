@@ -1,16 +1,13 @@
-import { getPostDetail } from '@/services/server/postService';
+import { getPostDetail } from '@/services/postService';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import DOMPurify from 'dompurify';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeSlug from 'rehype-slug';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypeShiftHeading from 'rehype-shift-heading';
-// import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-// import { prism } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import SyntaxHighlighter from 'react-syntax-highlighter';
-import { github, dracula } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import { dracula } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import React from 'react';
 import { Heading } from '@/types/common';
 import { unified } from 'unified';
@@ -19,25 +16,26 @@ import { visit } from 'unist-util-visit';
 import TableOfContents from '@/components/blog/TableOfContents';
 
 interface PostDetailPageProps {
-  params: Promise<{
+  params: {
     blogSlug: string;
     postSlug: string;
-  }>;
+  };
 }
 
-// export async function generateMetadata({ params }: PostDetailPageProps): Promise<Metadata> {
-//   const { blogSlug, postSlug } = await params;
-//   const postData = await getPostDetail(blogSlug, postSlug);
+export async function generateMetadata({ params }: PostDetailPageProps): Promise<Metadata> {
+  const { blogSlug, postSlug } = params;
+  const postData = await getPostDetail(blogSlug, postSlug);
 
-//   if (!postData) {
-//     return { title: '게시물을 찾을 수 없습니다.' };
-//   }
+  if (!postData) {
+    return { title: '게시물을 찾을 수 없습니다.' };
+  }
 
-//   return {
-//     title: postData.post.title,
-//     description: postData.post.metaDescription || '',
-//   };
-// }
+  return {
+    title: postData.post.title,
+    description: postData.post.metaDescription || '',
+  };
+}
+
 const getHeadingsFromMarkdown = async (markdown: string): Promise<Heading[]> => {
   const headings: Heading[] = [];
   const processor = unified().use(remarkParse);
@@ -63,7 +61,7 @@ const getHeadingsFromMarkdown = async (markdown: string): Promise<Heading[]> => 
 };
 
 export default async function PostDetailPage({ params }: PostDetailPageProps) {
-  const { blogSlug, postSlug } = await params;
+  const { blogSlug, postSlug } = params;
   // const postDetailResponse = await getPostDetail(blogSlug, postSlug);
 
   // if (!postDetailResponse) {
@@ -119,21 +117,17 @@ greet('World');
   return (
     <div className="relative mx-auto flex w-full max-w-7xl justify-center">
       <div className="w-full max-w-4xl">
+        <div className="mb-8">
+          <h1 className="mb-4 text-4xl font-bold text-gray-900">글 제목</h1>
+          <div className="flex items-center space-x-3 text-sm text-gray-500">
+            <span className="font-semibold text-gray-800">작성자 이름</span>
+            <span>•</span>
+            <span>{new Date().toLocaleDateString('ko-KR')}</span>
+          </div>
+        </div>
+        <hr className="mb-8" />
+
         <article className="prose max-w-none flex-shrink-0">
-          {/* <h1 className="mb-4 text-4xl font-bold">{post.title}</h1> */}
-
-          {/* 작성자 정보 및 발행일 */}
-          {/* <div className="mb-8 flex items-center space-x-4 text-gray-500"> */}
-          {/* <span>{author.username}</span> */}
-          {/* <span>•</span> */}
-          {/* <span>{new Date(post.publishedAt).toLocaleDateString()}</span> */}
-          {/* </div> */}
-
-          {/* 본문 내용 (HTML 렌더링) */}
-          {/* <div
-        className="prose max-w-none" // tailwindcss-typography 플러그인 필요
-        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.contentHtml) }}
-      /> */}
           <Markdown
             remarkPlugins={[remarkGfm]}
             rehypePlugins={[

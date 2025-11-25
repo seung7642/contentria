@@ -46,7 +46,7 @@ const BlogHeader = ({ blogName, blogSlug }: BlogHeaderProps) => {
   };
 
   return (
-    <header className="sticky top-0 z-30 w-full border-b bg-white/80 shadow-sm backdrop-blur-sm">
+    <header className="w-full border-b bg-white shadow-sm">
       <div className="flex items-center justify-between px-4 py-3 sm:px-6">
         {/* 좌측 영역 */}
         <div className="flex min-w-0 items-center">

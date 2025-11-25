@@ -1,4 +1,4 @@
-import { ApiError } from '@/errors/ApiError';
+import { ApiError } from '@/types/api/errors';
 import { userService } from '@/services/userService';
 import { User } from '@/types/user';
 import { useQuery } from '@tanstack/react-query';

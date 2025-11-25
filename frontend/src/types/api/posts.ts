@@ -34,3 +34,22 @@ export interface PostDetailResponse {
   post: PostDetail;
   owner: OwnerInfo;
 }
+
+export interface CreateNewPostRequest {
+  userId: string;
+  title: string;
+  contentMarkdown: string;
+  status: 'DRAFT' | 'PUBLISHED';
+  categoryId: string;
+}
+
+export interface CreateNewPostResponse {
+  postId: string;
+  slug: string;
+  title: string;
+  metaTitle: string | null;
+  metaDescription: string | null;
+  publishedAt: string | null;
+  status: 'DRAFT' | 'PUBLISHED';
+  categoryName: string | null;
+}

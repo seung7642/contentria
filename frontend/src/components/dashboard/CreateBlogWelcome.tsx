@@ -1,4 +1,4 @@
-import { useCreateBlogMutation } from '@/hooks/queries/useUserMutations';
+import { useCreateBlogMutation } from '@/hooks/mutations/useUserMutations';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertTriangle, Loader2 } from 'lucide-react';
 import { SubmitHandler, useForm } from 'react-hook-form';

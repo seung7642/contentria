@@ -1,6 +1,12 @@
-import apiServer from '@/lib/server/apiServer';
+import { ApiError } from '@/types/api/errors';
+import apiServer from '@/lib/apiServer';
 import { Page } from '@/types/api/common';
-import { PostDetailResponse, PostSummary } from '@/types/api/posts';
+import {
+  CreateNewPostRequest,
+  CreateNewPostResponse,
+  PostDetailResponse,
+  PostSummary,
+} from '@/types/api/posts';
 
 export async function getBlogPosts(
   slug: string,
@@ -30,5 +36,16 @@ export async function getPostDetail(
 ): Promise<PostDetailResponse | null> {
   const path = `/api/blogs/${blogSlug}/posts/${postSlug}`;
   const response = await apiServer.get<PostDetailResponse>(path);
+  return response;
+}
+
+export async function createNewPost(
+  createNewPostRequest: CreateNewPostRequest
+): Promise<CreateNewPostResponse | ApiError | null> {
+  const path = '/api/posts';
+  const response = await apiServer.post<CreateNewPostResponse>(
+    path,
+    JSON.stringify(createNewPostRequest)
+  );
   return response;
 }

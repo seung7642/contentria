@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction } from 'react';
-import { VerifyOtpCodeResponse } from '@/types/api/auth/signUp';
+import { VerifyOtpCodeResponse } from '@/types/api/auth';
 
 export type SignUpStep = 'email' | 'password' | 'recaptcha_v2_challenge' | 'verify_otp_code';
 

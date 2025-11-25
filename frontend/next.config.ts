@@ -42,8 +42,8 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
-        source: '/@:slug',
-        destination: '/user/:slug',
+        source: '/@:blogSlug',
+        destination: '/user/:blogSlug',
       },
       {
         source: '/@:blogSlug/:postSlug',

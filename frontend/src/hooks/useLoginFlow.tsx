@@ -6,9 +6,9 @@ import {
   useLoginWithPasswordMutation,
   useSendOtpMutation,
   useVerifyOtpMutation,
-} from './queries/useAuthMutations';
+} from './mutations/useAuthMutations';
 import { RECAPTCHA_LOGIN_WITH_PASSWORD_ACTION, RECAPTCHA_SEND_OTP_ACTION } from '@/constants/auth';
-import { ApiError } from '@/errors/ApiError';
+import { ApiError } from '@/types/api/errors';
 
 type LoginFlowContextType = ReturnType<typeof useLoginFlowLogic>;
 

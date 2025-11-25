@@ -1,19 +1,9 @@
 import { PATHS } from '@/constants/paths';
-import { ApiError } from '@/errors/ApiError';
+import { ApiError, BackendErrorResponse } from '@/types/api/errors';
 import { useAuthStore } from '@/store/authStore';
 import axios, { AxiosError } from 'axios';
 import createAuthRefreshInterceptor from 'axios-auth-refresh';
 import { getCookie } from 'cookies-next';
-
-interface BackendErrorResponse {
-  message: string;
-  timestamp: string;
-  status: number;
-  error: string;
-  code: string;
-  path?: string;
-  details?: Record<string, string>;
-}
 
 const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
@@ -36,14 +26,10 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response, // 2xx 응답은 그대로 통과
   (error: AxiosError) => {
-    if (
-      error.response &&
-      error.response.data &&
-      typeof error.response.data === 'object' &&
-      'code' in error.response.data
-    ) {
-      const errorData = error.response.data as BackendErrorResponse;
-
+    if (error.response && isBackendErrorResponse(error.response.data)) {
+      // error.response.data는 자동으로 'BackendErrorResponse' 타입으로 추론된다.
+      // 'as BackendErrorResponse' 같은 강제 형변환이 필요없다.
+      const errorData = error.response.data;
       return Promise.reject(
         new ApiError(
           errorData.message,
@@ -57,10 +43,22 @@ apiClient.interceptors.response.use(
       );
     }
 
-    // 네트워크 에러 등 백엔드 응답이 없는 경우, Axios의 기본 에러를 그대로 reject
+    // 네트워크 에러 등 백엔드 응답이 없는 경우, 기본 에러(AxiosError)를 그대로 reject
     return Promise.reject(error);
   }
 );
+
+// 타입스크립트 문법: User-Defined Type Guard
+//   함수가 true를 반환하면 data는 BackendErrorResponse 타입이라고 컴파일러에게 힌트를 준다.
+function isBackendErrorResponse(data: unknown): data is BackendErrorResponse {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'code' in data &&
+    'message' in data &&
+    'status' in data
+  );
+}
 
 // 3. 토큰 갱신 로직 정의 (라이브러리가 401 에러를 감지하면 이 함수를 호출해준다.)
 const refreshAuthLogic = async (failedRequest: AxiosError) => {
