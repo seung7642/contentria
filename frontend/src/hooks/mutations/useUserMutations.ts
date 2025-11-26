@@ -5,7 +5,7 @@ import {
   UpdateProfilePayload,
   userService,
 } from '@/services/userService';
-import { User } from '@/types/user';
+import { User } from '@/types/api/user';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 

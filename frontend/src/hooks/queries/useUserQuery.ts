@@ -1,6 +1,6 @@
 import { ApiError } from '@/types/api/errors';
 import { userService } from '@/services/userService';
-import { User } from '@/types/user';
+import { User } from '@/types/api/user';
 import { useQuery } from '@tanstack/react-query';
 
 export const useUserQuery = () => {

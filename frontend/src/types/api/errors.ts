@@ -26,7 +26,9 @@ export class ApiError extends Error {
   }
 }
 
-export interface BackendErrorResponse {
+// 백엔드에서 반환하는 표준 에러 응답의 타입 정의
+// 백엔드에서 반환되는 스펙은 접미사로 'Response'를 붙인다.
+export interface ApiErrorResponse {
   message: string;
   timestamp: string;
   status: number;

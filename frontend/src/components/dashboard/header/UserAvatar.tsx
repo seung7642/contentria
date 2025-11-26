@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { UserIcon } from 'lucide-react';
-import { User } from '@/types/user';
+import { User } from '@/types/api/user';
 
 interface UserAvatarProps {
   user: User | null;

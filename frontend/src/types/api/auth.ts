@@ -1,4 +1,4 @@
-import { User } from '@/types/user';
+import { User } from '@/types/api/user';
 
 // ===============================================
 // Login 관련 타입들

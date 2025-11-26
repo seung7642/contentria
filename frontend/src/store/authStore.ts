@@ -1,5 +1,5 @@
 import { cookieManager } from '@/lib/cookieManager';
-import { User } from '@/types/user';
+import { User } from '@/types/api/user';
 import { create } from 'zustand';
 
 interface AuthState {

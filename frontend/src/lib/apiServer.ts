@@ -1,5 +1,5 @@
 import { PATHS } from '@/constants/paths';
-import { ApiError, BackendErrorResponse } from '@/types/api/errors';
+import { ApiError, ApiErrorResponse } from '@/types/api/errors';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
@@ -25,7 +25,7 @@ const apiServer = {
       });
 
       if (!response.ok) {
-        const errorData: BackendErrorResponse = await response.json();
+        const errorData: ApiErrorResponse = await response.json();
         const apiError = new ApiError(
           errorData.message,
           errorData.timestamp,
@@ -72,7 +72,7 @@ const apiServer = {
       });
 
       if (!response.ok) {
-        const backendError = (await response.json()) as BackendErrorResponse;
+        const backendError = (await response.json()) as ApiErrorResponse;
         const apiError = new ApiError(
           backendError.message,
           backendError.timestamp,

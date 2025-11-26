@@ -1,4 +1,4 @@
-import { User } from '@/types/user';
+import { User } from '@/types/api/user';
 import UserAvatar from './UserAvatar';
 import { Home, LogOut, Settings } from 'lucide-react';
 import Link from 'next/link';

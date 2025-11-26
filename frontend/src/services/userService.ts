@@ -1,5 +1,5 @@
 import apiClient from '@/lib/apiClient';
-import { User } from '@/types/user';
+import { User } from '@/types/api/user';
 
 export interface UpdateProfilePayload {
   name: string;
