@@ -21,12 +21,14 @@ const fetchExtended = async <T>(
 
   const headers = new Headers(options.headers);
   headers.set('Content-Type', 'application/json');
+
   if (accessToken) {
     headers.set('Authorization', `Bearer ${accessToken}`);
   }
 
   try {
     const response = await fetch(endpoint, {
+      cache: 'no-store',
       ...options,
       headers,
     });
@@ -35,6 +37,10 @@ const fetchExtended = async <T>(
     if (!response.ok) {
       // 404 등에서 body가 비어있을 수 있으므로 안전하게 파싱
       const errorData = (await response.json().catch(() => ({}))) as ApiErrorResponse;
+
+      if (response.status === 401) {
+        redirect(PATHS.LOGIN);
+      }
 
       const apiError = new ApiError(
         errorData.message || 'Server Error',
@@ -45,12 +51,6 @@ const fetchExtended = async <T>(
         errorData.path,
         errorData.details
       );
-
-      // [선택 사항] 서버 사이드 401 자동 리다이렉트 처리
-      // 필요 없다면 이 부분 제거하고 그냥 throw apiError 하세요.
-      if (response.status === 401) {
-        redirect(PATHS.LOGIN);
-      }
 
       throw apiError; // 여기서 값을 리턴하지 않고 던져야 try-catch에 걸립니다.
     }

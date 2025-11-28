@@ -33,4 +33,11 @@ export const authService = {
     const { data } = await apiClient.post<SendOtpResponse>('/api/auth/send-otp', payload);
     return data;
   },
+
+  async refreshAccessToken(refreshToken: string): Promise<LoginResponse> {
+    const { data } = await apiClient.post<LoginResponse>('/api/auth/refresh-token', {
+      refreshToken,
+    });
+    return data;
+  },
 };
