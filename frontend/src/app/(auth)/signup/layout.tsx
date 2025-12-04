@@ -1,9 +1,9 @@
-'use client';
+import { Metadata } from 'next';
 
-// const metadata: Metadata = {
-//   title: 'Sign Up',
-//   description: 'Contentria 회원가입',
-// };
+export const metadata: Metadata = {
+  title: 'Sign Up',
+  description: 'Create a new account',
+};
 
 export default function SignUpLayout({
   children,
