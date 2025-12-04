@@ -8,7 +8,7 @@ import { Loader2 } from 'lucide-react';
 import InputField from '@/components/common/InputField';
 
 import { useUserQuery } from '@/hooks/queries/useUserQuery';
-import { useUpdateProfileMutation } from '@/hooks/mutations/useUserMutations';
+import { useUpdateUserProfileMutation } from '@/hooks/mutations/useUserMutations';
 
 // 1. 설정 폼의 유효성 검사를 위한 Zod 스키마
 const profileSchema = z.object({
@@ -44,7 +44,7 @@ const SettingsPage = () => {
   const { data: user, isPending: isUserLoading } = useUserQuery();
 
   // 4. 프로필 업데이트를 위한 useMutation 훅 사용
-  const { mutate: updateProfile, isPending: isUpdating } = useUpdateProfileMutation();
+  const { mutate: updateProfile, isPending: isUpdating } = useUpdateUserProfileMutation();
 
   const {
     register,
