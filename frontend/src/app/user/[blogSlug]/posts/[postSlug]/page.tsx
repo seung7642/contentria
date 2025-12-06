@@ -1,6 +1,4 @@
-import { getPostDetail } from '@/services/postService';
 import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeSlug from 'rehype-slug';
@@ -14,6 +12,7 @@ import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import { visit } from 'unist-util-visit';
 import TableOfContents from '@/components/blog/TableOfContents';
+import { getPostDetailAction } from '@/actions/post';
 
 interface PostDetailPageProps {
   params: {
@@ -24,7 +23,7 @@ interface PostDetailPageProps {
 
 export async function generateMetadata({ params }: PostDetailPageProps): Promise<Metadata> {
   const { blogSlug, postSlug } = params;
-  const postData = await getPostDetail(blogSlug, postSlug);
+  const postData = await getPostDetailAction(blogSlug, postSlug);
 
   if (!postData) {
     return { title: '게시물을 찾을 수 없습니다.' };

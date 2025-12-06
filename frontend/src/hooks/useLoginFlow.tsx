@@ -1,3 +1,5 @@
+'use client';
+
 import { LoginFormData, LoginStep } from '@/components/auth/login/types';
 import { PasswordStepFormData, LoginEmailStepFormData } from '@/lib/schemas/authSchemas';
 import { createContext, useContext, useEffect, useState } from 'react';

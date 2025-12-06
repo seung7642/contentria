@@ -1,11 +1,9 @@
-'use client';
+import type { Metadata } from 'next';
 
-// import type { Metadata } from 'next';
-
-// export const metadata: Metadata = {
-//   title: 'Login',
-//   description: 'Contentria 로그인',
-// };
+export const metadata: Metadata = {
+  title: 'Sign In',
+  description: 'Sign in to your account',
+};
 
 export default function LoginLayout({
   children,

@@ -5,3 +5,7 @@ export interface User {
   profileImage: string | null;
   slugs: string[] | null;
 }
+
+export interface UpdateProfilePayload {
+  name: string;
+}

@@ -1,7 +1,7 @@
+import { getBlogLayoutAction } from '@/actions/blog';
+import { getBlogPostsAction } from '@/actions/post';
 import BlogPagination from '@/components/blog/BlogPagination';
 import PostCard from '@/components/blog/PostCard';
-import { getBlogLayout } from '@/services/blogService';
-import { getBlogPosts } from '@/services/postService';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
@@ -19,7 +19,7 @@ interface UserBlogPageProps {
 export async function generateMetadata({ params }: UserBlogPageProps): Promise<Metadata> {
   const { blogSlug } = params;
 
-  const blogData = await getBlogLayout(blogSlug);
+  const blogData = await getBlogLayoutAction(blogSlug);
   if (!blogData) {
     return {
       title: '블로그를 찾을 수 없습니다.',
@@ -46,8 +46,8 @@ export default async function BlogPage({ params, searchParams }: UserBlogPagePro
   }
 
   const [layoutData, postsPage] = await Promise.all([
-    getBlogLayout(blogSlug),
-    getBlogPosts(blogSlug),
+    getBlogLayoutAction(blogSlug),
+    getBlogPostsAction(blogSlug),
   ]);
 
   if (!layoutData) {

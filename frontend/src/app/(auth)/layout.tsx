@@ -6,11 +6,7 @@ export const metadata = {
   description: 'Authentication related pages',
 };
 
-interface AuthLayoutProps {
-  children: React.ReactNode;
-}
-
-const AuthLayout = ({ children }: AuthLayoutProps) => {
+const AuthLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <RecaptchaWrapper>
       <AuthGuard>

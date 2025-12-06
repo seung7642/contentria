@@ -11,3 +11,8 @@ export async function getUserProfileAction(): Promise<User> {
 export async function updateUserProfileAction(payload: UpdateProfilePayload): Promise<User> {
   return await apiServer01.put<User>('/api/users/profile', payload, { requireAuth: true });
 }
+
+export async function serverActionTest(): Promise<string> {
+  console.log('Server Action Test Invoked');
+  return 'Server Action Test Successful';
+}

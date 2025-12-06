@@ -24,3 +24,15 @@ export interface BlogLayout {
   owner: OwnerInfo;
   categories: CategoryNode[];
 }
+
+export interface CreateBlogPayload {
+  slug: string;
+}
+
+export interface CreateBlogResponse {
+  id: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  createdAt: string;
+}

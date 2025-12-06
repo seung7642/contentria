@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { updateSession } from './middlewares/authMiddleware';
 
-// The file must export a single function, either as a default export or named `middleware`.
 export async function middleware(request: NextRequest) {
-  return await updateSession(request);
+  console.log('Middleware executed for path:', request.nextUrl.pathname);
+  return NextResponse.next();
 }
 
-// Optionally, a config object can be exported alongside the Middleware function.
-// This object includes the `matcher` to specify paths where the Middleware applies.
 export const config = {
   /**
    * Match all request paths except for the ones starting with:

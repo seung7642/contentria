@@ -1,6 +1,7 @@
 export const PATHS = {
+  HOME: '/',
   LOGIN: '/login',
-  SIGNUP: 'signup',
+  SIGNUP: '/signup',
   POLICY_PRIVACY: '/privacy?tab=privacy',
   POLICY_TERMS: '/policy?tab=terms',
   DASHBOARD: '/dashboard',

@@ -1,6 +1,7 @@
+'use client';
+
 import { PATHS } from '@/constants/paths';
 import { ApiError } from '@/types/api/errors';
-import { authService } from '@/services/authService';
 import { useAuthStore } from '@/store/authStore';
 import { LoginPayload, LoginResponse, SendOtpPayload, SendOtpResponse } from '@/types/api/auth';
 import {
@@ -12,6 +13,12 @@ import {
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { useRouter } from 'next/navigation';
+import {
+  initiateSignUpAction,
+  loginWithPasswordAction,
+  sendOtpCodeAction,
+  verifyOtpCodeAction,
+} from '@/actions/auth';
 
 /**
  * 패스워드로 로그인하는 Mutation
@@ -23,7 +30,7 @@ export const useLoginWithPasswordMutation = () => {
   const login = useAuthStore((state) => state.login);
 
   return useMutation<LoginResponse, ApiError | AxiosError, LoginPayload>({
-    mutationFn: (payload: LoginPayload) => authService.loginWithPassword(payload),
+    mutationFn: (payload: LoginPayload) => loginWithPasswordAction(payload),
     onSuccess: (data) => {
       login(data.user);
       queryClient.invalidateQueries({ queryKey: ['user', 'me'] });
@@ -38,7 +45,7 @@ export const useLoginWithPasswordMutation = () => {
  */
 export const useInitiateSignUpMutation = (onSuccessCallback?: () => void) => {
   return useMutation<InitiateSignUpResponse, ApiError | AxiosError, InitiateSignUpPayload>({
-    mutationFn: (payload: InitiateSignUpPayload) => authService.initiateSignUp(payload),
+    mutationFn: (payload: InitiateSignUpPayload) => initiateSignUpAction(payload),
     onSuccess: () => {
       onSuccessCallback?.();
     },
@@ -58,7 +65,7 @@ export const useVerifyOtpMutation = () => {
   const login = useAuthStore((state) => state.login);
 
   return useMutation<VerifyOtpCodeResponse, ApiError | AxiosError, VerifyOtpCodePayload>({
-    mutationFn: (payload: VerifyOtpCodePayload) => authService.verifyOtpCode(payload),
+    mutationFn: (payload: VerifyOtpCodePayload) => verifyOtpCodeAction(payload),
     onSuccess: (data) => {
       login(data.user);
       queryClient.invalidateQueries({ queryKey: ['user', 'me'] });
@@ -73,7 +80,7 @@ export const useVerifyOtpMutation = () => {
  */
 export const useSendOtpMutation = (onSuccessCallback?: () => void) => {
   return useMutation<SendOtpResponse, ApiError | AxiosError, SendOtpPayload>({
-    mutationFn: (payload: SendOtpPayload) => authService.sendOtpCode(payload),
+    mutationFn: (payload: SendOtpPayload) => sendOtpCodeAction(payload),
     onSuccess: () => {
       onSuccessCallback?.();
     },

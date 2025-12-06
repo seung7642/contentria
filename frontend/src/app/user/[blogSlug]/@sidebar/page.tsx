@@ -1,5 +1,5 @@
+import { getBlogLayoutAction } from '@/actions/blog';
 import Sidebar from '@/components/blog/Sidebar';
-import { getBlogLayout } from '@/services/blogService';
 
 interface SidebarSlotProps {
   params: Promise<{
@@ -10,7 +10,7 @@ interface SidebarSlotProps {
 export default async function SidebarSlot({ params }: SidebarSlotProps) {
   const { blogSlug } = await params;
 
-  const layoutData = await getBlogLayout(blogSlug);
+  const layoutData = await getBlogLayoutAction(blogSlug);
 
   if (!layoutData) {
     return null;

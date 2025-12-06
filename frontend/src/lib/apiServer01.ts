@@ -1,6 +1,5 @@
 import { PATHS } from '@/constants/paths';
 import { ApiError, ApiErrorResponse } from '@/types/api/errors';
-import { isRedirectError } from 'next/dist/client/components/redirect-error';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
@@ -8,6 +7,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8
 
 type FetchOptions = RequestInit & {
   requireAuth?: boolean; // 인증 필요 여부 (기본값: true)
+  shouldRedirectOn401?: boolean;
 };
 
 export const apiServer01 = {
@@ -25,7 +25,12 @@ export const apiServer01 = {
 };
 
 async function fetchExtended<T>(url: string, options: FetchOptions = {}): Promise<T> {
-  const { requireAuth = true, headers: customHeaders, ...rest } = options;
+  const {
+    requireAuth = true,
+    shouldRedirectOn401 = true,
+    headers: customHeaders,
+    ...rest
+  } = options;
   const cookieStore = await cookies();
   const accessToken = cookieStore.get('accessToken')?.value;
   const refreshToken = cookieStore.get('refreshToken')?.value;
@@ -58,7 +63,11 @@ async function fetchExtended<T>(url: string, options: FetchOptions = {}): Promis
       console.log('✅ [BFF] 액세스 토큰 갱신 및 재요청 성공');
     } else {
       console.error('❌ [BFF] 액세스 토큰 갱신 실패. 로그인 페이지로 리다이렉트.');
-      redirect(PATHS.LOGIN);
+      if (shouldRedirectOn401) {
+        redirect(PATHS.LOGIN);
+      } else {
+        throw new Error('Unauthorized');
+      }
     }
   }
 

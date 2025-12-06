@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 import BlogHeader from '@/components/blog/header';
-import TableOfContents from '@/components/blog/TableOfContents';
-import { getBlogLayout } from '@/services/blogService';
 import Footer from '@/components/home/Footer';
+import { getBlogLayoutAction } from '@/actions/blog';
 
 export const metadata: Metadata = {
   title: 'Blog',
@@ -22,7 +21,7 @@ interface BlogLayoutProps {
 export default async function BlogLayout({ children, sidebar, params }: BlogLayoutProps) {
   const pageHeadings: { id: string; text: string; level: number }[] = [];
   const { blogSlug } = params;
-  const layoutData = await getBlogLayout(blogSlug);
+  const layoutData = await getBlogLayoutAction(blogSlug);
   const blogName = layoutData?.blog.slug ?? 'Blog';
 
   return (
