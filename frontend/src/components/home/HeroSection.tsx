@@ -2,7 +2,7 @@
 
 import { PATHS } from '@/constants/paths';
 import { useAuthStore } from '@/store/authStore';
-import { Link } from 'lucide-react';
+import Link from 'next/link';
 import { memo, useRef } from 'react';
 import { TypeAnimation } from 'react-type-animation';
 
@@ -52,7 +52,7 @@ export default function HeroSection() {
             wrapper="span"
             cursor={true}
             repeat={0}
-            speed={50}
+            speed={20}
             className="inline-block whitespace-nowrap"
           />
         </h1>
