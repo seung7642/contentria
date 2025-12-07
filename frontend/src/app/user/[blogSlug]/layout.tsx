@@ -11,7 +11,21 @@ export const metadata: Metadata = {
 interface BlogLayoutProps {
   children: React.ReactNode;
   sidebar: React.ReactNode; // @sidebar 슬롯이 props로 돌아온다.
-  params: { blogSlug: string };
+  params: Promise<{ blogSlug: string }>;
+}
+
+export async function generateMetadata({ params }: BlogLayoutProps): Promise<Metadata> {
+  const { blogSlug } = await params;
+  const layoutData = await getBlogLayoutAction(blogSlug);
+
+  return {
+    title: layoutData?.blog.title || 'Blog',
+    description: layoutData?.blog.description || 'Welcome to my blog',
+    openGraph: {
+      title: layoutData?.blog.title || 'Blog',
+      description: layoutData?.blog.description || 'Welcome to my blog',
+    },
+  };
 }
 
 /**
@@ -19,22 +33,17 @@ interface BlogLayoutProps {
  * - https://nextjs.org/docs/app/api-reference/file-conventions/parallel-routes#slots
  */
 export default async function BlogLayout({ children, sidebar, params }: BlogLayoutProps) {
-  const pageHeadings: { id: string; text: string; level: number }[] = [];
-  const { blogSlug } = params;
+  const { blogSlug } = await params;
   const layoutData = await getBlogLayoutAction(blogSlug);
-  const blogName = layoutData?.blog.slug ?? 'Blog';
 
   return (
     <>
       <div className="flex min-h-screen flex-col">
-        <BlogHeader blogName={blogName} blogSlug={blogSlug} />
+        <BlogHeader blogTitle={layoutData?.blog.title} blogSlug={blogSlug} />
 
-        {/* 중간 영역*/}
         <div className="grid flex-1 grid-cols-[auto_minmax(0,1fr)_auto]">
-          {/* 사이드바 */}
           {sidebar}
 
-          {/* 메인 콘텐츠: 최대 너비 제한 */}
           <main className="w-full px-4 py-6">{children}</main>
         </div>
       </div>

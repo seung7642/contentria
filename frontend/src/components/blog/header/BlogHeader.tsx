@@ -1,4 +1,3 @@
-// components/blog/BlogHeader.tsx (파일명을 더 명확하게 변경하는 것을 추천합니다)
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
@@ -10,23 +9,25 @@ import { useAuthStore } from '@/store/authStore';
 import ProfileDropdown from '@/components/dashboard/header/ProfileDropdown';
 import UserAvatar from '@/components/dashboard/header/UserAvatar';
 import { useUiStore } from '@/store/uiStore';
+import { PATHS } from '@/constants/paths';
+import { logoutAction } from '@/actions/auth';
 
 interface BlogHeaderProps {
-  blogName: string;
+  blogTitle?: string;
   blogSlug: string;
 }
 
-const BlogHeader = ({ blogName, blogSlug }: BlogHeaderProps) => {
-  // ✨ 1. 중앙 상태 관리(Zustand)를 사용하여 사용자 정보를 가져옵니다.
+const BlogHeader = ({ blogTitle, blogSlug }: BlogHeaderProps) => {
   const user = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
+  const clearAuth = useAuthStore((state) => state.logout);
+
   const openSubscribeModal = useUiStore((state) => state.openSubscribeModal);
 
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  // ✨ 2. DashboardHeader와 동일한 방식으로 드롭다운 외부 클릭을 감지합니다.
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
@@ -37,34 +38,40 @@ const BlogHeader = ({ blogName, blogSlug }: BlogHeaderProps) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     // 실제 API 로그아웃 호출이 있다면 여기에 추가
-    setUser(null);
+    if (clearAuth) {
+      clearAuth();
+    } else {
+      setUser(null);
+    }
+
     setIsProfileOpen(false);
-    router.push('/'); // 로그아웃 후 홈으로 이동
-    // localStorage는 store 내부나 API 요청 로직에서 처리하는 것이 더 좋습니다.
+    await logoutAction();
+    router.refresh();
   };
+
+  const blogHomeLink = `/@${blogSlug}`;
 
   return (
     <header className="w-full border-b bg-white shadow-sm">
       <div className="flex items-center justify-between px-4 py-3 sm:px-6">
         {/* 좌측 영역 */}
         <div className="flex min-w-0 items-center">
-          {/* ✨ 3. 로고 추가 (next/image로 최적화) */}
           <Link href="/" className="flex flex-shrink-0 items-center space-x-2">
             <Image
               src="/contentria-icon.png"
               alt="Contentria 로고"
               width={32} // 헤더에 맞는 적절한 크기 지정
               height={32}
-              priority // 헤더 로고는 항상 중요
+              priority // 로고 이미지는 우선 로드
             />
           </Link>
         </div>
 
         {/* 중앙 영역 */}
         <h1 className="text-2xl font-bold">
-          <Link href="/">Contentria</Link>
+          <Link href={blogHomeLink}>{blogTitle || 'Contentria'}</Link>
         </h1>
 
         {/* 우측 영역 */}
@@ -76,7 +83,6 @@ const BlogHeader = ({ blogName, blogSlug }: BlogHeaderProps) => {
             구독하기
           </button>
 
-          {/* ✨ 4. 사용자 인증 상태에 따른 UI 분기 처리 */}
           {user ? (
             <div className="relative" ref={profileRef}>
               <button
@@ -97,7 +103,7 @@ const BlogHeader = ({ blogName, blogSlug }: BlogHeaderProps) => {
             </div>
           ) : (
             <Link
-              href="/login"
+              href={PATHS.LOGIN}
               className="rounded-md px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100"
             >
               로그인

@@ -5,14 +5,14 @@ import {
   usePopularPostsQuery,
   useTrafficChartQuery,
 } from '@/hooks/queries/useDashboardQueries';
-import { useUserQuery } from '@/hooks/queries/useUserQuery';
-import { TimeRange } from '@/services/dashboardService';
+import { useUserProfile } from '@/hooks/queries/useUserQuery';
 import Link from 'next/link';
 import { useState } from 'react';
 import PopularPostList from './PopularPostList';
 import { ArrowRight, Eye, FileText, Loader2, MessageSquare, ThumbsUp } from 'lucide-react';
 import TrafficChart from './TrafficChart';
 import StatCard from './StatCard';
+import { TimeRange } from '@/types/api/dashboard';
 
 // const revenueData: RevenueItem[] = [
 //   { source: 'Google AdSense', amount: '₩15,200', date: '2024-03-15' },
@@ -22,7 +22,7 @@ import StatCard from './StatCard';
 
 const DashboardContent = () => {
   const [timeRange, setTimeRange] = useState<TimeRange>('2weeks');
-  const { data: user } = useUserQuery();
+  const { data: user } = useUserProfile();
   const slug = user?.slugs?.[0];
 
   const { data: stats, isLoading: isStatsLoading } = useDashboadStatsQuery(slug!);

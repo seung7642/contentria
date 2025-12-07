@@ -11,6 +11,19 @@ import {
   VerifyOtpCodePayload,
   VerifyOtpCodeResponse,
 } from '@/types/api/auth';
+import { cookies } from 'next/headers';
+
+export async function logoutAction() {
+  try {
+    await apiServer01.post('/api/auth/logout', {}, { requireAuth: true });
+  } catch (error) {
+    console.error('Logout failed on backend:', error);
+  }
+
+  const cookieStore = await cookies();
+  cookieStore.delete('accessToken');
+  cookieStore.delete('refreshToken');
+}
 
 export async function initiateSignUpAction(
   payload: InitiateSignUpPayload

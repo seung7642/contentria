@@ -1,7 +1,7 @@
 'use client';
 
 import { PATHS } from '@/constants/paths';
-import { useUserQuery } from '@/hooks/queries/useUserQuery';
+import { useUserProfile } from '@/hooks/queries/useUserQuery';
 import { useAuthStore } from '@/store/authStore';
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -11,7 +11,7 @@ export default function CallbackClient() {
   const router = useRouter();
   const initializeAuth = useAuthStore((state) => state.initializeAuth);
 
-  const { data: user, isSuccess, isError, error } = useUserQuery();
+  const { data: user, isSuccess, isError, error } = useUserProfile();
 
   useEffect(() => {
     if (isSuccess && user) {

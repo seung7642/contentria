@@ -4,14 +4,14 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { LayoutDashboard, FileText, Settings, Menu, X, Home } from 'lucide-react';
-import { useUserQuery } from '@/hooks/queries/useUserQuery';
+import { useUserProfile } from '@/hooks/queries/useUserQuery';
 import SidebarMenuItem from './DashboardSidebarMenuItem';
 
 const DashboardSidebar = () => {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const { data: user, isPending: isUserLoading } = useUserQuery();
+  const { data: user, isPending: isUserLoading } = useUserProfile();
   const hasBlog = user?.slugs?.length;
 
   const navItems = [
