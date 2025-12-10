@@ -5,12 +5,14 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
-import { useAuthStore } from '@/store/authStore';
 import ProfileDropdown from '@/components/dashboard/header/ProfileDropdown';
 import UserAvatar from '@/components/dashboard/header/UserAvatar';
 import { useUiStore } from '@/store/uiStore';
 import { PATHS } from '@/constants/paths';
 import { logoutAction } from '@/actions/auth';
+import { useUserProfile } from '@/hooks/queries/useUserQuery';
+import { useQueryClient } from '@tanstack/react-query';
+import { userKeys } from '@/hooks/queries/keys';
 
 interface BlogHeaderProps {
   blogTitle?: string;
@@ -18,15 +20,14 @@ interface BlogHeaderProps {
 }
 
 const BlogHeader = ({ blogTitle, blogSlug }: BlogHeaderProps) => {
-  const user = useAuthStore((state) => state.user);
-  const setUser = useAuthStore((state) => state.setUser);
-  const clearAuth = useAuthStore((state) => state.logout);
+  const { data: user } = useUserProfile();
+
+  const queryClient = useQueryClient();
+  const router = useRouter();
 
   const openSubscribeModal = useUiStore((state) => state.openSubscribeModal);
-
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -39,15 +40,12 @@ const BlogHeader = ({ blogTitle, blogSlug }: BlogHeaderProps) => {
   }, []);
 
   const handleLogout = async () => {
-    // 실제 API 로그아웃 호출이 있다면 여기에 추가
-    if (clearAuth) {
-      clearAuth();
-    } else {
-      setUser(null);
-    }
+    queryClient.setQueryData(userKeys.profile(), null);
+
+    await logoutAction();
 
     setIsProfileOpen(false);
-    await logoutAction();
+
     router.refresh();
   };
 
