@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import './globals.css';
-import AuthInitializer from '@/components/auth/AuthInitializer';
-import Providers from '@/components/Providers';
+import ReactQueryProvider from '@/components/ReactQueryProvider';
 import { getUserProfileAction } from '@/actions/user';
-import { User } from '@/types/api/user';
+import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query';
+import { userKeys } from '@/hooks/queries/keys';
 
 const pretendard = localFont({
   src: '../../public/fonts/PretendardVariable.woff2',
@@ -22,21 +22,20 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  let initialUser: User | null = null;
+  const queryClient = new QueryClient();
+  await queryClient.prefetchQuery({
+    queryKey: userKeys.profile(),
+    queryFn: () => getUserProfileAction(false),
+  });
 
-  try {
-    initialUser = await getUserProfileAction(false);
-  } catch (error) {
-    console.error('[RootLayout] Failed to fetch initial user profile:', error);
-    initialUser = null;
-  }
+  const dehydratedState = dehydrate(queryClient);
 
   return (
     <html lang="ko">
       <body className={pretendard.className}>
-        <Providers>
-          <AuthInitializer initialUser={initialUser}>{children}</AuthInitializer>
-        </Providers>
+        <ReactQueryProvider>
+          <HydrationBoundary state={dehydratedState}>{children}</HydrationBoundary>
+        </ReactQueryProvider>
       </body>
     </html>
   );

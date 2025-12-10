@@ -7,9 +7,8 @@ import { getUserProfileAction } from '@/actions/user';
 export const useUserProfile = () => {
   return useQuery({
     queryKey: userKeys.profile(),
-    queryFn: () => getUserProfileAction(),
+    queryFn: () => getUserProfileAction(false),
     staleTime: 5 * 60 * 1000, // 5분간 캐시 유지
-    retry: 1,
-    throwOnError: true, // 에러 발생 시 ErrorBoundary로 전파
+    retry: 0,
   });
 };
