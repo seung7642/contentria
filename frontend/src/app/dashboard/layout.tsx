@@ -6,18 +6,18 @@ import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import { usePathname, useRouter } from 'next/navigation';
 import { PATHS } from '@/constants/paths';
-import { useAuthStore } from '@/store/authStore';
 import Footer from '@/components/home/Footer';
 import HomeHeader from '@/components/home/homeHeader/HomeHeader';
+import { useUserProfile } from '@/hooks/queries/useUserQuery';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
-  const pathname = usePathname();
+  const { data: user } = useUserProfile();
   const router = useRouter();
-  const user = useAuthStore((state) => state.user);
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!user) {

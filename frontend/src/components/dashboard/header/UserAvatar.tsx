@@ -3,7 +3,7 @@ import { UserIcon } from 'lucide-react';
 import { User } from '@/types/api/user';
 
 interface UserAvatarProps {
-  user: User | null;
+  user: User | null | undefined;
   size?: number;
 }
 

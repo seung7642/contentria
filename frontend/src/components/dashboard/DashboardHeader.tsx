@@ -1,25 +1,29 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { Search, Bell, Home } from 'lucide-react';
-import { useAuthStore } from '@/store/authStore';
 import { useRouter } from 'next/navigation';
 import NotificationDropdown from './header/NotificationDropdown';
 import UserAvatar from './header/UserAvatar';
 import ProfileDropdown from './header/ProfileDropdown';
+import { useUserProfile } from '@/hooks/queries/useUserQuery';
+import { useQueryClient } from '@tanstack/react-query';
+import { userKeys } from '@/hooks/queries/keys';
+import { logoutAction } from '@/actions/auth';
+import { PATHS } from '@/constants/paths';
 
-const DashboardHeader = () => {
+export default function DashboardHeader() {
+  const { data: user } = useUserProfile();
+  const queryClient = useQueryClient();
+  const router = useRouter();
+
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const notificationRef = useRef(null);
   const profileRef = useRef(null);
-  const router = useRouter();
-
-  const user = useAuthStore((state) => state.user);
-  const setUser = useAuthStore((state) => state.setUser);
 
   // 알림 목록 - 실제로는 API에서 가져올 것
   const notifications = [
@@ -49,17 +53,18 @@ const DashboardHeader = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
+    queryClient.setQueryData(userKeys.profile(), null);
     setIsProfileOpen(false);
+
     try {
-      // await apiClient('/api/auth/logout', { method: 'POST' });
-      setUser(null);
-      router.push('/');
+      await logoutAction();
+      router.replace(PATHS.HOME);
     } catch (e) {
       console.error('Logout error:', e);
-      alert('로그아웃 중 오류가 발생했습니다. 다시 시도해 주세요.');
+      router.replace(PATHS.HOME);
     }
-  };
+  }, [queryClient, router]);
 
   return (
     <header className="sticky top-0 z-10 w-full border-b bg-white shadow-sm">
@@ -144,6 +149,4 @@ const DashboardHeader = () => {
       </div>
     </header>
   );
-};
-
-export default DashboardHeader;
+}

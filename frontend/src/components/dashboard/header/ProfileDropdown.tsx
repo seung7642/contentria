@@ -4,7 +4,7 @@ import { Home, LogOut, Settings } from 'lucide-react';
 import Link from 'next/link';
 
 interface ProfileDropdownProps {
-  user: User | null;
+  user: User | null | undefined;
   onClose: () => void;
   onLogout: () => void;
 }
