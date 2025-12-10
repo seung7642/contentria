@@ -1,16 +1,16 @@
 'use server';
 
-import apiServer01 from '@/lib/apiServer01';
+import apiServer from '@/lib/apiServer';
 import { ChartData, PopularPost, Stats, TimeRange } from '@/types/api/dashboard';
 
 export async function getDashboardStatsAction(blogSlug: string): Promise<Stats> {
-  return await apiServer01.get<Stats>(`/api/blogs/${blogSlug}/dashboard/stats`, {
+  return await apiServer.get<Stats>(`/api/blogs/${blogSlug}/dashboard/stats`, {
     requireAuth: true,
   });
 }
 
 export async function getPopularPostsAction(blogSlug: string): Promise<PopularPost[]> {
-  return await apiServer01.get<PopularPost[]>(`/api/blogs/${blogSlug}/dashboard/popular-posts`, {
+  return await apiServer.get<PopularPost[]>(`/api/blogs/${blogSlug}/dashboard/popular-posts`, {
     requireAuth: true,
   });
 }
@@ -21,7 +21,7 @@ export async function getTrafficDataAction(
 ): Promise<ChartData[]> {
   const query = new URLSearchParams({ timeRange });
 
-  return await apiServer01.get<ChartData[]>(
+  return await apiServer.get<ChartData[]>(
     `/api/blogs/${blogSlug}/dashboard/traffic?${query.toString()}`,
     {
       requireAuth: true,

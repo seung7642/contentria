@@ -3,93 +3,88 @@ import { ApiError, ApiErrorResponse } from '@/types/api/errors';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8080';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
-const apiServer = {
-  async get<T>(path: string, options?: RequestInit): Promise<T | null> {
-    const endpoint = `${API_BASE_URL}${path}`;
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get('accessToken')?.value;
-
-    const headers = new Headers(options?.headers);
-    headers.set('Content-Type', 'application/json');
-    if (accessToken) {
-      headers.set('Authorization', `Bearer ${accessToken}`);
-    }
-
-    try {
-      const response = await fetch(endpoint, {
-        method: 'GET',
-        headers,
-        ...options,
-      });
-
-      if (!response.ok) {
-        const errorData: ApiErrorResponse = await response.json();
-        const apiError = new ApiError(
-          errorData.message,
-          errorData.timestamp,
-          errorData.status,
-          errorData.error,
-          errorData.code,
-          errorData.path,
-          errorData.details
-        );
-
-        switch (apiError.status) {
-          case 401:
-            return redirect(PATHS.LOGIN);
-          case 404:
-            return null; // 리소스 없음 -> 페이지에서 notFound() 호출하도록 null 반환
-          default:
-            throw apiError; // 그 외 에러는 error.tsx 바운더리가 처리하도록 에러를 던짐
-        }
-      }
-
-      return response.json() as T;
-    } catch (error) {
-      if (
-        typeof error === 'object' &&
-        error !== null &&
-        'digest' in error &&
-        typeof (error as { digest?: string }).digest === 'string' &&
-        (error as { digest: string }).digest?.startsWith('NEXT_REDIRECT')
-      ) {
-        throw error;
-      }
-      console.error(`[apiServer GET Error] for path ${path}:`, error);
-      return null;
-    }
-  },
-
-  async post<T>(path: string, body: string, options?: RequestInit): Promise<T | ApiError | null> {
-    const endpoint = `${API_BASE_URL}${path}`;
-    try {
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        body: JSON.stringify(body),
-        ...options,
-      });
-
-      if (!response.ok) {
-        const backendError = (await response.json()) as ApiErrorResponse;
-        const apiError = new ApiError(
-          backendError.message,
-          backendError.timestamp,
-          backendError.status,
-          backendError.error,
-          backendError.code,
-          backendError.path,
-          backendError.details
-        );
-        return apiError;
-      }
-      return response.json() as T;
-    } catch (error) {
-      console.error(`[apiServer POST Error] for path ${path}:`, error);
-      return null;
-    }
-  },
+type FetchOptions = RequestInit & {
+  requireAuth?: boolean; // 인증 필요 여부 (기본값: true)
+  shouldRedirectOn401?: boolean;
 };
+
+export const apiServer = {
+  get: <T>(url: string, options?: FetchOptions) =>
+    fetchExtended<T>(url, { ...options, method: 'GET' }),
+
+  post: <T>(url: string, body: any, options?: FetchOptions) =>
+    fetchExtended<T>(url, { ...options, method: 'POST', body: JSON.stringify(body) }),
+
+  put: <T>(url: string, body: any, options?: FetchOptions) =>
+    fetchExtended<T>(url, { ...options, method: 'PUT', body: JSON.stringify(body) }),
+
+  delete: <T>(url: string, options?: FetchOptions) =>
+    fetchExtended<T>(url, { ...options, method: 'DELETE' }),
+};
+
+async function fetchExtended<T>(url: string, options: FetchOptions = {}): Promise<T> {
+  const {
+    requireAuth = true,
+    shouldRedirectOn401 = true,
+    headers: customHeaders,
+    ...rest
+  } = options;
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get('accessToken')?.value;
+  const refreshToken = cookieStore.get('refreshToken')?.value;
+
+  const headers = new Headers(customHeaders);
+  headers.set('Content-Type', 'application/json');
+
+  if (requireAuth && accessToken) {
+    headers.set('Authorization', `Bearer ${accessToken}`);
+  }
+
+  let response = await fetch(`${API_BASE_URL}${url}`, { ...rest, headers });
+
+  if (response.status === 401 && requireAuth && refreshToken) {
+    console.log('🔄 [BFF] Access Token 만료. 갱신 시도...');
+
+    const refreshResponse = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken }), // 혹은 Cookie 헤더 사용
+    });
+
+    if (refreshResponse.ok) {
+      const { accessToken: newAccessToken } = await refreshResponse.json();
+
+      cookieStore.set('accessToken', newAccessToken, { httpOnly: true, secure: true });
+
+      headers.set('Authorization', `Bearer ${newAccessToken}`);
+      response = await fetch(`${API_BASE_URL}${url}`, { ...rest, headers });
+      console.log('✅ [BFF] 액세스 토큰 갱신 및 재요청 성공');
+    } else {
+      console.error('❌ [BFF] 액세스 토큰 갱신 실패. 로그인 페이지로 리다이렉트.');
+      if (shouldRedirectOn401) {
+        redirect(PATHS.LOGIN);
+      } else {
+        throw new Error('Unauthorized');
+      }
+    }
+  }
+
+  if (!response.ok) {
+    const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
+    throw new ApiError(
+      errorData.message || 'Server Error',
+      errorData.timestamp,
+      errorData.status || response.status,
+      errorData.error,
+      errorData.code,
+      errorData.path,
+      errorData.details
+    );
+  }
+
+  return response.json();
+}
 
 export default apiServer;

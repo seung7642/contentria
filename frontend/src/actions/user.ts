@@ -1,6 +1,6 @@
 'use server';
 
-import apiServer01 from '@/lib/apiServer01';
+import apiServer from '@/lib/apiServer';
 import { UpdateProfilePayload, User } from '@/types/api/user';
 import { cookies } from 'next/headers';
 
@@ -19,9 +19,9 @@ export async function getUserProfileAction(
     return null;
   }
 
-  return await apiServer01.get<User>('/api/users/me', { requireAuth: true, shouldRedirectOn401 });
+  return await apiServer.get<User>('/api/users/me', { requireAuth: true, shouldRedirectOn401 });
 }
 
 export async function updateUserProfileAction(payload: UpdateProfilePayload): Promise<User> {
-  return await apiServer01.put<User>('/api/users/profile', payload, { requireAuth: true });
+  return await apiServer.put<User>('/api/users/profile', payload, { requireAuth: true });
 }

@@ -1,6 +1,6 @@
 'use server';
 
-import apiServer01 from '@/lib/apiServer01';
+import apiServer from '@/lib/apiServer';
 import { Page } from '@/types/api/common';
 import {
   CreateNewPostRequest,
@@ -20,7 +20,7 @@ export async function getBlogPostsAction(
     size: size.toString(),
   });
 
-  return await apiServer01.get<Page<PostSummary>>(`/api/posts?${query.toString()}`, {
+  return await apiServer.get<Page<PostSummary>>(`/api/posts?${query.toString()}`, {
     requireAuth: false,
     next: {
       tags: [`posts-${slug}`], // 태그 기반 재검증(On-demand Revalidation)을 위해 유지
@@ -33,7 +33,7 @@ export async function getPostDetailAction(
   blogSlug: string,
   postSlug: string
 ): Promise<PostDetailResponse | null> {
-  return await apiServer01.get<PostDetailResponse>(`/api/blogs/${blogSlug}/posts/${postSlug}`, {
+  return await apiServer.get<PostDetailResponse>(`/api/blogs/${blogSlug}/posts/${postSlug}`, {
     requireAuth: false,
   });
 }
@@ -41,7 +41,7 @@ export async function getPostDetailAction(
 export async function createNewPostAction(
   payload: CreateNewPostRequest
 ): Promise<CreateNewPostResponse> {
-  return await apiServer01.post<CreateNewPostResponse>('/api/posts', payload, {
+  return await apiServer.post<CreateNewPostResponse>('/api/posts', payload, {
     requireAuth: true,
   });
 }
