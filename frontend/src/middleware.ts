@@ -2,6 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function middleware(request: NextRequest) {
   console.log('Middleware executed for path:', request.nextUrl.pathname);
+
+  const { pathname } = request.nextUrl;
+  const hasToken = request.cookies.has('accessToken');
+
+  const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/signup');
+  if (isAuthPage && hasToken) {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
+  }
+
+  if (pathname.startsWith('/dashboard') && !hasToken) {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+
   return NextResponse.next();
 }
 

@@ -3,11 +3,6 @@ import BlogHeader from '@/components/blog/header';
 import Footer from '@/components/home/Footer';
 import { getBlogLayoutAction } from '@/actions/blog';
 
-export const metadata: Metadata = {
-  title: 'Blog',
-  description: 'Read this interesting blog post.',
-};
-
 interface BlogLayoutProps {
   children: React.ReactNode;
   sidebar: React.ReactNode; // @sidebar 슬롯이 props로 돌아온다.

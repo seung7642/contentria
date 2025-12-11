@@ -1,16 +1,23 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 
 import ProfileDropdown from './ProfileDropdown';
 import UserAvatar from './UserAvatar';
-import { useAuthStore } from '@/store/authStore';
 import { PATHS } from '@/constants/paths';
+import { useUserProfile } from '@/hooks/queries/useUserQuery';
+import { useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
+import { userKeys } from '@/hooks/queries/keys';
+import { logoutAction } from '@/actions/auth';
 
 const HomeHeader = () => {
-  const { user, isAuthenticated, logout } = useAuthStore();
+  const { data: user } = useUserProfile();
+
+  const queryClient = useQueryClient();
+  const router = useRouter();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -26,6 +33,15 @@ const HomeHeader = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  const handleLogout = useCallback(async () => {
+    queryClient.setQueryData(userKeys.profile(), null);
+    setIsDropdownOpen(false);
+
+    await logoutAction();
+
+    router.refresh();
+  }, [queryClient, router]);
 
   return (
     <header className="border-b shadow-sm">
@@ -51,7 +67,7 @@ const HomeHeader = () => {
         {/* 우측 영역 */}
         <div className="flex items-center space-x-2">
           <div>
-            {isAuthenticated && user ? (
+            {user ? (
               <div ref={dropdownRef} className="relative">
                 <button
                   type="button"
@@ -64,7 +80,7 @@ const HomeHeader = () => {
                   user={user}
                   isOpen={isDropdownOpen}
                   onClose={() => setIsDropdownOpen(false)}
-                  onLogout={logout}
+                  onLogout={handleLogout}
                 />
               </div>
             ) : (

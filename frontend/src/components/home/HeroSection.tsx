@@ -1,7 +1,7 @@
 'use client';
 
 import { PATHS } from '@/constants/paths';
-import { useAuthStore } from '@/store/authStore';
+import { useUserProfile } from '@/hooks/queries/useUserQuery';
 import Link from 'next/link';
 import { memo, useRef } from 'react';
 import { TypeAnimation } from 'react-type-animation';
@@ -9,7 +9,7 @@ import { TypeAnimation } from 'react-type-animation';
 const MemoizedTypeAnimation = memo(TypeAnimation);
 
 export default function HeroSection() {
-  const { isAuthenticated } = useAuthStore();
+  const { data: user } = useUserProfile();
   const h1Ref = useRef<HTMLHeadingElement>(null);
 
   const triggerWaveAnimation = (element: HTMLSpanElement | null) => {
@@ -60,7 +60,7 @@ export default function HeroSection() {
           당신의 이야기가 곧 당신의 브랜드가 됩니다.
         </p>
         <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-          {isAuthenticated ? (
+          {user ? (
             <>
               <Link
                 href={PATHS.DASHBOARD}
