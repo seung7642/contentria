@@ -28,6 +28,7 @@ export const useTrafficChartQuery = (slug: string, timeRange: TimeRange) => {
   return useQuery<ChartData[], ApiError | AxiosError>({
     queryKey: ['dashboard', 'traffic', slug, timeRange],
     queryFn: () => getTrafficDataAction(slug, timeRange),
+    staleTime: 5 * 60 * 1000, // 5 minutes
     placeholderData: (previousData) => previousData,
   });
 };
