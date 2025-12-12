@@ -1,3 +1,5 @@
+'use client';
+
 import { useCreateBlogMutation } from '@/hooks/mutations/useUserMutations';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertTriangle, Loader2 } from 'lucide-react';
