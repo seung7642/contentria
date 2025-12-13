@@ -8,6 +8,7 @@ import {
   PostDetailResponse,
   PostSummary,
 } from '@/types/api/posts';
+import { getUserProfileAction } from './user';
 
 export async function getBlogPostsAction(
   slug: string,
@@ -41,6 +42,11 @@ export async function getPostDetailAction(
 export async function createNewPostAction(
   payload: CreateNewPostRequest
 ): Promise<CreateNewPostResponse> {
+  const user = await getUserProfileAction(false);
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
   return await apiServer.post<CreateNewPostResponse>('/api/posts', payload, {
     requireAuth: true,
   });

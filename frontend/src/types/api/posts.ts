@@ -35,11 +35,12 @@ export interface PostDetailResponse {
   owner: OwnerInfo;
 }
 
+export type PostStatus = 'DRAFT' | 'PUBLISHED';
+
 export interface CreateNewPostRequest {
-  userId: string;
   title: string;
   contentMarkdown: string;
-  status: 'DRAFT' | 'PUBLISHED';
+  status: PostStatus;
   categoryId: string;
 }
 
@@ -50,6 +51,6 @@ export interface CreateNewPostResponse {
   metaTitle: string | null;
   metaDescription: string | null;
   publishedAt: string | null;
-  status: 'DRAFT' | 'PUBLISHED';
+  status: PostStatus;
   categoryName: string | null;
 }
