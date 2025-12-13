@@ -4,4 +4,6 @@ import com.contentria.api.user.controller.UserInfoResponse
 
 data class LoginResponse(
     val user: UserInfoResponse,
+    val accessToken: String,
+    val refreshToken: String
 )

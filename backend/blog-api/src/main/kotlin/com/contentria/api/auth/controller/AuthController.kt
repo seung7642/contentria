@@ -26,14 +26,35 @@ class AuthController(
         @CookieValue(name = "\${app.auth.cookie.refresh-token-name}", required = true) refreshTokenValue: String,
         request: HttpServletRequest,
         response: HttpServletResponse
-    ): ResponseEntity<*> {
+    ): ResponseEntity<RefreshTokenResponse> {
         val newTokens = refreshTokenService.refreshTokens(refreshTokenValue)
 
         response.addCookie(cookieUtil.createAccessTokenCookie(newTokens.accessToken, request))
         response.addCookie(cookieUtil.createRefreshTokenCookie(newTokens.refreshToken, request))
 
         log.info { "Successfully refreshed token." }
-        return ResponseEntity.ok().body(mapOf("message" to "Token refreshed successfully"))
+        return ResponseEntity.ok(RefreshTokenResponse(
+            accessToken = newTokens.accessToken,
+            refreshToken = newTokens.refreshToken
+        ))
+    }
+
+    @PostMapping("/login")
+    fun login(
+        @Valid @RequestBody request: LoginRequest,
+        httpRequest: HttpServletRequest,
+        httpResponse: HttpServletResponse
+    ): ResponseEntity<LoginResponse> {
+        val result = authService.login(request, httpRequest)
+
+        httpResponse.addCookie(cookieUtil.createAccessTokenCookie(result.accessToken, httpRequest))
+        httpResponse.addCookie(cookieUtil.createRefreshTokenCookie(result.refreshToken, httpRequest))
+
+        return ResponseEntity.ok(LoginResponse(
+            user = result.user,
+            accessToken = result.accessToken,
+            refreshToken = result.refreshToken
+        ))
     }
 
     @PostMapping("/signup/initiate")
@@ -57,20 +78,6 @@ class AuthController(
         httpResponse.addCookie(cookieUtil.createRefreshTokenCookie(result.refreshToken, httpRequest))
 
         return ResponseEntity.ok(VerifyCodeResponse(result.user))
-    }
-
-    @PostMapping("/login")
-    fun login(
-        @Valid @RequestBody request: LoginRequest,
-        httpRequest: HttpServletRequest,
-        httpResponse: HttpServletResponse
-    ): ResponseEntity<LoginResponse> {
-        val result = authService.login(request, httpRequest)
-
-        httpResponse.addCookie(cookieUtil.createAccessTokenCookie(result.accessToken, httpRequest))
-        httpResponse.addCookie(cookieUtil.createRefreshTokenCookie(result.refreshToken, httpRequest))
-
-        return ResponseEntity.ok(LoginResponse(result.user))
     }
 
     @PostMapping("/send-otp")

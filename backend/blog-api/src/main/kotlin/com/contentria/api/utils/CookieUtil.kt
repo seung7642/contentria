@@ -17,7 +17,7 @@ class CookieUtil(
     private val refreshTokenMaxAge: Int get() = appProperties.auth.jwt.refreshTokenExpiration.toSeconds().toInt()
 
     fun createAccessTokenCookie(tokenValue: String, request: HttpServletRequest): Cookie {
-        return createCookie(accessTokenCookieName, tokenValue, accessTokenPath, accessTokenMaxAge, request, false)
+        return createCookie(accessTokenCookieName, tokenValue, accessTokenPath, accessTokenMaxAge, request, true)
     }
 
     fun createRefreshTokenCookie(tokenValue: String, request: HttpServletRequest): Cookie {
@@ -25,7 +25,7 @@ class CookieUtil(
     }
 
     fun clearAccessTokenCookie(request: HttpServletRequest): Cookie {
-        return createCookie(accessTokenCookieName, null, accessTokenPath, 0, request, false)
+        return createCookie(accessTokenCookieName, null, accessTokenPath, 0, request, true)
     }
 
     fun clearRefreshTokenCookie(request: HttpServletRequest): Cookie {
@@ -42,7 +42,7 @@ class CookieUtil(
     ): Cookie {
         return Cookie(name, value).apply {
             isHttpOnly = isHttpOnlyCookie
-            secure = request.isSecure // HTTPS 에서만 쿠키 전송
+//            secure = request.isSecure // HTTPS 에서만 쿠키 전송
             this.path = path
             this.maxAge = maxAge
         }

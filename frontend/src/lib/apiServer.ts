@@ -49,20 +49,38 @@ async function fetchExtended<T>(url: string, options: FetchOptions = {}): Promis
 
     const refreshResponse = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refreshToken }), // 혹은 Cookie 헤더 사용
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: `refreshToken=${refreshToken}`,
+      },
     });
 
     if (refreshResponse.ok) {
-      const { accessToken: newAccessToken } = await refreshResponse.json();
+      const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
+        await refreshResponse.json();
 
-      cookieStore.set('accessToken', newAccessToken, { httpOnly: true, secure: true });
+      cookieStore.set('accessToken', newAccessToken, {
+        httpOnly: true,
+        path: '/',
+        maxAge: 15 * 60, // 15 minutes
+      });
+
+      if (newRefreshToken) {
+        cookieStore.set('refreshToken', newRefreshToken, {
+          httpOnly: true,
+          path: '/',
+          maxAge: 7 * 24 * 60 * 60, // 7 days
+        });
+      }
 
       headers.set('Authorization', `Bearer ${newAccessToken}`);
       response = await fetch(`${API_BASE_URL}${url}`, { ...rest, headers });
       console.log('✅ [BFF] 액세스 토큰 갱신 및 재요청 성공');
     } else {
-      console.error('❌ [BFF] 액세스 토큰 갱신 실패. 로그인 페이지로 리다이렉트.');
+      console.error('❌ [BFF] 리프레시 토큰 만료됨. 로그아웃 처리');
+      cookieStore.delete('accessToken');
+      cookieStore.delete('refreshToken');
+
       if (shouldRedirectOn401) {
         redirect(PATHS.LOGIN);
       } else {
