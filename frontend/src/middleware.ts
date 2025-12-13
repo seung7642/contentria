@@ -1,18 +1,87 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { PATHS } from './constants/paths';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
 export async function middleware(request: NextRequest) {
   console.log('Middleware executed for path:', request.nextUrl.pathname);
 
   const { pathname } = request.nextUrl;
-  const hasToken = request.cookies.has('accessToken');
+
+  const accessToken = request.cookies.get('accessToken')?.value;
+  const refreshToken = request.cookies.get('refreshToken')?.value;
 
   const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/signup');
-  if (isAuthPage && hasToken) {
+  const isDashboardPage = pathname.startsWith('/dashboard');
+
+  if (isAuthPage && (accessToken || refreshToken)) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
-  if (pathname.startsWith('/dashboard') && !hasToken) {
-    return NextResponse.redirect(new URL('/login', request.url));
+  if (isDashboardPage) {
+    if (accessToken) {
+      return NextResponse.next();
+    }
+
+    if (refreshToken) {
+      console.log('[Middleware] AccessToken expired. Attempting refresh...');
+
+      try {
+        const refreshResponse = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Cookie: `refreshToken=${refreshToken}`,
+          },
+        });
+
+        if (refreshResponse.ok) {
+          const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
+            await refreshResponse.json();
+
+          const requestHeaders = new Headers(request.headers);
+          requestHeaders.set('Authorization', `Bearer ${newAccessToken}`);
+
+          requestHeaders.set(
+            'Cookie',
+            `accessToken=${newAccessToken}; refreshToken=${newRefreshToken || refreshToken}`
+          );
+
+          const response = NextResponse.next({
+            request: {
+              headers: requestHeaders,
+            },
+          });
+
+          response.cookies.set('accessToken', newAccessToken, {
+            httpOnly: true,
+            path: '/',
+            maxAge: 15 * 60, // 15 minutes
+          });
+
+          if (newRefreshToken) {
+            response.cookies.set('refreshToken', newRefreshToken, {
+              httpOnly: true,
+              path: '/',
+              maxAge: 7 * 24 * 60 * 60, // 7 days
+            });
+          }
+
+          return response;
+        }
+      } catch (error) {
+        console.error('[Middleware] Refresh failed.', error);
+      }
+    }
+
+    const loginUrl = new URL(PATHS.LOGIN, request.url);
+    loginUrl.searchParams.set('redirect', pathname);
+
+    const response = NextResponse.redirect(loginUrl);
+    response.cookies.delete('accessToken');
+    response.cookies.delete('refreshToken');
+
+    return response;
   }
 
   return NextResponse.next();
