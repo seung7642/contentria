@@ -1,6 +1,6 @@
 package com.contentria.api.blog.dto
 
-import com.contentria.api.category.Category
+import com.contentria.api.category.domain.Category
 import java.util.UUID
 
 data class CategoryNodeInfo(

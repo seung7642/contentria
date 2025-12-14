@@ -2,7 +2,8 @@ package com.contentria.api.category.service
 
 import com.contentria.api.blog.domain.Blog
 import com.contentria.api.blog.dto.CategoryNodeInfo
-import com.contentria.api.category.Category
+import com.contentria.api.category.domain.Category
+import com.contentria.api.category.dto.CategoryResponse
 import com.contentria.api.category.repository.CategoryRepository
 import com.contentria.api.post.repository.PostRepository
 import org.springframework.stereotype.Service
@@ -52,5 +53,38 @@ class CategoryService(
         val childrenTotal = node.children.sumOf { updateTotalPostCount(it) }
         node.postCount += childrenTotal
         return node.postCount
+    }
+
+    fun getCategoriesForDropdown(blog: Blog): List<CategoryResponse> {
+        val categories = categoryRepository.findAllByBlogOrderByCreatedAtAsc(blog)
+
+        val groupedByParent = categories.groupBy { it.parent?.id }
+
+        val result = mutableListOf<CategoryResponse>()
+        flattenCategories(groupedByParent, null, 0, result)
+
+        return result
+    }
+
+    private fun flattenCategories(
+        groupedCategories: Map<UUID?, List<Category>>,
+        parentId: UUID?,
+        level: Int,
+        result: MutableList<CategoryResponse>
+    ) {
+        val children = groupedCategories[parentId] ?: return
+
+        for (category in children) {
+            result.add(
+                CategoryResponse(
+                    id = category.id!!,
+                    name = category.name,
+                    slug = category.slug,
+                    parentId = parentId,
+                    level = level
+                )
+            )
+            flattenCategories(groupedCategories, category.id, level + 1, result)
+        }
     }
 }

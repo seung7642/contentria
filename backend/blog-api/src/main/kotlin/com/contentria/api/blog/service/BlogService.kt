@@ -3,7 +3,7 @@ package com.contentria.api.blog.service
 import com.contentria.api.blog.domain.Blog
 import com.contentria.api.blog.dto.*
 import com.contentria.api.blog.repository.BlogRepository
-import com.contentria.api.category.Category
+import com.contentria.api.category.domain.Category
 import com.contentria.api.category.repository.CategoryRepository
 import com.contentria.api.category.service.CategoryService
 import com.contentria.api.config.exception.ContentriaException
@@ -122,4 +122,9 @@ class BlogService(
         )
     }
 
+    @Transactional(readOnly = true)
+    fun getBlogByBlogId(blogId: UUID): Blog {
+        return blogRepository.findById(blogId)
+            .orElseThrow { ContentriaException(ErrorCode.NOT_FOUND_BLOG) }
+    }
 }
