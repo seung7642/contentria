@@ -214,6 +214,7 @@ function helloWorld() {
           </option>
           {categories.map((category) => (
             <option key={category.id} value={category.id}>
+              {category.level > 0 ? '  └ ' : ''}
               {category.name}
             </option>
           ))}
