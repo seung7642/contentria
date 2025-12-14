@@ -9,6 +9,7 @@ logging:
     org.springframework.security.web: INFO
     org.hibernate.sql: DEBUG
     org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator: WARN
+    com.contentria.api.config.security.JwtAuthenticationFilter: DEBUG
 spring:
   application:
     name: backend
@@ -79,7 +80,7 @@ app:
       access-token-name: "accessToken"
       refresh-token-name: "refreshToken"
       access-token-path: "/"
-      refresh-token-path: "/api/auth"
+      refresh-token-path: "/"
     oidc:
       success-redirect-url: http://localhost:3000/login/callback
     verification-code:

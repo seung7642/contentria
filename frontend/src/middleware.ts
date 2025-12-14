@@ -15,16 +15,21 @@ export async function middleware(request: NextRequest) {
   const isDashboardPage = pathname.startsWith('/dashboard');
 
   if (isAuthPage && (accessToken || refreshToken)) {
+    console.log(
+      '[Middleware] Authenticated user trying to access auth page. Redirecting to dashboard...'
+    );
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
   if (isDashboardPage) {
+    console.log('[Middleware] Protecting dashboard route...');
     if (accessToken) {
+      console.log('[Middleware] accessToken present. Allowing access to dashboard.');
       return NextResponse.next();
     }
 
     if (refreshToken) {
-      console.log('[Middleware] AccessToken expired. Attempting refresh...');
+      console.log('[Middleware] accessToken expired. Attempting refresh...');
 
       try {
         const refreshResponse = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
@@ -36,6 +41,9 @@ export async function middleware(request: NextRequest) {
         });
 
         if (refreshResponse.ok) {
+          console.log(
+            '[Middleware] Refresh successful. Updating tokens and allowing access to dashboard.'
+          );
           const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
             await refreshResponse.json();
 

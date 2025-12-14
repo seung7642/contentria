@@ -75,6 +75,7 @@ async function fetchExtended<T>(url: string, options: FetchOptions = {}): Promis
 
       headers.set('Authorization', `Bearer ${newAccessToken}`);
       response = await fetch(`${API_BASE_URL}${url}`, { ...rest, headers });
+
       console.log('✅ [BFF] 액세스 토큰 갱신 및 재요청 성공');
     } else {
       console.error('❌ [BFF] 리프레시 토큰 만료됨. 로그아웃 처리');

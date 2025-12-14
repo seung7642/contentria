@@ -27,12 +27,13 @@ class AuthController(
         request: HttpServletRequest,
         response: HttpServletResponse
     ): ResponseEntity<RefreshTokenResponse> {
+        log.info { "Refresh with $refreshTokenValue" }
         val newTokens = refreshTokenService.refreshTokens(refreshTokenValue)
 
         response.addCookie(cookieUtil.createAccessTokenCookie(newTokens.accessToken, request))
         response.addCookie(cookieUtil.createRefreshTokenCookie(newTokens.refreshToken, request))
 
-        log.info { "Successfully refreshed token." }
+        log.info { "Successfully refreshed token. accessToken:${newTokens.accessToken}, refreshToken:${newTokens.refreshToken}" }
         return ResponseEntity.ok(RefreshTokenResponse(
             accessToken = newTokens.accessToken,
             refreshToken = newTokens.refreshToken
