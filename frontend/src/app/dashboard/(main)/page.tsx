@@ -11,11 +11,11 @@ import {
 export default async function DashboardPage() {
   const user = await getUserProfileAction();
 
-  if (!user?.slugs || user.slugs.length === 0) {
+  if (!user?.blogs || user.blogs.length === 0) {
     return <CreateBlogWelcome />;
   }
 
-  const slug = user.slugs[0];
+  const slug = user.blogs[0].slug;
   const queryClient = new QueryClient();
 
   await Promise.all([

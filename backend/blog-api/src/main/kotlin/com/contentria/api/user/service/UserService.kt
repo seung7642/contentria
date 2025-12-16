@@ -1,5 +1,6 @@
 package com.contentria.api.user.service
 
+import com.contentria.api.blog.dto.BlogSummary
 import com.contentria.api.blog.repository.BlogRepository
 import com.contentria.api.config.exception.ContentriaException
 import com.contentria.api.config.exception.ErrorCode
@@ -126,14 +127,14 @@ class UserService(
     fun getCurrentUserInfo(userId: UUID): UserInfoResponse {
         val user = findActiveUserById(userId)
 
-        val blogSlugs = blogRepository.findSlugsByUserId(user.id!!)
+        val blogs = blogRepository.findAllByUser(user)
 
         return UserInfoResponse(
             userId = user.id,
             email = user.email,
             name = user.realUsername,
             profileImage = user.pictureUrl,
-            slugs = blogSlugs
+            blogs = blogs.map { BlogSummary.from(it) }
         )
     }
 }

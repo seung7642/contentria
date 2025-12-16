@@ -6,7 +6,7 @@ export interface CategoryNode {
   children: CategoryNode[];
 }
 
-export interface BlogInfo {
+export interface BlogSummary {
   id: string;
   slug: string;
   title: string;
@@ -20,7 +20,7 @@ export interface OwnerInfo {
 }
 
 export interface BlogLayout {
-  blog: BlogInfo;
+  blog: BlogSummary;
   owner: OwnerInfo;
   categories: CategoryNode[];
 }

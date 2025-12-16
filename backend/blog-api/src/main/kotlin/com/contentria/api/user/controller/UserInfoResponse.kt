@@ -1,5 +1,6 @@
 package com.contentria.api.user.controller
 
+import com.contentria.api.blog.dto.BlogSummary
 import com.contentria.api.user.domain.User
 import java.util.UUID
 
@@ -8,7 +9,7 @@ data class UserInfoResponse(
     val email: String,
     val name: String?,
     val profileImage: String?,
-    val slugs: List<String>? = emptyList(),
+    val blogs: List<BlogSummary>? = emptyList()
 ) {
     companion object {
         fun from(user: User): UserInfoResponse {
@@ -17,17 +18,17 @@ data class UserInfoResponse(
                 email = user.email,
                 name = user.username,
                 profileImage = user.pictureUrl,
-                slugs = null,
+                blogs = null,
             )
         }
 
-        fun from(user: User, slugs: List<String>): UserInfoResponse {
+        fun from(user: User, blogs: List<BlogSummary>): UserInfoResponse {
             return UserInfoResponse(
                 userId = user.id,
                 email = user.email,
                 name = user.username,
                 profileImage = user.pictureUrl,
-                slugs = slugs,
+                blogs = blogs
             )
         }
     }

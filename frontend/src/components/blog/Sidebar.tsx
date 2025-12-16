@@ -1,10 +1,10 @@
 import Image from 'next/image';
 import CategoryItem from './CategoryItem';
-import { BlogInfo, CategoryNode, OwnerInfo } from '@/types/api/blogs';
+import { BlogSummary, CategoryNode, OwnerInfo } from '@/types/api/blogs';
 import { getHighResGoogleProfileImage } from '@/lib/imageUtil';
 
 interface SidebarProps {
-  blog: BlogInfo;
+  blog: BlogSummary;
   owner: OwnerInfo;
   categories: CategoryNode[];
 }

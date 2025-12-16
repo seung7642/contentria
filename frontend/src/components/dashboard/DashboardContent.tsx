@@ -16,7 +16,7 @@ import { User } from '@/types/api/user';
 
 const DashboardContent = ({ user }: { user: User }) => {
   const [timeRange, setTimeRange] = useState<TimeRange>('2weeks');
-  const slug = user.slugs?.[0];
+  const slug = user.blogs[0]?.slug;
 
   const { data: stats } = useDashboadStatsQuery(slug!);
   const { data: popularPosts } = usePopularPostsQuery(slug!);
