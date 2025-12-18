@@ -1,8 +1,13 @@
 package com.contentria.api.post.service
 
+import com.contentria.api.blog.domain.Blog
 import com.contentria.api.blog.dto.OwnerInfo
+import com.contentria.api.blog.repository.BlogRepository
+import com.contentria.api.category.domain.Category
+import com.contentria.api.category.repository.CategoryRepository
 import com.contentria.api.config.exception.ContentriaException
 import com.contentria.api.config.exception.ErrorCode
+import com.contentria.api.post.domain.Post
 import com.contentria.api.post.domain.PostStatus
 import com.contentria.api.post.dto.CreateNewPostCommand
 import com.contentria.api.post.dto.CreateNewPostInfo
@@ -10,12 +15,14 @@ import com.contentria.api.post.dto.PostDetailAndOwnerInfo
 import com.contentria.api.post.dto.PostDetailInfo
 import com.contentria.api.post.dto.PostSummaryInfo
 import com.contentria.api.post.repository.PostRepository
+import com.contentria.api.utils.SlugUtils
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.ZonedDateTime
 import java.util.UUID
 
 private val log = KotlinLogging.logger {}
@@ -23,6 +30,8 @@ private val log = KotlinLogging.logger {}
 @Service
 class PostService(
     private val postRepository: PostRepository,
+    private val blogRepository: BlogRepository,
+    private val categoryRepository: CategoryRepository,
     private val markdownService: MarkdownService
 ) {
 
@@ -30,9 +39,10 @@ class PostService(
     fun getPostsByBlogSlug(blogSlug: String, page: Int, size: Int): Page<PostSummaryInfo> {
         val pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "publishedAt"))
         val postSummaries = postRepository.findPostSummariesByBlogSlug(blogSlug, pageable)
-        return postSummaries.map { PostSummaryInfo.from(it) }
+        return postSummaries.map { it.copy(summary = markdownService.createSummary(it.summary)) }.map { PostSummaryInfo.from(it) }
     }
 
+    @Transactional(readOnly = true)
     fun getPostDetail(blogSlug: String, postSlug: String): PostDetailAndOwnerInfo {
         val post = postRepository.findPublishedByBlogsWithDetails(blogSlug, postSlug)
             ?: throw ContentriaException(ErrorCode.NOT_FOUND_POST)
@@ -44,37 +54,53 @@ class PostService(
     }
 
     @Transactional
-    fun createNewPost(command: CreateNewPostCommand): CreateNewPostInfo {
-        // 1. 비즈니스 유효성 검증
-        validateBusinessRules(command)
+    fun createNewPost(userId: UUID, command: CreateNewPostCommand): CreateNewPostInfo {
+        val blog = blogRepository.findByIdAndUserId(command.blogId, userId)
+            ?: throw ContentriaException(ErrorCode.NOT_FOUND_BLOG)
 
-        // 2. contentMarkdown을 HTML로 변환 & HTML Sanitization
-        val contentHtml = markdownService.convertToHtml(command.contentMarkdown)
+        val category = categoryRepository.findByIdAndBlog(command.categoryId, blog)
+            ?: throw ContentriaException(ErrorCode.NOT_FOUND_CATEGORY)
 
-        // 3. Post 엔티티 생성 및 저장
+        val rawSlug = SlugUtils.toSlug(command.title)
+        val uniqueSlug = resolveUniqueSlug(blog, rawSlug)
 
-        return CreateNewPostInfo(
-            postId = UUID.randomUUID(),
-            slug = "",
-            title = "",
-            metaTitle = "",
-            metaDescription = "",
-            publishedAt = null,
-            status = PostStatus.DRAFT,
-            categoryName = null
-        )
+        val savedPost = postRepository.save(
+            Post(
+            blog = blog,
+            category = category,
+            slug = uniqueSlug,
+            title = command.title,
+            contentMarkdown = command.contentMarkdown,
+            status = command.status,
+            publishedAt = ZonedDateTime.now().takeIf { command.status.isPublished() }
+        ))
+        log.info { "Created new post: $savedPost" }
+
+        return CreateNewPostInfo.from(savedPost)
     }
 
-    private fun validateBusinessRules(command: CreateNewPostCommand) {
-        // 각 비즈니스 규칙에 위반될 시, 매핑되는 ErrorCode로 ContentriaException을 던집니다.
+    private fun resolveUniqueSlug(blog: Blog, rawSlug: String): String {
+        val existingSlugs = postRepository.findSlugsByPrefix(blog, rawSlug)
 
-        // 1. 사용자 ID 존재 여부 검증
-
-        // 2. 블로그 존재 여부
-
-        // 3. 카테고리 ID 존재 여부 (카테고리 ID가 주어진 경우)
-        command.categoryId?.let { categoryId ->
-            // TODO: 카테고리 존재 여부 검증
+        if (existingSlugs.isEmpty()) {
+            return rawSlug
         }
+
+        if (!existingSlugs.contains(rawSlug)) {
+            return rawSlug
+        }
+
+        val maxSuffix = existingSlugs.asSequence()
+            .mapNotNull { slug ->
+                val suffix = slug.removePrefix(rawSlug)
+                if (suffix.matches(Regex("-\\d+"))) {
+                    suffix.substring(1).toLong()
+                } else {
+                    null
+                }
+            }
+            .maxOrNull() ?: 0L
+
+        return "$rawSlug-${maxSuffix + 1}"
     }
 }

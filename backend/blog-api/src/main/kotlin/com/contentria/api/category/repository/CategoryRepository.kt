@@ -12,4 +12,6 @@ interface CategoryRepository : JpaRepository<Category, UUID> {
     fun findAllByBlog(blog: Blog): List<Category>
 
     fun findAllByBlogOrderByCreatedAtAsc(blog: Blog): List<Category>
+
+    fun findByIdAndBlog(id: UUID, blog: Blog): Category?
 }

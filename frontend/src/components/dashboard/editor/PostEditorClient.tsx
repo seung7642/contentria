@@ -46,6 +46,7 @@ import { createNewPostAction } from '@/actions/post';
 import { PostStatus } from '@/types/api/posts';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { PATHS } from '@/constants/paths';
 
 type AdmonitionKind = 'note' | 'tip' | 'danger' | 'info' | 'caution';
 
@@ -60,7 +61,12 @@ function whenInAdmonition(editorInFocus: EditorInFocus | null) {
   );
 }
 
-export function PostEditorClient({ categories }: { categories: Category[] }) {
+interface PostEditorClientProps {
+  blogId: string;
+  categories: Category[];
+}
+
+export function PostEditorClient({ blogId, categories }: PostEditorClientProps) {
   const router = useRouter();
   const editorRef = useRef<MDXEditorMethods>(null); // MDXEditor의 인스턴스에 접근하기 위한 ref 생성
 
@@ -154,11 +160,7 @@ function helloWorld() {
       const markdownContent = editorRef.current?.getMarkdown() || '';
       console.log(markdownContent);
 
-      if (
-        !title.trim() ||
-        !selectedCategory ||
-        markdownContent?.trim() === initialMarkdown.trim()
-      ) {
+      if (!title.trim() || !selectedCategory || !markdownContent.trim()) {
         alert('제목, 카고리를 선택하고 내용을 입력해주세요.');
         setSaveStatus('idle');
         return;
@@ -166,6 +168,7 @@ function helloWorld() {
 
       try {
         await createNewPostAction({
+          blogId,
           title,
           categoryId: selectedCategory,
           contentMarkdown: markdownContent,
@@ -174,11 +177,14 @@ function helloWorld() {
 
         setSaveStatus('saved');
 
-        if (postStatus === 'PUBLISHED') {
-          alert('포스트가 성공적으로 게시되었습니다.');
-        } else {
-          alert('포스트가 임시 저장되었습니다.');
-        }
+        const message =
+          postStatus === 'PUBLISHED'
+            ? '포스트가 성공적으로 게시되었습니다.'
+            : '포스트가 임시 저장되었습니다.';
+
+        alert(message);
+
+        router.replace(PATHS.DASHBOARD);
       } catch (error) {
         setSaveStatus('error');
         console.error('저장 실패', error);
@@ -190,7 +196,7 @@ function helloWorld() {
       // editorRef.current?.setMarkdown('새로운 마크다운 내용');
       // console.log(editorRef.current?.getMarkdown());
     },
-    [title, selectedCategory]
+    [title, selectedCategory, blogId, router]
   );
 
   const handleExit = () => {

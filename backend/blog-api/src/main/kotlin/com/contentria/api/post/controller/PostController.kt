@@ -5,10 +5,15 @@ import com.contentria.api.post.dto.CreateNewPostResponse
 import com.contentria.api.post.dto.PostDetailResponse
 import com.contentria.api.post.dto.PostSummaryResponse
 import com.contentria.api.post.service.PostService
+import com.contentria.api.user.security.CustomUserDetails
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
+
+private val log = KotlinLogging.logger {}
 
 @RestController
 @RequestMapping
@@ -37,9 +42,11 @@ class PostController(
 
     @PostMapping("/posts")
     fun createNewPost(
+        @AuthenticationPrincipal userDetails: CustomUserDetails,
         @Valid @RequestBody request: CreateNewPostRequest
     ): ResponseEntity<CreateNewPostResponse> {
-        val createNewPostInfo = postService.createNewPost(request.toCommand())
+        log.info { "Creating new post for userId=${userDetails.userId}, request=$request" }
+        val createNewPostInfo = postService.createNewPost(userDetails.userId!!, request.toCommand())
         return ResponseEntity.ok(CreateNewPostResponse.from(createNewPostInfo))
     }
 }

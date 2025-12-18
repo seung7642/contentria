@@ -1,7 +1,7 @@
 package com.contentria.api.post.domain
 
 import com.contentria.api.blog.domain.Blog
-import com.contentria.api.category.Category
+import com.contentria.api.category.domain.Category
 import com.contentria.api.user.domain.BaseEntity
 import com.contentria.common.config.jpa.GeneratedUuidV7
 import jakarta.persistence.*
@@ -25,13 +25,8 @@ class Post(
     @Column(length = 255, nullable = false)
     var title: String,
 
-//    @Lob
     @Column(columnDefinition = "TEXT")
     var contentMarkdown: String,
-
-//    @Lob
-    @Column(columnDefinition = "TEXT")
-    var contentHtml: String,
 
     @Column(length = 255)
     var metaTitle: String? = null,

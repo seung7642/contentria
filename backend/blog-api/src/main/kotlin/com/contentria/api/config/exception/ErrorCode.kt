@@ -37,10 +37,14 @@ enum class ErrorCode(
 
     // Blog
     DUPLICATE_BLOG_SLUG(HttpStatus.CONFLICT, "BL0000", "Blog slug already in use. Please choose a different one."),
-    NOT_FOUND_BLOG(HttpStatus.NOT_FOUND, "AU0012", "Not found blog. Please contact support."),
+    NOT_FOUND_BLOG(HttpStatus.NOT_FOUND, "BL0001", "Not found blog. Please contact support."),
+    FORBIDDEN_ACCESS_BLOG(HttpStatus.FORBIDDEN, "BL0002", "You do not have permission to access this blog."),
 
     // Post
     NOT_FOUND_POST(HttpStatus.NOT_FOUND, "PO0000", "Not found post. Please contact support."),
+
+    // Category
+    NOT_FOUND_CATEGORY(HttpStatus.NOT_FOUND, "CA0000", "Not found category. Please contact support."),
 
     // Markdown
     MARKDOWN_PROCESSING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MD0000", "An error occurred while processing the markdown content."),

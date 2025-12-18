@@ -38,6 +38,7 @@ export interface PostDetailResponse {
 export type PostStatus = 'DRAFT' | 'PUBLISHED';
 
 export interface CreateNewPostRequest {
+  blogId: string;
   title: string;
   contentMarkdown: string;
   status: PostStatus;

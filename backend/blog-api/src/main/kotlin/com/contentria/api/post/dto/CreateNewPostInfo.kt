@@ -1,5 +1,6 @@
 package com.contentria.api.post.dto
 
+import com.contentria.api.post.domain.Post
 import com.contentria.api.post.domain.PostStatus
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -13,4 +14,19 @@ data class CreateNewPostInfo(
     val publishedAt: ZonedDateTime?,
     val status: PostStatus,
     val categoryName: String?
-)
+) {
+    companion object {
+        fun from(post: Post): CreateNewPostInfo {
+            return CreateNewPostInfo(
+                postId = post.id!!,
+                slug = post.slug,
+                title = post.title,
+                metaTitle = post.metaTitle,
+                metaDescription = post.metaDescription,
+                publishedAt = post.publishedAt,
+                status = post.status,
+                categoryName = post.category?.name
+            )
+        }
+    }
+}

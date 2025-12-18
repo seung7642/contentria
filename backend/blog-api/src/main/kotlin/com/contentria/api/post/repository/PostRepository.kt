@@ -62,4 +62,11 @@ interface PostRepository : JpaRepository<Post, UUID> {
     """)
     fun findPublishedByBlogsWithDetails(blogSlug: String, postSlug: String): Post?
 
+    @Query("""
+        SELECT p.slug 
+        FROM Post p
+        WHERE p.blog = :blog
+            AND (p.slug = :targetSlug OR p.slug LIKE CONCAT(:targetSlug, '-%'))
+    """)
+    fun findSlugsByPrefix(blog: Blog, targetSlug: String): List<String>
 }

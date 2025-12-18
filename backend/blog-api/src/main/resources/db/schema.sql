@@ -96,7 +96,6 @@ CREATE TABLE posts (
     slug VARCHAR(255) NOT NULL,
     title VARCHAR(255) NOT NULL,
     content_markdown TEXT,
-    content_html TEXT,
     meta_title VARCHAR(255), -- SEO(검색 엔진), 소셜 미디어 공유를 위한 컬럼
     meta_description VARCHAR(500), -- SEO(검색 엔진), 소셜 미디어 공유를 위한 컬럼
     featured_image_url TEXT,

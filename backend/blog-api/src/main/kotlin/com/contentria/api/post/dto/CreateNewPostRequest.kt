@@ -7,9 +7,9 @@ import java.util.UUID
 import org.hibernate.validator.constraints.UUID as ValidUUID
 
 data class CreateNewPostRequest(
-    @field:NotNull(message = "사용자 ID는 필수입니다.")
-    @field:ValidUUID(message = "올바른 UUID 형식이 아닙니다.")
-    val userId: UUID,
+//    @field:NotNull(message = "blogId는 필수입니다.")
+//    @field:ValidUUID(message = "올바른 UUID 형식이 아닙니다.")
+    val blogId: UUID,
 
     @field:NotNull(message = "제목은 필수입니다.")
     @field:Size(min = 1, max = 150, message = "제목은 1자 이상 150자 이하여야 합니다.")
@@ -22,11 +22,11 @@ data class CreateNewPostRequest(
     @field:NotNull(message = "게시 상태는 필수입니다.")
     val status: PostStatus,
 
-    val categoryId: UUID? = null
+    val categoryId: UUID
 ) {
     fun toCommand(): CreateNewPostCommand {
         return CreateNewPostCommand(
-            userId = this.userId,
+            blogId = this.blogId,
             title = this.title,
             contentMarkdown = this.contentMarkdown,
             status = this.status,
