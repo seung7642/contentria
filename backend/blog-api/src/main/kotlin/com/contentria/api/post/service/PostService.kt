@@ -3,12 +3,10 @@ package com.contentria.api.post.service
 import com.contentria.api.blog.domain.Blog
 import com.contentria.api.blog.dto.OwnerInfo
 import com.contentria.api.blog.repository.BlogRepository
-import com.contentria.api.category.domain.Category
 import com.contentria.api.category.repository.CategoryRepository
 import com.contentria.api.config.exception.ContentriaException
 import com.contentria.api.config.exception.ErrorCode
 import com.contentria.api.post.domain.Post
-import com.contentria.api.post.domain.PostStatus
 import com.contentria.api.post.dto.CreateNewPostCommand
 import com.contentria.api.post.dto.CreateNewPostInfo
 import com.contentria.api.post.dto.PostDetailAndOwnerInfo
@@ -39,7 +37,8 @@ class PostService(
     fun getPostsByBlogSlug(blogSlug: String, page: Int, size: Int): Page<PostSummaryInfo> {
         val pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "publishedAt"))
         val postSummaries = postRepository.findPostSummariesByBlogSlug(blogSlug, pageable)
-        return postSummaries.map { it.copy(summary = markdownService.createSummary(it.summary)) }.map { PostSummaryInfo.from(it) }
+        return postSummaries.map { it.copy(summary = markdownService.extractSummary(it.summary)) }
+            .map { PostSummaryInfo.from(it) }
     }
 
     @Transactional(readOnly = true)
@@ -66,14 +65,15 @@ class PostService(
 
         val savedPost = postRepository.save(
             Post(
-            blog = blog,
-            category = category,
-            slug = uniqueSlug,
-            title = command.title,
-            contentMarkdown = command.contentMarkdown,
-            status = command.status,
-            publishedAt = ZonedDateTime.now().takeIf { command.status.isPublished() }
-        ))
+                blog = blog,
+                category = category,
+                slug = uniqueSlug,
+                title = command.title,
+                contentMarkdown = command.contentMarkdown,
+                summary = markdownService.extractSummary(command.contentMarkdown),
+                status = command.status,
+                publishedAt = ZonedDateTime.now().takeIf { command.status.isPublished() }
+            ))
         log.info { "Created new post: $savedPost" }
 
         return CreateNewPostInfo.from(savedPost)

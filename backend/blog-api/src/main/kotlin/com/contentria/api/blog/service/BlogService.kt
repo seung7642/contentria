@@ -12,9 +12,6 @@ import com.contentria.api.post.domain.Post
 import com.contentria.api.post.domain.PostStatus
 import com.contentria.api.post.repository.PostRepository
 import com.contentria.api.user.service.UserService
-import com.vladsch.flexmark.html.HtmlRenderer
-import com.vladsch.flexmark.parser.Parser
-import com.vladsch.flexmark.util.data.MutableDataSet
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.core.io.ResourceLoader
 import org.springframework.stereotype.Service
@@ -34,16 +31,6 @@ class BlogService(
     private val postRepository: PostRepository,
     private val resourceLoader: ResourceLoader
 ) {
-
-    private val markdownParser: Parser
-    private val htmlRenderer: HtmlRenderer
-
-    init {
-        val options = MutableDataSet()
-        markdownParser = Parser.builder(options).build()
-        htmlRenderer = HtmlRenderer.builder(options).build()
-    }
-
     @Transactional
     fun createBlog(userId: UUID, request: CreateBlogCommand): CreateBlogInfo {
         val user = userService.findActiveUserById(userId)
@@ -100,11 +87,6 @@ class BlogService(
     private fun readMarkdownContent(resourcePath: String): String {
         val resource = resourceLoader.getResource(resourcePath)
         return resource.inputStream.bufferedReader(StandardCharsets.UTF_8).use { it.readText() }
-    }
-
-    private fun convertMarkdownToHtml(markdown: String): String {
-        val document = markdownParser.parse(markdown)
-        return htmlRenderer.render(document)
     }
 
     @Transactional(readOnly = true)

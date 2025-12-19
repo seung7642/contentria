@@ -41,10 +41,16 @@ dependencies {
     implementation("com.github.ben-manes.caffeine:jcache:3.2.2")
 
     // Markdown parser
-    implementation("com.vladsch.flexmark:flexmark-all:0.64.8")
-
-    // HTML parser
-    implementation("org.jsoup:jsoup:1.21.2")
+    implementation("org.commonmark:commonmark:0.27.0")
+    implementation("org.commonmark:commonmark-ext-gfm-tables:0.27.0")
+    implementation("org.commonmark:commonmark-ext-gfm-strikethrough:0.27.0")
+    implementation("org.commonmark:commonmark-ext-autolink:0.27.0")
+    implementation("org.commonmark:commonmark-ext-footnotes:0.27.0")
+    implementation("org.commonmark:commonmark-ext-heading-anchor:0.27.0")
+    implementation("org.commonmark:commonmark-ext-ins:0.27.0")
+    implementation("org.commonmark:commonmark-ext-yaml-front-matter:0.27.0")
+    implementation("org.commonmark:commonmark-ext-image-attributes:0.27.0")
+    implementation("org.commonmark:commonmark-ext-task-list-items:0.27.0")
 
     // 테스트 종속성 - 명시적으로 JUnit 프레임워크 지정
     testImplementation("org.springframework.boot:spring-boot-starter-test")

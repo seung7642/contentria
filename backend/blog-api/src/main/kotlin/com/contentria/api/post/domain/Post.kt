@@ -28,6 +28,9 @@ class Post(
     @Column(columnDefinition = "TEXT")
     var contentMarkdown: String,
 
+    @Column(length = 500)
+    var summary: String? = null,
+
     @Column(length = 255)
     var metaTitle: String? = null,
 
