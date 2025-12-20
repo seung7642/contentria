@@ -33,8 +33,8 @@ class PostController(
 
     @GetMapping("/blogs/{blogSlug}/posts/{postSlug}")
     fun getPostDetail(
-        @PathVariable("blogSlug") blogSlug: String,
-        @PathVariable("postSlug") postSlug: String
+        @PathVariable blogSlug: String,
+        @PathVariable postSlug: String
     ): ResponseEntity<PostDetailResponse> {
         val postDetailAndOwnerInfo = postService.getPostDetail(blogSlug, postSlug)
         return ResponseEntity.ok(PostDetailResponse.from(postDetailAndOwnerInfo))

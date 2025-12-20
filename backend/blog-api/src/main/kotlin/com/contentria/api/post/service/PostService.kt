@@ -63,6 +63,7 @@ class PostService(
         val rawSlug = SlugUtils.toSlug(command.title)
         val uniqueSlug = resolveUniqueSlug(blog, rawSlug)
 
+        val summary = markdownService.extractSummary(command.contentMarkdown)
         val savedPost = postRepository.save(
             Post(
                 blog = blog,
@@ -70,7 +71,9 @@ class PostService(
                 slug = uniqueSlug,
                 title = command.title,
                 contentMarkdown = command.contentMarkdown,
-                summary = markdownService.extractSummary(command.contentMarkdown),
+                summary = summary,
+                metaTitle = command.title,
+                metaDescription = summary,
                 status = command.status,
                 publishedAt = ZonedDateTime.now().takeIf { command.status.isPublished() }
             ))

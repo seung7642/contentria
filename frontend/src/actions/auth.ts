@@ -12,6 +12,7 @@ import {
   VerifyOtpCodeResponse,
 } from '@/types/api/auth';
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 
 export async function logoutAction() {
   try {
@@ -23,6 +24,8 @@ export async function logoutAction() {
   const cookieStore = await cookies();
   cookieStore.delete('accessToken');
   cookieStore.delete('refreshToken');
+
+  redirect('/');
 }
 
 export async function initiateSignUpAction(

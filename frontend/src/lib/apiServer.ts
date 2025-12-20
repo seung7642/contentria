@@ -34,6 +34,9 @@ async function fetchExtended<T>(url: string, options: FetchOptions = {}): Promis
   const cookieStore = await cookies();
   const accessToken = cookieStore.get('accessToken')?.value;
   const refreshToken = cookieStore.get('refreshToken')?.value;
+  console.log(
+    `[apiServer] accessToken: ${accessToken?.substring(0, 10) ?? ''}, refreshToken: ${refreshToken?.substring(0, 10) ?? ''}`
+  );
 
   const headers = new Headers(customHeaders);
   headers.set('Content-Type', 'application/json');

@@ -7,17 +7,16 @@ import { notFound } from 'next/navigation';
 
 // Next.js 15 버전부터 params와 searchParams는 비동기 처리가 가능하다.
 interface UserBlogPageProps {
-  params: {
+  params: Promise<{
     blogSlug: string;
-  };
-  searchParams: {
+  }>;
+  searchParams: Promise<{
     page?: string;
-  };
+  }>;
 }
 
-// SEO를 위한 동적 메타데이터 생성 (매우 중요!)
 export async function generateMetadata({ params }: UserBlogPageProps): Promise<Metadata> {
-  const { blogSlug } = params;
+  const { blogSlug } = await params;
 
   const blogData = await getBlogLayoutAction(blogSlug);
   if (!blogData) {
@@ -34,8 +33,8 @@ export async function generateMetadata({ params }: UserBlogPageProps): Promise<M
 }
 
 export default async function BlogPage({ params, searchParams }: UserBlogPageProps) {
-  const { blogSlug } = params;
-  const { page } = searchParams;
+  const { blogSlug } = await params;
+  const { page } = await searchParams;
 
   // 페이지 번호 파싱 (1-based를 0-based로 변환)
   const currentPage = page ? Math.max(0, parseInt(page, 10) - 1) : 0;

@@ -8,7 +8,6 @@ import {
   PostDetailResponse,
   PostSummary,
 } from '@/types/api/posts';
-import { getUserProfileAction } from './user';
 
 export async function getBlogPostsAction(
   slug: string,

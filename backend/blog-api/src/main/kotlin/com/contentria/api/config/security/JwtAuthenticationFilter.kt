@@ -41,14 +41,17 @@ class JwtAuthenticationFilter(
     }
 
     private fun resolveToken(request: HttpServletRequest): String? {
-        log.debug { "Resolving token with Authorization header." }
         val authHeader = request.getHeader("Authorization")
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            return authHeader.substring(7)
+            val bearerToken = authHeader.substring(7)
+            log.info { "Found Bearer token in Authorization header: $bearerToken" }
+            return bearerToken
         }
 
-        log.debug { "Resolving token with accessToken cookie." }
-        return request.cookies?.find { it.name == "accessToken" }?.value
+        val accessToken = request.cookies?.find { it.name == "accessToken" }?.value
+        val refreshToken = request.cookies?.find { it.name == "refreshToken" }?.value
+        log.info { "Found accessToken in cookies: $accessToken, refreshToken:${refreshToken}" }
+        return accessToken
     }
 
     private fun authenticateUser(jwt: String, request: HttpServletRequest) {
