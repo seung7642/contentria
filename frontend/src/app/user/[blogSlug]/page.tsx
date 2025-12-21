@@ -45,18 +45,20 @@ export default async function BlogPage({ params, searchParams }: UserBlogPagePro
     getBlogLayoutAction(blogSlug),
     getBlogPostsAction(blogSlug),
   ]);
+  console.log(`postsPage: ${postsPage?.totalPages}`);
+  console.log(`postsPage: ${JSON.stringify(postsPage?.page)}`);
 
   if (!layoutData) {
     notFound();
   }
 
-  if (postsPage && currentPage >= postsPage.totalPages && postsPage.totalPages > 0) {
+  if (postsPage && currentPage >= postsPage.page.totalPages && postsPage.page.totalPages > 0) {
     notFound();
   }
 
   // const { blog, owner, categories } = layoutData;
   const initialPosts = postsPage?.content ?? [];
-  const totalPages = postsPage?.totalPages ?? 0;
+  const totalPages = postsPage?.page.totalPages ?? 0;
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-6">
@@ -73,7 +75,6 @@ export default async function BlogPage({ params, searchParams }: UserBlogPagePro
 
       <div className="mt-10">
         <CustomPagination totalPages={totalPages} />
-        {/* <BlogPagination currentPage={currentPage} totalPages={totalPages} blogSlug={blogSlug} /> */}
       </div>
     </div>
   );

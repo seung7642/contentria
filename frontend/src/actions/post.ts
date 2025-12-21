@@ -12,7 +12,7 @@ import {
 export async function getBlogPostsAction(
   blogSlug: string,
   page: number = 0,
-  size: number = 10
+  size: number = 5
 ): Promise<Page<PostSummary> | null> {
   const query = new URLSearchParams({
     blogSlug,
