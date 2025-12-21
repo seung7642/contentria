@@ -4,6 +4,7 @@ import com.contentria.api.auth.dto.*
 import com.contentria.api.auth.service.AuthService
 import com.contentria.api.auth.service.RefreshTokenService
 import com.contentria.api.utils.CookieUtil
+import com.contentria.common.aop.ApiLog
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -21,19 +22,20 @@ class AuthController(
     private val cookieUtil: CookieUtil
 ) {
 
+    @ApiLog
     @PostMapping("/refresh")
     fun refreshToken(
         @CookieValue(name = "\${app.auth.cookie.refresh-token-name}", required = true) refreshTokenValue: String,
         request: HttpServletRequest,
         response: HttpServletResponse
     ): ResponseEntity<RefreshTokenResponse> {
-        log.info { "Refresh with $refreshTokenValue" }
+        log.info { "=== Refresh with $refreshTokenValue ===" }
         val newTokens = refreshTokenService.refreshTokens(refreshTokenValue)
 
         response.addCookie(cookieUtil.createAccessTokenCookie(newTokens.accessToken, request))
         response.addCookie(cookieUtil.createRefreshTokenCookie(newTokens.refreshToken, request))
 
-        log.info { "Successfully refreshed token. accessToken:${newTokens.accessToken}, refreshToken:${newTokens.refreshToken}" }
+        log.info { "=== Successfully refreshed token. accessToken:${newTokens.accessToken.substring(0, 10)}, refreshToken:${newTokens.refreshToken.substring(0, 10)}" }
         return ResponseEntity.ok(RefreshTokenResponse(
             accessToken = newTokens.accessToken,
             refreshToken = newTokens.refreshToken

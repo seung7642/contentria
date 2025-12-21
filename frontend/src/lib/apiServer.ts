@@ -48,7 +48,7 @@ async function fetchExtended<T>(url: string, options: FetchOptions = {}): Promis
   let response = await fetch(`${API_BASE_URL}${url}`, { ...rest, headers });
 
   if (response.status === 401 && requireAuth && refreshToken) {
-    console.log('🔄 [BFF] Access Token 만료. 갱신 시도...');
+    console.log('🔄 [apiServer] accessToken expired, attempt to refresh');
 
     const refreshResponse = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
       method: 'POST',
@@ -58,30 +58,9 @@ async function fetchExtended<T>(url: string, options: FetchOptions = {}): Promis
       },
     });
 
-    if (refreshResponse.ok) {
-      const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
-        await refreshResponse.json();
+    if (!refreshResponse.ok) {
+      console.error('❌ [apiServer] refreshToken expired. Logging out');
 
-      cookieStore.set('accessToken', newAccessToken, {
-        httpOnly: true,
-        path: '/',
-        maxAge: 15 * 60, // 15 minutes
-      });
-
-      if (newRefreshToken) {
-        cookieStore.set('refreshToken', newRefreshToken, {
-          httpOnly: true,
-          path: '/',
-          maxAge: 7 * 24 * 60 * 60, // 7 days
-        });
-      }
-
-      headers.set('Authorization', `Bearer ${newAccessToken}`);
-      response = await fetch(`${API_BASE_URL}${url}`, { ...rest, headers });
-
-      console.log('✅ [BFF] 액세스 토큰 갱신 및 재요청 성공');
-    } else {
-      console.error('❌ [BFF] 리프레시 토큰 만료됨. 로그아웃 처리');
       cookieStore.delete('accessToken');
       cookieStore.delete('refreshToken');
 
@@ -91,6 +70,28 @@ async function fetchExtended<T>(url: string, options: FetchOptions = {}): Promis
         throw new Error('Unauthorized');
       }
     }
+
+    const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
+      await refreshResponse.json();
+
+    cookieStore.set('accessToken', newAccessToken, {
+      httpOnly: true,
+      path: '/',
+      maxAge: 15 * 60, // 15 minutes
+    });
+
+    if (newRefreshToken) {
+      cookieStore.set('refreshToken', newRefreshToken, {
+        httpOnly: true,
+        path: '/',
+        maxAge: 7 * 24 * 60 * 60, // 7 days
+      });
+    }
+
+    headers.set('Authorization', `Bearer ${newAccessToken}`);
+    response = await fetch(`${API_BASE_URL}${url}`, { ...rest, headers });
+
+    console.log('✅ [apiServer] accessToken refreshed and request retried successfully');
   }
 
   if (!response.ok) {

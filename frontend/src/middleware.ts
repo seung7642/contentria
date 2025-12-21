@@ -13,6 +13,7 @@ export async function middleware(request: NextRequest) {
 
   const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/signup');
   const isDashboardPage = pathname.startsWith('/dashboard');
+  const isBlogPage = pathname.startsWith('/@');
 
   if (isAuthPage) {
     console.log(
@@ -26,10 +27,7 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  if (isDashboardPage) {
-    console.log(
-      `[Middleware] Dashboard page. accessToken: ${accessToken?.substring(0, 10) ?? ''}, refreshToken: ${refreshToken?.substring(0, 10) ?? ''}`
-    );
+  if (isDashboardPage || isBlogPage) {
     if (accessToken) {
       console.log('[Middleware] accessToken present. Allowing access to dashboard.');
       return NextResponse.next();
@@ -91,14 +89,25 @@ export async function middleware(request: NextRequest) {
       }
     }
 
-    const loginUrl = new URL(PATHS.LOGIN, request.url);
-    loginUrl.searchParams.set('redirect', pathname);
+    if (isDashboardPage) {
+      const loginUrl = new URL(PATHS.LOGIN, request.url);
+      loginUrl.searchParams.set('redirect', pathname);
 
-    const response = NextResponse.redirect(loginUrl);
-    response.cookies.delete('accessToken');
-    response.cookies.delete('refreshToken');
+      const response = NextResponse.redirect(loginUrl);
+      response.cookies.delete('accessToken');
+      response.cookies.delete('refreshToken');
 
-    return response;
+      return response;
+    }
+
+    if (isBlogPage) {
+      const response = NextResponse.next();
+      if (refreshToken) {
+        response.cookies.delete('accessToken');
+        response.cookies.delete('refreshToken');
+      }
+      return response;
+    }
   }
 
   return NextResponse.next();

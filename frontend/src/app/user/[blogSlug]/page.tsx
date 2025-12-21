@@ -1,11 +1,11 @@
 import { getBlogLayoutAction } from '@/actions/blog';
 import { getBlogPostsAction } from '@/actions/post';
 import BlogPagination from '@/components/blog/BlogPagination';
+import CustomPagination from '@/components/common/CustomPagination';
 import PostCard from '@/components/blog/PostCard';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
-// Next.js 15 버전부터 params와 searchParams는 비동기 처리가 가능하다.
 interface UserBlogPageProps {
   params: Promise<{
     blogSlug: string;
@@ -36,10 +36,7 @@ export default async function BlogPage({ params, searchParams }: UserBlogPagePro
   const { blogSlug } = await params;
   const { page } = await searchParams;
 
-  // 페이지 번호 파싱 (1-based를 0-based로 변환)
   const currentPage = page ? Math.max(0, parseInt(page, 10) - 1) : 0;
-
-  // 잘못된 페이지 번호 처리
   if (page && (isNaN(currentPage) || parseInt(page, 10) < 1)) {
     notFound();
   }
@@ -74,11 +71,10 @@ export default async function BlogPage({ params, searchParams }: UserBlogPagePro
         )}
       </div>
 
-      {totalPages > 0 && (
-        <div className="mt-10">
-          <BlogPagination currentPage={currentPage} totalPages={totalPages} blogSlug={blogSlug} />
-        </div>
-      )}
+      <div className="mt-10">
+        <CustomPagination totalPages={totalPages} />
+        {/* <BlogPagination currentPage={currentPage} totalPages={totalPages} blogSlug={blogSlug} /> */}
+      </div>
     </div>
   );
 }

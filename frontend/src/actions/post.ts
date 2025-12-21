@@ -10,12 +10,12 @@ import {
 } from '@/types/api/posts';
 
 export async function getBlogPostsAction(
-  slug: string,
+  blogSlug: string,
   page: number = 0,
   size: number = 10
 ): Promise<Page<PostSummary> | null> {
   const query = new URLSearchParams({
-    blogSlug: slug,
+    blogSlug,
     page: page.toString(),
     size: size.toString(),
   });
@@ -23,7 +23,7 @@ export async function getBlogPostsAction(
   return await apiServer.get<Page<PostSummary>>(`/api/posts?${query.toString()}`, {
     requireAuth: false,
     next: {
-      tags: [`posts-${slug}`], // 태그 기반 재검증(On-demand Revalidation)을 위해 유지
+      tags: [`posts-${blogSlug}`], // 태그 기반 재검증(On-demand Revalidation)을 위해 유지
       revalidate: 60,
     },
   });
