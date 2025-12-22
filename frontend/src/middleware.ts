@@ -27,84 +27,90 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  if (accessToken) {
-    console.log('[Middleware] accessToken present. Allowing access to dashboard.');
-    return NextResponse.next();
-  }
+  if (isDashboardPage || isBlogPage) {
+    if (accessToken) {
+      console.log('[Middleware] accessToken present. Allowing access to dashboard.');
+      return NextResponse.next();
+    }
 
-  if (refreshToken) {
-    console.log('[Middleware] accessToken expired. Attempting refresh.');
+    if (refreshToken) {
+      console.log('[Middleware] accessToken expired. Attempting refresh.');
 
-    try {
-      const refreshResponse = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Cookie: `refreshToken=${refreshToken}`,
-        },
-      });
+      try {
+        const refreshResponse = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Cookie: `refreshToken=${refreshToken}`,
+          },
+        });
 
-      if (!refreshResponse.ok) {
-        console.log('[Middleware] Refresh token invalid or expired.');
-        throw new Error('Refresh token invalid or expired');
+        if (!refreshResponse.ok) {
+          console.log('[Middleware] Refresh token invalid or expired.');
+          throw new Error('Refresh token invalid or expired');
+        }
+
+        console.log(
+          '[Middleware] Refresh successful. Updating tokens and allowing access to dashboard.'
+        );
+        const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
+          await refreshResponse.json();
+
+        const requestHeaders = new Headers(request.headers);
+        requestHeaders.set('Authorization', `Bearer ${newAccessToken}`);
+        requestHeaders.set(
+          'Cookie',
+          `accessToken=${newAccessToken}; refreshToken=${newRefreshToken}`
+        );
+
+        const response = NextResponse.next({
+          request: {
+            headers: requestHeaders,
+          },
+        });
+
+        response.cookies.set('accessToken', newAccessToken, {
+          httpOnly: true,
+          path: '/',
+          maxAge: 1 * 60, // 15 minutes
+          // maxAge: 15 * 60, // 15 minutes
+        });
+
+        response.cookies.set('refreshToken', newRefreshToken, {
+          httpOnly: true,
+          path: '/',
+          maxAge: 7 * 24 * 60 * 60, // 7 days
+        });
+
+        console.log('[Middleware] Tokens updated successfully.');
+        return response;
+      } catch (error) {
+        console.error('[Middleware] Refresh failed.', error);
       }
+    }
 
-      console.log(
-        '[Middleware] Refresh successful. Updating tokens and allowing access to dashboard.'
-      );
-      const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
-        await refreshResponse.json();
+    if (isDashboardPage) {
+      const loginUrl = new URL(PATHS.LOGIN, request.url);
+      loginUrl.searchParams.set('redirect', pathname);
 
-      const requestHeaders = new Headers(request.headers);
-      requestHeaders.set('Authorization', `Bearer ${newAccessToken}`);
-      requestHeaders.set(
-        'Cookie',
-        `accessToken=${newAccessToken}; refreshToken=${newRefreshToken}`
-      );
+      const response = NextResponse.redirect(loginUrl);
+      response.cookies.delete('accessToken');
+      response.cookies.delete('refreshToken');
 
-      const response = NextResponse.next({
-        request: {
-          headers: requestHeaders,
-        },
-      });
-
-      response.cookies.set('accessToken', newAccessToken, {
-        httpOnly: true,
-        path: '/',
-        maxAge: 1 * 60, // 15 minutes
-        // maxAge: 15 * 60, // 15 minutes
-      });
-
-      response.cookies.set('refreshToken', newRefreshToken, {
-        httpOnly: true,
-        path: '/',
-        maxAge: 7 * 24 * 60 * 60, // 7 days
-      });
-
-      console.log('[Middleware] Tokens updated successfully.');
       return response;
-    } catch (error) {
-      console.error('[Middleware] Refresh failed.', error);
+    }
+
+    if (isBlogPage) {
+      const response = NextResponse.next();
+      if (refreshToken) {
+        response.cookies.delete('accessToken');
+        response.cookies.delete('refreshToken');
+      }
+      return response;
     }
   }
 
-  if (isDashboardPage) {
-    const loginUrl = new URL(PATHS.LOGIN, request.url);
-    loginUrl.searchParams.set('redirect', pathname);
-
-    const response = NextResponse.redirect(loginUrl);
-    response.cookies.delete('accessToken');
-    response.cookies.delete('refreshToken');
-
-    return response;
-  }
-
-  const response = NextResponse.next();
-  if (refreshToken) {
-    response.cookies.delete('accessToken');
-    response.cookies.delete('refreshToken');
-  }
-  return response;
+  return NextResponse.next();
 }
 
 export const config = {

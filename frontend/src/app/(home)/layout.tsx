@@ -7,11 +7,7 @@ export const metadata: Metadata = {
   description: 'Welcome to the Home Page',
 };
 
-export default function HomeLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function HomeLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="grid min-h-screen grid-rows-[auto_1fr_auto] bg-white antialiased">
       <HomeHeader />

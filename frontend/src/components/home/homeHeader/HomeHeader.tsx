@@ -13,7 +13,7 @@ import { useRouter } from 'next/navigation';
 import { userKeys } from '@/hooks/queries/keys';
 import { logoutAction } from '@/actions/auth';
 
-const HomeHeader = () => {
+export default function HomeHeader() {
   const { data: user } = useUserProfile();
 
   const queryClient = useQueryClient();
@@ -96,6 +96,4 @@ const HomeHeader = () => {
       </div>
     </header>
   );
-};
-
-export default HomeHeader;
+}

@@ -43,7 +43,7 @@ export default async function BlogPage({ params, searchParams }: UserBlogPagePro
 
   const [layoutData, postsPage] = await Promise.all([
     getBlogLayoutAction(blogSlug),
-    getBlogPostsAction(blogSlug),
+    getBlogPostsAction(blogSlug, currentPage, 5),
   ]);
   console.log(`postsPage: ${postsPage?.totalPages}`);
   console.log(`postsPage: ${JSON.stringify(postsPage?.page)}`);
