@@ -9,7 +9,12 @@ interface SocialLoginButtonProps {
   disabled?: boolean;
 }
 
-const SocialLoginButton = ({ icon, children, onClick, disabled }: SocialLoginButtonProps) => {
+export default function SocialLoginButton({
+  icon,
+  children,
+  onClick,
+  disabled,
+}: SocialLoginButtonProps) {
   return (
     <button
       onClick={onClick}
@@ -21,6 +26,4 @@ const SocialLoginButton = ({ icon, children, onClick, disabled }: SocialLoginBut
       <span>{children}</span>
     </button>
   );
-};
-
-export default SocialLoginButton;
+}

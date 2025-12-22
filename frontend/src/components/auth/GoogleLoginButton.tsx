@@ -33,12 +33,10 @@ interface GoogleLoginButtonProps {
   disabled?: boolean;
 }
 
-const GoogleLoginButton = ({ onClick, disabled }: GoogleLoginButtonProps) => {
+export default function GoogleLoginButton({ onClick, disabled }: GoogleLoginButtonProps) {
   return (
     <SocialLoginButton onClick={onClick} disabled={disabled} icon={<GoogleLogo />}>
       Continue with Google
     </SocialLoginButton>
   );
-};
-
-export default GoogleLoginButton;
+}

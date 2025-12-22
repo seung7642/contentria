@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { PATHS } from '@/constants/paths';
 import { useLoginFlow } from '@/hooks/useLoginFlow';
 
-const EmailStep = () => {
+export default function EmailStep() {
   const { formData, isLoading, error, submitEmailStep, startGoogleLogin } = useLoginFlow();
   const {
     register,
@@ -65,6 +65,4 @@ const EmailStep = () => {
       </div>
     </>
   );
-};
-
-export default EmailStep;
+}

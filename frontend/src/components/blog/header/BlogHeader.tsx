@@ -19,7 +19,7 @@ interface BlogHeaderProps {
   blogSlug: string;
 }
 
-const BlogHeader = ({ blogTitle, blogSlug }: BlogHeaderProps) => {
+export default function BlogHeader({ blogTitle, blogSlug }: BlogHeaderProps) {
   const { data: user } = useUserProfile();
 
   const queryClient = useQueryClient();
@@ -111,6 +111,4 @@ const BlogHeader = ({ blogTitle, blogSlug }: BlogHeaderProps) => {
       </div>
     </header>
   );
-};
-
-export default BlogHeader;
+}
