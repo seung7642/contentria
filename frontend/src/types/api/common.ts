@@ -1,10 +1,11 @@
 export interface Page<T> {
   content: T[];
-  totalPages: number;
-  totalElements: number;
+  page: PageMetadata;
+}
+
+export interface PageMetadata {
   size: number;
-  number: number; // current page number
-  first: boolean;
-  last: boolean;
-  empty: boolean;
+  totalElements: number;
+  totalPages: number;
+  number: number;
 }
