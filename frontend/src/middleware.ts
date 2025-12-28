@@ -12,105 +12,101 @@ export async function middleware(request: NextRequest) {
   const refreshToken = request.cookies.get('refreshToken')?.value;
 
   const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/signup');
-  const isDashboardPage = pathname.startsWith('/dashboard');
-  const isBlogPage = pathname.startsWith('/@');
+  const isProtectedPage = pathname.startsWith('/dashboard');
+
+  const isSessionExpired = request.nextUrl.searchParams.get('alert') === 'session_expired';
 
   if (isAuthPage) {
     console.log(
       `[Middleware] Auth page. accessToken: ${accessToken?.substring(0, 10) ?? ''}, refreshToken: ${refreshToken?.substring(0, 10) ?? ''}`
     );
-    if (accessToken || refreshToken) {
-      console.log(
-        '[Middleware] Authenticated user trying to access auth page. Redirecting to dashboard.'
-      );
-      return NextResponse.redirect(new URL('/dashboard', request.url));
-    }
-  }
 
-  if (isDashboardPage || isBlogPage) {
-    if (accessToken) {
-      console.log('[Middleware] accessToken present. Allowing access to dashboard.');
-      return NextResponse.next();
-    }
-
-    if (refreshToken) {
-      console.log('[Middleware] accessToken expired. Attempting refresh.');
-
-      try {
-        const refreshResponse = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Cookie: `refreshToken=${refreshToken}`,
-          },
-        });
-
-        if (!refreshResponse.ok) {
-          console.log('[Middleware] Refresh token invalid or expired.');
-          throw new Error('Refresh token invalid or expired');
-        }
-
-        console.log(
-          '[Middleware] Refresh successful. Updating tokens and allowing access to dashboard.'
-        );
-        const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
-          await refreshResponse.json();
-
-        const requestHeaders = new Headers(request.headers);
-        requestHeaders.set('Authorization', `Bearer ${newAccessToken}`);
-        requestHeaders.set(
-          'Cookie',
-          `accessToken=${newAccessToken}; refreshToken=${newRefreshToken}`
-        );
-
-        const response = NextResponse.next({
-          request: {
-            headers: requestHeaders,
-          },
-        });
-
-        response.cookies.set('accessToken', newAccessToken, {
-          httpOnly: true,
-          path: '/',
-          maxAge: 1 * 60, // 15 minutes
-          // maxAge: 15 * 60, // 15 minutes
-        });
-
-        response.cookies.set('refreshToken', newRefreshToken, {
-          httpOnly: true,
-          path: '/',
-          maxAge: 7 * 24 * 60 * 60, // 7 days
-        });
-
-        console.log('[Middleware] Tokens updated successfully.');
-        return response;
-      } catch (error) {
-        console.error('[Middleware] Refresh failed.', error);
-      }
-    }
-
-    if (isDashboardPage) {
-      const loginUrl = new URL(PATHS.LOGIN, request.url);
-      loginUrl.searchParams.set('redirect', pathname);
-
-      const response = NextResponse.redirect(loginUrl);
+    if (isSessionExpired) {
+      console.log('[Middleware] Session expired signal detected. Clearing cookies.');
+      const response = NextResponse.next();
       response.cookies.delete('accessToken');
       response.cookies.delete('refreshToken');
-
       return response;
     }
 
-    if (isBlogPage) {
-      const response = NextResponse.next();
-      if (refreshToken) {
-        response.cookies.delete('accessToken');
-        response.cookies.delete('refreshToken');
-      }
-      return response;
+    if (accessToken || refreshToken) {
+      console.log('[Middleware] User already logged in. Redirecting to dashboard.');
+      return NextResponse.redirect(new URL('/dashboard', request.url));
     }
+    return NextResponse.next();
+  }
+
+  if (!accessToken && refreshToken) {
+    const refreshResponse = await tryRefreshTokens(request, refreshToken);
+    if (refreshResponse.status === 307) {
+      return refreshResponse;
+    }
+    if (isProtectedPage) {
+      return redirectToLogin(request, pathname);
+    }
+    return refreshResponse;
+  }
+
+  if (isProtectedPage && !accessToken) {
+    return redirectToLogin(request, pathname);
   }
 
   return NextResponse.next();
+}
+
+async function tryRefreshTokens(request: NextRequest, refreshToken: string): Promise<NextResponse> {
+  console.log('[Middleware] accessToken expired. Attempting refresh.');
+
+  try {
+    const refreshResponse = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: `refreshToken=${refreshToken}`,
+      },
+    });
+
+    if (!refreshResponse.ok) {
+      throw new Error('Refresh token invalid or expired');
+    }
+
+    console.log('[Middleware] Refresh successful. Reloading...');
+    const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
+      await refreshResponse.json();
+
+    const response = NextResponse.redirect(request.url);
+    setAuthCookies(response, newAccessToken, newRefreshToken);
+    return response;
+  } catch (error) {
+    console.error('[Middleware] Refresh failed. Clearing cookies.', error);
+    const response = NextResponse.next();
+    response.cookies.delete('accessToken');
+    response.cookies.delete('refreshToken');
+    return response;
+  }
+}
+
+function redirectToLogin(request: NextRequest, fromPath: string) {
+  const loginUrl = new URL(PATHS.LOGIN, request.url);
+  loginUrl.searchParams.set('redirect', fromPath);
+
+  const response = NextResponse.redirect(loginUrl);
+  response.cookies.delete('accessToken');
+  response.cookies.delete('refreshToken');
+  return response;
+}
+
+function setAuthCookies(response: NextResponse, accessToken: string, refreshToken: string) {
+  response.cookies.set('accessToken', accessToken, {
+    httpOnly: true,
+    path: '/',
+    maxAge: 1 * 60, // 1 minute
+  });
+  response.cookies.set('refreshToken', refreshToken, {
+    httpOnly: true,
+    path: '/',
+    maxAge: 7 * 24 * 60 * 60, // 7 days
+  });
 }
 
 export const config = {

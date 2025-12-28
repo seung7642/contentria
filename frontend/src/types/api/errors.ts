@@ -24,6 +24,18 @@ export class ApiError extends Error {
     this.path = path;
     this.details = details;
   }
+
+  static from(data: Partial<ApiErrorResponse>, fallbackStatus: number): ApiError {
+    return new ApiError(
+      data.message || 'Server Error',
+      data.timestamp || new Date().toISOString(),
+      data.status || fallbackStatus,
+      data.error || 'Error',
+      data.code || 'UNKNOWN',
+      data.path,
+      data.details
+    );
+  }
 }
 
 // 백엔드에서 반환하는 표준 에러 응답의 타입 정의

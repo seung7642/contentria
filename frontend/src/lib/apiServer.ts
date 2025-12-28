@@ -1,5 +1,7 @@
 import { PATHS } from '@/constants/paths';
 import { ApiError, ApiErrorResponse } from '@/types/api/errors';
+import { isRedirectError } from 'next/dist/client/components/redirect-error';
+import { ReadonlyRequestCookies } from 'next/dist/server/web/spec-extension/adapters/request-cookies';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
@@ -48,32 +50,77 @@ async function fetchExtended<T>(url: string, options: FetchOptions = {}): Promis
   let response = await fetch(`${API_BASE_URL}${url}`, { ...rest, headers });
 
   if (response.status === 401 && requireAuth && refreshToken) {
-    console.log('🔄 [apiServer] accessToken expired, attempt to refresh');
+    try {
+      const newAccessToken = await refreshTokens(cookieStore, refreshToken, shouldRedirectOn401);
+      if (newAccessToken) {
+        headers.set('Authorization', `Bearer ${newAccessToken}`);
+        response = await fetch(`${API_BASE_URL}${url}`, { ...rest, headers });
+        console.log('✅ [apiServer] Retried request after token refresh.');
+      }
+    } catch (error) {
+      if (isRedirectError(error)) {
+        throw error;
+      }
+      console.warn('❌ [apiServer] Token refresh failed:', error);
+    }
+  }
 
-    const refreshResponse = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Cookie: `refreshToken=${refreshToken}`,
-      },
-    });
+  if (response.status === 401 && requireAuth && shouldRedirectOn401) {
+    console.log('🔒 [apiServer] Unauthorized. Redirecting to login.');
+    redirect(`${PATHS.LOGIN}?alert=session_expired`);
+  }
 
-    if (!refreshResponse.ok) {
-      console.error('❌ [apiServer] refreshToken expired. Logging out');
+  if (!response.ok) {
+    const errorData: Partial<ApiErrorResponse> = await response.json().catch(() => ({}));
+    throw ApiError.from(errorData, response.status);
+  }
 
+  return response.json();
+}
+
+/**
+ * Pure function responsible only for token refresh and cookie setting
+ * @returns newAccessToken (newAccessToken upon successful refresh)
+ */
+async function refreshTokens(
+  cookieStore: ReadonlyRequestCookies,
+  refreshToken: string,
+  shouldRedirectOn401: boolean
+): Promise<string> {
+  console.log('🔄 [apiServer] Attempting to refresh tokens.');
+
+  const refreshResponse = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Cookie: `refreshToken=${refreshToken}`,
+    },
+  });
+
+  if (!refreshResponse.ok) {
+    console.error('❌ [apiServer] Refresh failed. Logging out');
+
+    try {
       cookieStore.delete('accessToken');
       cookieStore.delete('refreshToken');
-
-      if (shouldRedirectOn401) {
-        redirect(PATHS.LOGIN);
-      } else {
-        throw new Error('Unauthorized');
-      }
+    } catch (error) {
+      // apiServer는 오직 서버 액션을 통해서만 호출된다.
+      // 클라이언트 컴포넌트에서 서버 액션이 호출될 때는 HTTP 요청이 발생하기 때문에 쿠키 설정이 가능하지만,
+      // 서버 컴포넌트에서 서버 액션이 호출될 때는 단순 함수 호출로 처리되기 때문에 쿠키 설정이 불가능하다.
+      console.error('❌ [apiServer] Error deleting cookies during logout:', error);
     }
 
-    const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
-      await refreshResponse.json();
+    if (shouldRedirectOn401) {
+      redirect(`${PATHS.LOGIN}?alert=session_expired`);
+    } else {
+      throw new Error('Unauthorized');
+    }
+  }
 
+  const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
+    await refreshResponse.json();
+
+  try {
     cookieStore.set('accessToken', newAccessToken, {
       httpOnly: true,
       path: '/',
@@ -87,27 +134,14 @@ async function fetchExtended<T>(url: string, options: FetchOptions = {}): Promis
         maxAge: 7 * 24 * 60 * 60, // 7 days
       });
     }
-
-    headers.set('Authorization', `Bearer ${newAccessToken}`);
-    response = await fetch(`${API_BASE_URL}${url}`, { ...rest, headers });
-
-    console.log('✅ [apiServer] accessToken refreshed and request retried successfully');
+  } catch (error) {
+    // apiServer는 오직 서버 액션을 통해서만 호출된다.
+    // 클라이언트 컴포넌트에서 서버 액션이 호출될 때는 HTTP 요청이 발생하기 때문에 쿠키 설정이 가능하지만,
+    // 서버 컴포넌트에서 서버 액션이 호출될 때는 단순 함수 호출로 처리되기 때문에 쿠키 설정이 불가능하다.
+    console.error('❌ [apiServer] Error setting cookies during token refresh:', error);
   }
 
-  if (!response.ok) {
-    const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
-    throw new ApiError(
-      errorData.message || 'Server Error',
-      errorData.timestamp,
-      errorData.status || response.status,
-      errorData.error,
-      errorData.code,
-      errorData.path,
-      errorData.details
-    );
-  }
-
-  return response.json();
+  return newAccessToken;
 }
 
 export default apiServer;
