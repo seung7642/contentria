@@ -2,6 +2,7 @@ package com.contentria.api.user.controller
 
 import com.contentria.api.config.exception.ContentriaException
 import com.contentria.api.config.exception.ErrorCode
+import com.contentria.api.user.dto.CurrentUserResponse
 import com.contentria.api.user.security.CustomUserDetails
 import com.contentria.api.user.service.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -20,7 +21,7 @@ class UserController(
 ) {
 
     @GetMapping("/me")
-    fun getMyInfo(authentication: Authentication): ResponseEntity<UserInfoResponse> {
+    fun getMyInfo(authentication: Authentication): ResponseEntity<CurrentUserResponse> {
         val userDetails = authentication.principal as? CustomUserDetails
             ?: run {
                 log.error { "Authentication principal is not of type CustomUserDetails. It is: ${authentication.principal::class.simpleName}" }

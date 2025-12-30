@@ -4,7 +4,7 @@ import com.contentria.api.blog.dto.BlogSummary
 import com.contentria.api.blog.repository.BlogRepository
 import com.contentria.api.config.exception.ContentriaException
 import com.contentria.api.config.exception.ErrorCode
-import com.contentria.api.user.controller.UserInfoResponse
+import com.contentria.api.user.dto.CurrentUserResponse
 import com.contentria.api.user.domain.Role
 import com.contentria.api.user.domain.User
 import com.contentria.api.user.domain.UserStatus
@@ -124,12 +124,12 @@ class UserService(
             ?: throw ContentriaException(ErrorCode.USER_NOT_FOUND)
     }
 
-    fun getCurrentUserInfo(userId: UUID): UserInfoResponse {
+    fun getCurrentUserInfo(userId: UUID): CurrentUserResponse {
         val user = findActiveUserById(userId)
 
         val blogs = blogRepository.findAllByUser(user)
 
-        return UserInfoResponse(
+        return CurrentUserResponse(
             userId = user.id,
             email = user.email,
             name = user.realUsername,

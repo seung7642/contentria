@@ -1,7 +1,6 @@
 package com.contentria.api.post.service
 
 import com.contentria.api.blog.domain.Blog
-import com.contentria.api.blog.dto.OwnerInfo
 import com.contentria.api.blog.repository.BlogRepository
 import com.contentria.api.category.repository.CategoryRepository
 import com.contentria.api.config.exception.ContentriaException
@@ -9,19 +8,17 @@ import com.contentria.api.config.exception.ErrorCode
 import com.contentria.api.post.domain.Post
 import com.contentria.api.post.dto.CreateNewPostCommand
 import com.contentria.api.post.dto.CreateNewPostInfo
-import com.contentria.api.post.dto.PostDetailAndOwnerInfo
 import com.contentria.api.post.dto.PostDetailInfo
 import com.contentria.api.post.dto.PostSummaryInfo
 import com.contentria.api.post.repository.PostRepository
 import com.contentria.api.utils.SlugUtils
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.ZonedDateTime
-import java.util.UUID
+import java.util.*
 
 private val log = KotlinLogging.logger {}
 
@@ -34,22 +31,19 @@ class PostService(
 ) {
 
     @Transactional(readOnly = true)
-    fun getPostsByBlogSlug(blogSlug: String, page: Int, size: Int): Page<PostSummaryInfo> {
-        val pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "publishedAt"))
+    fun getPostsByBlogSlug(blogSlug: String, pageable: Pageable): Page<PostSummaryInfo> {
+//        val pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "publishedAt"))
         val postSummaries = postRepository.findPostSummariesByBlogSlug(blogSlug, pageable)
         return postSummaries.map { it.copy(summary = markdownService.extractSummary(it.summary)) }
             .map { PostSummaryInfo.from(it) }
     }
 
     @Transactional(readOnly = true)
-    fun getPostDetail(blogSlug: String, postSlug: String): PostDetailAndOwnerInfo {
+    fun getPostDetail(blogSlug: String, postSlug: String): PostDetailInfo {
         val post = postRepository.findPublishedByBlogsWithDetails(blogSlug, postSlug)
             ?: throw ContentriaException(ErrorCode.NOT_FOUND_POST)
 
-        return PostDetailAndOwnerInfo(
-            post = PostDetailInfo.from(post),
-            owner = OwnerInfo.from(post.blog.user)
-        )
+        return PostDetailInfo.from(post)
     }
 
     @Transactional

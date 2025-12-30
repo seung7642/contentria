@@ -1,9 +1,9 @@
 package com.contentria.api.auth.dto
 
-import com.contentria.api.user.controller.UserInfoResponse
+import com.contentria.api.user.dto.CurrentUserResponse
 
 data class LoginResult(
-    val user: UserInfoResponse,
+    val user: CurrentUserResponse,
     val accessToken: String,
     val refreshToken: String
 )

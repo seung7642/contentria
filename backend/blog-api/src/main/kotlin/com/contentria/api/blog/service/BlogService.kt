@@ -11,6 +11,7 @@ import com.contentria.api.config.exception.ErrorCode
 import com.contentria.api.post.domain.Post
 import com.contentria.api.post.domain.PostStatus
 import com.contentria.api.post.repository.PostRepository
+import com.contentria.api.user.dto.UserSummaryInfo
 import com.contentria.api.user.service.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.core.io.ResourceLoader
@@ -97,7 +98,7 @@ class BlogService(
 
         return BlogLayoutInfo(
             blog = BlogInfo.from(blog),
-            owner = OwnerInfo.from(user),
+            owner = UserSummaryInfo.from(user),
             categories = categoryService.getCategoryTreeWithPostCounts(blog)
         )
     }

@@ -6,9 +6,13 @@ import com.contentria.api.post.dto.PostDetailResponse
 import com.contentria.api.post.dto.PostSummaryResponse
 import com.contentria.api.post.service.PostService
 import com.contentria.api.user.security.CustomUserDetails
+import com.contentria.common.aop.ApiLog
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.validation.Valid
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
@@ -21,16 +25,17 @@ class PostController(
     private val postService: PostService
 ) {
 
+    @ApiLog
     @GetMapping("/posts")
     fun getPostsByBlog(
         @RequestParam blogSlug: String,
-        @RequestParam(defaultValue = "0") page: Int,
-        @RequestParam(defaultValue = "10") size: Int
+        @PageableDefault(sort = ["publishedAt"], direction = Sort.Direction.DESC) pageable: Pageable
     ): ResponseEntity<Page<PostSummaryResponse>> {
-        val postsPage = postService.getPostsByBlogSlug(blogSlug, page, size)
+        val postsPage = postService.getPostsByBlogSlug(blogSlug, pageable)
         return ResponseEntity.ok(postsPage.map { PostSummaryResponse.from(it) })
     }
 
+    @ApiLog
     @GetMapping("/blogs/{blogSlug}/posts/{postSlug}")
     fun getPostDetail(
         @PathVariable blogSlug: String,

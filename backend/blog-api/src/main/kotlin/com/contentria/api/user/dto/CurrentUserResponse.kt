@@ -1,10 +1,10 @@
-package com.contentria.api.user.controller
+package com.contentria.api.user.dto
 
 import com.contentria.api.blog.dto.BlogSummary
 import com.contentria.api.user.domain.User
 import java.util.UUID
 
-data class UserInfoResponse(
+data class CurrentUserResponse(
     val userId: UUID?,
     val email: String,
     val name: String?,
@@ -12,8 +12,8 @@ data class UserInfoResponse(
     val blogs: List<BlogSummary>? = emptyList()
 ) {
     companion object {
-        fun from(user: User): UserInfoResponse {
-            return UserInfoResponse(
+        fun from(user: User): CurrentUserResponse {
+            return CurrentUserResponse(
                 userId = user.id,
                 email = user.email,
                 name = user.username,
@@ -22,8 +22,8 @@ data class UserInfoResponse(
             )
         }
 
-        fun from(user: User, blogs: List<BlogSummary>): UserInfoResponse {
-            return UserInfoResponse(
+        fun from(user: User, blogs: List<BlogSummary>): CurrentUserResponse {
+            return CurrentUserResponse(
                 userId = user.id,
                 email = user.email,
                 name = user.username,

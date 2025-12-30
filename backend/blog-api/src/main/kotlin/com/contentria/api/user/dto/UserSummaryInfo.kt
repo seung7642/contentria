@@ -1,14 +1,14 @@
-package com.contentria.api.blog.dto
+package com.contentria.api.user.dto
 
 import com.contentria.api.user.domain.User
 
-data class OwnerInfo(
+data class UserSummaryInfo(
     val username: String,
     val pictureUrl: String?,
 ) {
     companion object {
-        fun from(user: User): OwnerInfo {
-            return OwnerInfo(
+        fun from(user: User): UserSummaryInfo {
+            return UserSummaryInfo(
                 username = user.username!!,
                 pictureUrl = user.pictureUrl,
             )

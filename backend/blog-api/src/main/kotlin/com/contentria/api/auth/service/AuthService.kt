@@ -4,7 +4,7 @@ import com.contentria.api.auth.dto.*
 import com.contentria.api.config.exception.ContentriaException
 import com.contentria.api.config.exception.ErrorCode
 import com.contentria.api.config.properties.AppProperties
-import com.contentria.api.user.controller.UserInfoResponse
+import com.contentria.api.user.dto.CurrentUserResponse
 import com.contentria.api.user.service.UserService
 import com.contentria.api.utils.IpResolver
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -57,7 +57,7 @@ class AuthService(
         return VerifyCodeResult(
             accessToken = accessToken,
             refreshToken = refreshToken,
-            user = UserInfoResponse.from(activatedUser)
+            user = CurrentUserResponse.from(activatedUser)
         )
     }
 
@@ -86,7 +86,7 @@ class AuthService(
         return LoginResult(
             accessToken = accessToken,
             refreshToken = refreshToken,
-            user = UserInfoResponse.from(user)
+            user = CurrentUserResponse.from(user)
         )
     }
 

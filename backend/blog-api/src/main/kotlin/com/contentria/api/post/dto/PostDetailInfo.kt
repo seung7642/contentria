@@ -1,43 +1,57 @@
 package com.contentria.api.post.dto
 
-import com.contentria.api.post.domain.Post
 import com.contentria.api.post.domain.PostStatus
+import com.contentria.api.user.dto.UserSummaryInfo
 import java.time.ZonedDateTime
 import java.util.UUID
+import com.contentria.api.post.domain.Post as PostEntity
 
-// 서비스 계층의 '조회'를 담당하는 메서드의 입력 객체의 네이밍은 접미사로 'Info' 를 사용한다.
 data class PostDetailInfo(
-    val id: UUID,
-    val slug: String,
-    val title: String,
-    val contentMarkdown: String,
-    val metaTitle: String?,
-    val metaDescription: String?,
-    val featuredImageUrl: String?,
-    val status: PostStatus,
-    val likeCount: Int,
-    val viewCount: Int,
-    val publishedAt: ZonedDateTime?,
-    val categoryName: String?,
-    val blogSlug: String
+    val post: Post,
+    val owner: UserSummaryInfo
 ) {
     companion object {
-        fun from(post: Post): PostDetailInfo {
+        fun from(postEntity: PostEntity): PostDetailInfo {
             return PostDetailInfo(
-                id = post.id!!,
-                slug = post.slug,
-                title = post.title,
-                contentMarkdown = post.contentMarkdown,
-                metaTitle = post.metaTitle,
-                metaDescription = post.metaDescription,
-                featuredImageUrl = post.featuredImageUrl,
-                status = post.status,
-                likeCount = post.likeCount,
-                viewCount = post.viewCount,
-                publishedAt = post.publishedAt,
-                categoryName = post.category?.name,
-                blogSlug = post.blog.slug
+                post = Post.from(postEntity),
+                owner = UserSummaryInfo.from(postEntity.blog.user)
             )
+        }
+    }
+
+    data class Post(
+        val id: UUID,
+        val slug: String,
+        val title: String,
+        val contentMarkdown: String,
+        val metaTitle: String?,
+        val metaDescription: String?,
+        val featuredImageUrl: String?,
+        val status: PostStatus,
+        val likeCount: Int,
+        val viewCount: Int,
+        val publishedAt: ZonedDateTime?,
+        val categoryName: String?,
+        val blogSlug: String
+    ) {
+        companion object {
+            fun from(postEntity: PostEntity): Post {
+                return Post(
+                    id = postEntity.id!!,
+                    slug = postEntity.slug,
+                    title = postEntity.title,
+                    contentMarkdown = postEntity.contentMarkdown,
+                    metaTitle = postEntity.metaTitle,
+                    metaDescription = postEntity.metaDescription,
+                    featuredImageUrl = postEntity.featuredImageUrl,
+                    status = postEntity.status,
+                    likeCount = postEntity.likeCount,
+                    viewCount = postEntity.viewCount,
+                    publishedAt = postEntity.publishedAt,
+                    categoryName = postEntity.category?.name,
+                    blogSlug = postEntity.blog.slug
+                )
+            }
         }
     }
 }
