@@ -69,7 +69,7 @@ export default function BlogHeader({ blogTitle, blogSlug }: BlogHeaderProps) {
 
         {/* 중앙 영역 */}
         <h1 className="text-2xl font-bold">
-          <Link href={blogHomeLink}>{blogTitle || 'Contentria'}</Link>
+          <Link href={blogHomeLink}>{'Contentria'}</Link>
         </h1>
 
         {/* 우측 영역 */}

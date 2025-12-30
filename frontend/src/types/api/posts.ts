@@ -1,3 +1,5 @@
+import { UserSummaryResponse } from './user';
+
 export interface PostSummary {
   id: string;
   slug: string;
@@ -17,7 +19,7 @@ export interface PostDetail {
   slug: string;
   title: string;
   summary: string;
-  contentHtml: string;
+  contentMarkdown: string;
   metaTitle: string | null;
   metaDescription: string | null;
   featuredImageUrl: string | null;
@@ -25,14 +27,9 @@ export interface PostDetail {
   categoryName: string;
 }
 
-export interface OwnerInfo {
-  username: string;
-  pictureUrl: string | null;
-}
-
 export interface PostDetailResponse {
   post: PostDetail;
-  owner: OwnerInfo;
+  owner: UserSummaryResponse;
 }
 
 export type PostStatus = 'DRAFT' | 'PUBLISHED';

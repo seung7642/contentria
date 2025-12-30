@@ -1,6 +1,5 @@
 package com.contentria.api.auth.dto
 
-import com.contentria.api.config.exception.ErrorCode
 import com.contentria.api.user.validation.UniqueEmail
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank

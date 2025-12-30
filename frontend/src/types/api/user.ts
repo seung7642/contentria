@@ -11,3 +11,8 @@ export interface User {
 export interface UpdateProfilePayload {
   name: string;
 }
+
+export interface UserSummaryResponse {
+  username: string;
+  pictureUrl: string | null;
+}

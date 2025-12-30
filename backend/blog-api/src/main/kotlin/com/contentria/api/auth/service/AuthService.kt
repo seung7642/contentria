@@ -43,7 +43,7 @@ class AuthService(
     }
 
     @Transactional
-    fun verifyCode(request: VerifyCodeRequest): VerifyCodeResult {
+    fun verifyCode(request: VerifyCodeRequest): VerifyCodeInfo {
         val result = verificationCodeService.verify(request.email, request.verificationCode)
         if (!result) {
             throw ContentriaException(ErrorCode.INVALID_VERIFICATION_CODE)
@@ -54,7 +54,7 @@ class AuthService(
         val accessToken = jwtService.generateAccessToken(activatedUser)
         val refreshToken = jwtService.generateRefreshToken(activatedUser)
 
-        return VerifyCodeResult(
+        return VerifyCodeInfo(
             accessToken = accessToken,
             refreshToken = refreshToken,
             user = CurrentUserResponse.from(activatedUser)
@@ -62,7 +62,7 @@ class AuthService(
     }
 
     @Transactional
-    fun login(request: LoginRequest, httpRequest: HttpServletRequest): LoginResult {
+    fun login(request: LoginRequest, httpRequest: HttpServletRequest): LoginInfo {
         val user = userService.findByEmail(request.email)
             ?: throw ContentriaException(ErrorCode.INVALID_CREDENTIALS)
 
@@ -83,7 +83,7 @@ class AuthService(
         val refreshToken = refreshTokenService.createOrUpdateOpaqueRefreshToken(user.id!!)
 
         log.info { "User logged in successfully: ${user.email}" }
-        return LoginResult(
+        return LoginInfo(
             accessToken = accessToken,
             refreshToken = refreshToken,
             user = CurrentUserResponse.from(user)

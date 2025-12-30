@@ -13,6 +13,7 @@ import remarkParse from 'remark-parse';
 import { visit } from 'unist-util-visit';
 import TableOfContents from '@/components/blog/TableOfContents';
 import { getPostDetailAction } from '@/actions/post';
+import { notFound } from 'next/navigation';
 
 interface PostDetailPageProps {
   params: {
@@ -35,7 +36,7 @@ export async function generateMetadata({ params }: PostDetailPageProps): Promise
   };
 }
 
-const getHeadingsFromMarkdown = async (markdown: string): Promise<Heading[]> => {
+async function getHeadingsFromMarkdown(markdown: string): Promise<Heading[]> {
   const headings: Heading[] = [];
   const processor = unified().use(remarkParse);
   const tree = processor.parse(markdown);
@@ -57,18 +58,19 @@ const getHeadingsFromMarkdown = async (markdown: string): Promise<Heading[]> => 
   });
 
   return headings;
-};
+}
 
 export default async function PostDetailPage({ params }: PostDetailPageProps) {
   const { blogSlug, postSlug } = params;
-  // const postDetailResponse = await getPostDetail(blogSlug, postSlug);
+  const postDetailResponse = await getPostDetailAction(blogSlug, postSlug);
 
-  // if (!postDetailResponse) {
-  //   console.log('Post not found, invoking notFound()');
-  //   notFound();
-  // }
+  if (!postDetailResponse) {
+    console.log('Post not found, invoking notFound()');
+    notFound();
+  }
 
-  // const { post } = postDetailResponse;
+  const { post, owner } = postDetailResponse;
+  const { contentMarkdown } = post;
   const markdown = `
 # 이것은 H1 제목입니다
 
@@ -111,17 +113,17 @@ greet('World');
 [링크](https://www.google.com)
   `;
 
-  const headings = await getHeadingsFromMarkdown(markdown);
+  const headings = await getHeadingsFromMarkdown(contentMarkdown);
 
   return (
     <div className="relative mx-auto flex w-full max-w-7xl justify-center">
       <div className="w-full max-w-4xl">
         <div className="mb-8">
-          <h1 className="mb-4 text-4xl font-bold text-gray-900">글 제목</h1>
+          <h1 className="mb-4 text-4xl font-bold text-gray-900">{post.title}</h1>
           <div className="flex items-center space-x-3 text-sm text-gray-500">
-            <span className="font-semibold text-gray-800">작성자 이름</span>
+            <span className="font-semibold text-gray-800">{owner.username}</span>
             <span>•</span>
-            <span>{new Date().toLocaleDateString('ko-KR')}</span>
+            <span>{new Date(post.publishedAt).toLocaleDateString('ko-KR')}</span>
           </div>
         </div>
         <hr className="mb-8" />
@@ -154,7 +156,7 @@ greet('World');
               },
             }}
           >
-            {markdown}
+            {contentMarkdown}
           </Markdown>
         </article>
       </div>
