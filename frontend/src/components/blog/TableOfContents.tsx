@@ -7,7 +7,7 @@ interface TableOfContentsProps {
   headings: Heading[];
 }
 
-const TableOfContents = ({ headings }: TableOfContentsProps) => {
+export default function TableOfContents({ headings }: TableOfContentsProps) {
   const [activeId, setActiveId] = useState<string>('');
 
   useEffect(() => {
@@ -30,16 +30,28 @@ const TableOfContents = ({ headings }: TableOfContentsProps) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [headings]);
 
-  if (headings.length == 0) {
-    return null;
-  }
-
   return (
     <aside className="sticky top-24 max-h-[calc(100vh-6rem)] overflow-y-auto">
       <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-700">
         On this page
       </h2>
       <ul className="space-y-2">
+        <li>
+          <a
+            href="#"
+            className={`block text-sm transition-colors hover:text-gray-900 ${
+              // activeId가 비어있으면(스크롤이 맨 위면) 활성화
+              activeId === '' ? 'font-semibold text-indigo-600' : 'text-gray-500'
+            }`}
+            onClick={(e) => {
+              e.preventDefault();
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+          >
+            Introduction
+          </a>
+        </li>
+
         {headings.map((heading) => (
           <li key={heading.id} style={{ paddingLeft: `${(heading.level - 1) * 1}rem` }}>
             <a
@@ -55,6 +67,4 @@ const TableOfContents = ({ headings }: TableOfContentsProps) => {
       </ul>
     </aside>
   );
-};
-
-export default TableOfContents;
+}

@@ -160,11 +160,9 @@ greet('World');
           </Markdown>
         </article>
       </div>
-      {headings.length > 0 && (
-        <div className="ml-8 hidden w-64 flex-shrink-0 lg:block">
-          <TableOfContents headings={headings} />
-        </div>
-      )}
+      <div className="ml-8 hidden w-64 flex-shrink-0 lg:block">
+        <TableOfContents headings={headings} />
+      </div>
     </div>
   );
 }
