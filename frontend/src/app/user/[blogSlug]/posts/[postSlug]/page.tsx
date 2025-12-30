@@ -16,14 +16,14 @@ import { getPostDetailAction } from '@/actions/post';
 import { notFound } from 'next/navigation';
 
 interface PostDetailPageProps {
-  params: {
+  params: Promise<{
     blogSlug: string;
     postSlug: string;
-  };
+  }>;
 }
 
 export async function generateMetadata({ params }: PostDetailPageProps): Promise<Metadata> {
-  const { blogSlug, postSlug } = params;
+  const { blogSlug, postSlug } = await params;
   const postData = await getPostDetailAction(blogSlug, postSlug);
 
   if (!postData) {
@@ -61,7 +61,7 @@ async function getHeadingsFromMarkdown(markdown: string): Promise<Heading[]> {
 }
 
 export default async function PostDetailPage({ params }: PostDetailPageProps) {
-  const { blogSlug, postSlug } = params;
+  const { blogSlug, postSlug } = await params;
   const postDetailResponse = await getPostDetailAction(blogSlug, postSlug);
 
   if (!postDetailResponse) {

@@ -112,14 +112,16 @@ function setAuthCookies(response: NextResponse, accessToken: string, refreshToke
 export const config = {
   /**
    * Match all request paths except for the ones starting with:
-   *   - api
-   *   - _next/static
-   *   - _next/image
-   *   - favicon.ico
+   *   1. api
+   *   2. _next/static
+   *   3. _next/image
+   *   4. favicon.ico
+   *   5. icons
+   *   6. any file with an extension (e.g., .css, .js, .png, etc.)
    */
   matcher: [
     {
-      source: '/((?!_next/static|_next/image|favicon.ico).*)',
+      source: '/((?!_next/static|_next/image|favicon.ico|icons|.*\\..*).*)',
       missing: [
         { type: 'header', key: 'next-router-prefetch' },
         { type: 'header', key: 'purpose', value: 'prefetch' },
