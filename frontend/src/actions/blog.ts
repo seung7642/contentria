@@ -1,10 +1,10 @@
 'use server';
 
 import apiServer from '@/lib/apiServer';
-import { BlogLayout, CreateBlogPayload, CreateBlogResponse } from '@/types/api/blogs';
+import { BlogLayoutResponse, CreateBlogPayload, CreateBlogResponse } from '@/types/api/blogs';
 
-export async function getBlogLayoutAction(slug: string): Promise<BlogLayout | null> {
-  return await apiServer.get<BlogLayout>(`/api/blogs/layout/${slug}`, {
+export async function getBlogLayoutAction(slug: string): Promise<BlogLayoutResponse | null> {
+  return await apiServer.get<BlogLayoutResponse>(`/api/blogs/layout/${slug}`, {
     requireAuth: false,
     next: {
       revalidate: 3600, // 1시간 캐시

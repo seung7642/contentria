@@ -1,18 +1,23 @@
 import Image from 'next/image';
 import CategoryItem from './CategoryItem';
-import { BlogSummary, CategoryNode, OwnerInfo } from '@/types/api/blogs';
+import { BlogSummary } from '@/types/api/blogs';
 import { getHighResGoogleProfileImage } from '@/lib/imageUtil';
+import { UserSummaryResponse } from '@/types/api/user';
+import { CategoryResponse } from '@/types/api/category';
+import { buildCategoryTree } from '@/lib/categoryTree';
 
 interface SidebarProps {
   blog: BlogSummary;
-  owner: OwnerInfo;
-  categories: CategoryNode[];
+  owner: UserSummaryResponse;
+  categories: CategoryResponse[];
 }
 
-const Sidebar = ({ blog, owner, categories }: SidebarProps) => {
+export default function Sidebar({ blog, owner, categories }: SidebarProps) {
   const profileImageUrl =
     getHighResGoogleProfileImage(owner.pictureUrl, 256) ?? '/images/default-profile.png';
   const blogDescription = blog.description ?? '블로그에 오신 것을 환영합니다.';
+
+  const categoryTree = buildCategoryTree(categories, blog.slug);
 
   return (
     <aside className="m-2 flex w-full max-w-xs flex-col overflow-auto rounded border border-gray-200 bg-gray-50 p-4 shadow-sm lg:max-w-sm">
@@ -38,8 +43,8 @@ const Sidebar = ({ blog, owner, categories }: SidebarProps) => {
         <div className="mb-6 border bg-white p-4">
           <h2 className="mb-4 text-center text-xl font-bold text-indigo-600">카테고리</h2>
           <ul>
-            {categories.map((category) => (
-              <CategoryItem key={category.id ?? 'uncategorized'} category={category} />
+            {categoryTree.map((node) => (
+              <CategoryItem key={node.id} category={node} blogSlug={blog.slug} />
             ))}
           </ul>
         </div>
@@ -71,6 +76,4 @@ const Sidebar = ({ blog, owner, categories }: SidebarProps) => {
       </div>
     </aside>
   );
-};
-
-export default Sidebar;
+}

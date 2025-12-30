@@ -47,6 +47,7 @@ import { PostStatus } from '@/types/api/posts';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { PATHS } from '@/constants/paths';
+import { CategoryResponse } from '@/types/api/category';
 
 type AdmonitionKind = 'note' | 'tip' | 'danger' | 'info' | 'caution';
 
@@ -63,7 +64,7 @@ function whenInAdmonition(editorInFocus: EditorInFocus | null) {
 
 interface PostEditorClientProps {
   blogId: string;
-  categories: Category[];
+  categories: CategoryResponse[];
 }
 
 export function PostEditorClient({ blogId, categories }: PostEditorClientProps) {

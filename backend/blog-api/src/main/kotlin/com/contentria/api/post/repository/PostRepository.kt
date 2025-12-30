@@ -2,7 +2,6 @@ package com.contentria.api.post.repository
 
 import com.contentria.api.blog.domain.Blog
 import com.contentria.api.post.domain.Post
-import com.contentria.api.post.repository.CategoryPostCountProjection
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
@@ -23,7 +22,7 @@ interface PostRepository : JpaRepository<Post, UUID> {
             AND p.category.id IS NOT NULL
         GROUP BY p.category.id
     """)
-    fun countPostsByCategoryId(@Param("blog") blog: Blog): List<CategoryPostCountProjection>
+    fun findPostCountsByBlog(@Param("blog") blog: Blog): List<CategoryPostCountProjection>
 
     @Query("""
         SELECT new com.contentria.api.post.repository.PostSummaryProjection(

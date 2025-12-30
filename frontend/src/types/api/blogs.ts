@@ -1,9 +1,14 @@
+import { UserSummaryResponse } from './user';
+import { CategoryResponse } from './category';
+
 export interface CategoryNode {
   id: string | null;
   name: string;
   slug: string;
+  parentId: string | null;
+  level: number;
   postCount: number;
-  children: CategoryNode[];
+  // children: CategoryNode[];
 }
 
 export interface BlogSummary {
@@ -13,16 +18,10 @@ export interface BlogSummary {
   description: string | null;
 }
 
-export interface OwnerInfo {
-  id: string;
-  username: string;
-  pictureUrl: string | null;
-}
-
-export interface BlogLayout {
+export interface BlogLayoutResponse {
   blog: BlogSummary;
-  owner: OwnerInfo;
-  categories: CategoryNode[];
+  owner: UserSummaryResponse;
+  categories: CategoryResponse[];
 }
 
 export interface CreateBlogPayload {

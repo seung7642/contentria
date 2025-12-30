@@ -99,7 +99,7 @@ class BlogService(
         return BlogLayoutInfo(
             blog = BlogInfo.from(blog),
             owner = UserSummaryInfo.from(user),
-            categories = categoryService.getCategoryTreeWithPostCounts(blog)
+            categories = categoryService.getFlattenedCategories(blog)
         )
     }
 

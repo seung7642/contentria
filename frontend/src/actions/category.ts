@@ -1,12 +1,13 @@
 import apiServer from '@/lib/apiServer';
 import { getUserProfileAction } from './user';
+import { CategoryResponse } from '@/types/api/category';
 
-export async function getCategoriesAction(): Promise<Category[]> {
+export async function getCategoriesAction(): Promise<CategoryResponse[]> {
   try {
     const user = await getUserProfileAction();
     const blogId = user?.blogs[0]?.id;
 
-    return await apiServer.get<Category[]>(`/api/categories/dropdown?blogId=${blogId}`, {
+    return await apiServer.get<CategoryResponse[]>(`/api/categories/dropdown?blogId=${blogId}`, {
       requireAuth: true,
     });
   } catch (error) {

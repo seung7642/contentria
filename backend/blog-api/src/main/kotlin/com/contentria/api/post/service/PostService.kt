@@ -45,7 +45,7 @@ class PostService(
 
         return PostDetailInfo.from(post)
     }
-    
+
     @Transactional
     fun createNewPost(userId: UUID, command: CreateNewPostCommand): CreateNewPostInfo {
         val blog = blogRepository.findByIdAndUserId(command.blogId, userId)

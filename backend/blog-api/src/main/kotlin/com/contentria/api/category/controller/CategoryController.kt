@@ -17,10 +17,11 @@ class CategoryController(
     private val blogService: BlogService
 ) {
 
-    @GetMapping("/dropdown")
-    fun getCategoriesForDropdown(@RequestParam blogId: UUID): ResponseEntity<List<CategoryResponse>> {
+    @GetMapping
+    fun getCategories(@RequestParam blogId: UUID): ResponseEntity<List<CategoryResponse>> {
         val blog = blogService.getBlogByBlogId(blogId)
-        val responses = categoryService.getCategoriesForDropdown(blog)
+        val categories = categoryService.getFlattenedCategories(blog)
+        val responses = categories.map { CategoryResponse.from(it) }
         return ResponseEntity.ok(responses)
     }
 }
