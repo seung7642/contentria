@@ -3,11 +3,11 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { LayoutDashboard, FileText, Settings, Menu, X, Home } from 'lucide-react';
+import { LayoutDashboard, FileText, Settings, Menu, X, Home, FolderTree } from 'lucide-react';
 import { useUserProfile } from '@/hooks/queries/useUserQuery';
 import SidebarMenuItem from './DashboardSidebarMenuItem';
 
-const DashboardSidebar = () => {
+export default function DashboardSidebar() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -25,6 +25,12 @@ const DashboardSidebar = () => {
       path: '/dashboard/posts',
       label: '글 관리',
       icon: <FileText size={20} />,
+      requiresBlog: true,
+    },
+    {
+      path: '/dashboard/categories',
+      label: '카테고리 관리',
+      icon: <FolderTree size={20} />,
       requiresBlog: true,
     },
     // { path: '/dashboard/ads', label: '광고 관리', icon: <Store size={20} /> },
@@ -102,6 +108,4 @@ const DashboardSidebar = () => {
       </aside>
     </>
   );
-};
-
-export default DashboardSidebar;
+}

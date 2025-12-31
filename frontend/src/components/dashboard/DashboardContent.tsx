@@ -14,7 +14,7 @@ import StatCard from './StatCard';
 import { TimeRange } from '@/types/api/dashboard';
 import { User } from '@/types/api/user';
 
-const DashboardContent = ({ user }: { user: User }) => {
+export default function DashboardContent({ user }: { user: User }) {
   const [timeRange, setTimeRange] = useState<TimeRange>('2weeks');
   const slug = user.blogs[0]?.slug;
 
@@ -121,6 +121,4 @@ const DashboardContent = ({ user }: { user: User }) => {
       </div>
     </div>
   );
-};
-
-export default DashboardContent;
+}
