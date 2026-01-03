@@ -45,6 +45,8 @@ enum class ErrorCode(
 
     // Category
     NOT_FOUND_CATEGORY(HttpStatus.NOT_FOUND, "CA0000", "Not found category. Please contact support."),
+    MAX_CATEGORY_LEVEL_EXCEEDED(HttpStatus.BAD_REQUEST, "CA0001", "Maximum category nesting level exceeded."),
+    DUPLICATE_CATEGORY_NAME(HttpStatus.CONFLICT, "CA0002", "Category name already exists under the same parent."),
 
     // Markdown
     MARKDOWN_PROCESSING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MD0000", "An error occurred while processing the markdown content."),

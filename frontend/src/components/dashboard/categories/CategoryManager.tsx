@@ -165,6 +165,11 @@ export default function CategoryManager({ initialCategories, blogSlug }: Categor
     setItems(newList);
   };
 
+  const handleDragCancel = () => {
+    setActiveId(null);
+    setOverId(null);
+  };
+
   const handleAddCategory = () => {
     const newCategory: CategoryResponse = {
       id: `new-${Date.now()}`,
@@ -262,6 +267,7 @@ export default function CategoryManager({ initialCategories, blogSlug }: Categor
         parentId: item.level === 0 ? null : item.parentId,
         order: index,
       }));
+      console.log('Saving categories payload:', payload);
 
       // await updateCategoriesAction(blogSlug, payload);
       alert('카테고리가 성공적으로 저장되었습니다.');
@@ -324,8 +330,6 @@ export default function CategoryManager({ initialCategories, blogSlug }: Categor
     );
   };
 
-  const draggingIds = activeId ? [activeId, ...getChildrenIds(activeId, items)] : [];
-
   const dropAnimation: DropAnimation = {
     sideEffects: defaultDropAnimationSideEffects({
       styles: {
@@ -366,6 +370,7 @@ export default function CategoryManager({ initialCategories, blogSlug }: Categor
           onDragStart={handleDragStart}
           onDragOver={handleDragOver}
           onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
         >
           <SortableContext items={sortableItems} strategy={verticalListSortingStrategy}>
             {items.length === 0 ? (
