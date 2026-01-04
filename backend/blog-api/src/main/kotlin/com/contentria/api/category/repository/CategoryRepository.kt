@@ -28,4 +28,7 @@ interface CategoryRepository : JpaRepository<Category, UUID> {
             AND (c.slug = :targetSlug OR c.slug LIKE CONCAT(:targetSlug, '-%'))
     """)
     fun findSimilarSlugs(@Param("blog") blog: Blog, @Param("targetSlug") targetSlug: String): List<String>
+
+    @Query("SELECT DISTINCT c FROM Category c JOIN Post p ON p.category = c WHERE c.id IN :categoryIds")
+    fun findCategoriesWithPosts(@Param("categoryIds") categoryIds: List<UUID>): List<Category>
 }

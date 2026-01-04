@@ -14,6 +14,7 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
+import org.hibernate.annotations.BatchSize
 import java.util.UUID
 
 @Entity
@@ -34,6 +35,9 @@ class Category(
     @Column(nullable = false)
     var slug: String,
 
+    @Column(nullable = false)
+    var displayOrder: Int = 0,
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
     var parent: Category? = null,
@@ -41,6 +45,7 @@ class Category(
     // `ON DELETE SET NULL` 또는 `RESTRICT`와 JPA Cascade 옵션 간의 상호작용은 주의가 필요하다.
     // 데이터베이스가 참조 무결성을 처리하도록 하고 JPA Cascade는 `PERSIST`, `MERGE` 정도로 제한하는 것이 안전하다.
     @OneToMany(mappedBy = "parent", cascade = [CascadeType.PERSIST, CascadeType.MERGE])
+    @BatchSize(size = 100)
     var children: MutableList<Category> = mutableListOf(),
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

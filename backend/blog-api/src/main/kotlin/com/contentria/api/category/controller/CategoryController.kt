@@ -2,12 +2,10 @@ package com.contentria.api.category.controller
 
 import com.contentria.api.blog.service.BlogService
 import com.contentria.api.category.dto.CategoryResponse
-import com.contentria.api.category.dto.CreateCategoryRequest
-import com.contentria.api.category.dto.CreateCategoryResponse
+import com.contentria.api.category.dto.SyncCategoryRequest
 import com.contentria.api.category.service.CategoryService
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
-import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -35,9 +33,9 @@ class CategoryController(
     @PostMapping
     fun createCategory(
         @PathVariable blogId: UUID,
-        @RequestBody @Valid request: CreateCategoryRequest
-    ): ResponseEntity<CreateCategoryResponse> {
-        val response = categoryService.createCategory(blogId, request.toCommand())
-        return ResponseEntity.ok(CreateCategoryResponse.from(response))
+        @RequestBody @Valid request: List<SyncCategoryRequest>
+    ): ResponseEntity<Void> {
+        categoryService.syncCategories(blogId, request.map { it.toCommand() })
+        return ResponseEntity.ok().build()
     }
 }

@@ -4,8 +4,7 @@ import com.contentria.api.blog.domain.Blog
 import com.contentria.api.blog.repository.BlogRepository
 import com.contentria.api.category.domain.Category
 import com.contentria.api.category.dto.CategoryInfo
-import com.contentria.api.category.dto.CreateCategoryCommand
-import com.contentria.api.category.dto.CreateCategoryInfo
+import com.contentria.api.category.dto.SyncCategoryCommand
 import com.contentria.api.category.repository.CategoryRepository
 import com.contentria.api.config.exception.ContentriaException
 import com.contentria.api.config.exception.ErrorCode
@@ -19,7 +18,7 @@ import java.util.*
 class CategoryService(
     private val categoryRepository: CategoryRepository,
     private val postRepository: PostRepository,
-    private val blogRepository: BlogRepository
+    private val blogRepository: BlogRepository,
 ) {
     @Transactional(readOnly = true)
     fun getFlattenedCategories(blog: Blog): List<CategoryInfo> {
@@ -62,41 +61,82 @@ class CategoryService(
     }
 
     @Transactional
-    fun createCategory(blogId: UUID, command: CreateCategoryCommand): CreateCategoryInfo {
+    fun syncCategories(blogId: UUID, commands: List<SyncCategoryCommand>) {
         val blog = blogRepository.findById(blogId)
             .orElseThrow { ContentriaException(ErrorCode.NOT_FOUND_BLOG) }
 
-        var parentCategory: Category? = null
-        if (command.parentId != null) {
-            parentCategory = categoryRepository.findById(command.parentId)
-                .orElseThrow { ContentriaException(ErrorCode.NOT_FOUND_CATEGORY) }
+        val existingCategories = categoryRepository.findAllByBlog(blog)
+        val existingMap = existingCategories.associateBy { it.id.toString() }
 
-            if (parentCategory.blog.id != blog.id) {
-                throw ContentriaException(ErrorCode.INVALID_INPUT_VALUE)
-            }
-
-            if (parentCategory.parent != null) {
-                throw ContentriaException(ErrorCode.MAX_CATEGORY_LEVEL_EXCEEDED)
-            }
+        // 1. 삭제 처리
+        val requestIds = commands.map { it.id }.toSet()
+        val toDelete = existingCategories.filterNot { it.id.toString() in requestIds }
+        if (toDelete.isNotEmpty()) {
+            validateDeletionCandidates(toDelete, requestIds)
+            val sortedToDelete = toDelete.sortedByDescending { it.parent != null }
+            categoryRepository.deleteAll(sortedToDelete)
         }
 
-        if (categoryRepository.existsByBlogAndParentAndName(blog, parentCategory, command.name)) {
-            throw ContentriaException(ErrorCode.DUPLICATE_CATEGORY_NAME)
+        // 2. Upsert 처리
+        val level0Requests = commands.filter { it.parentId == null }
+        val savedParentsMap = level0Requests.associate { request ->
+            val savedEntity = upsertOne(request, blog, null, existingMap[request.id])
+            request.id to savedEntity
         }
 
-        val slug = generateUniqueSlug(blog, command.name)
+        val level1Requests = commands.filter { it.parentId != null }
+        level1Requests.forEach { request ->
+            val parentId = request.parentId
+            val parent = savedParentsMap[parentId]
+                ?: existingMap[parentId]
+                ?: throw ContentriaException(ErrorCode.INVALID_INPUT_VALUE)
 
-        val category = Category(
-            name = command.name,
-            slug = slug,
-            parent = parentCategory,
+            upsertOne(request, blog, parent, existingMap[request.id])
+        }
+    }
+
+    private fun validateDeletionCandidates(toDelete: List<Category>, requestIds: Set<String>) {
+        // 1. 게시글이 있는 카테고리 삭제 방지
+        val toDeleteIds = toDelete.map { it.id!! }
+        val categoriesWithPosts = categoryRepository.findCategoriesWithPosts(toDeleteIds)
+
+        if (categoriesWithPosts.isNotEmpty()) {
+            throw ContentriaException(ErrorCode.CANNOT_DELETE_CATEGORY)
+        }
+
+        // 2. 자식 카테고리가 남아있는 부모 카테고리 삭제 방지
+        val hasOrphanedChildren = toDelete
+            .asSequence()
+            .filter { it.parent == null }
+            .any { it.children.any { it.id.toString() in requestIds } }
+
+        if (hasOrphanedChildren) {
+            throw ContentriaException(ErrorCode.CANNOT_DELETE_CATEGORY)
+        }
+    }
+
+    /**
+     * 반복문에서 단 건 API 호출을 하지만, 내부적으로 JDBC Batch 처리됨
+     *   - https://docs.hibernate.org/orm/7.2/userguide/html_single/#batch-jdbcbatch
+     */
+    private fun upsertOne(request: SyncCategoryCommand, blog: Blog, parent: Category?, existing: Category?): Category {
+        val category = existing ?: Category(
+            name = request.name,
+            slug = generateUniqueSlug(blog, request.name),
+            displayOrder = request.order,
+            parent = parent,
             blog = blog
         )
 
-        parentCategory?.children?.add(category)
+        if (category.name != request.name) {
+            category.name = request.name
+            category.slug = generateUniqueSlug(blog, request.name)
+        }
 
-        val savedCategory = categoryRepository.save(category)
-        return CreateCategoryInfo.from(savedCategory)
+        category.displayOrder = request.order
+        category.parent = parent
+
+        return categoryRepository.save(category)
     }
 
     private fun generateUniqueSlug(blog: Blog, name: String): String {
