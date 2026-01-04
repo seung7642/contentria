@@ -1,6 +1,7 @@
 package com.contentria.api.category.dto
 
 import jakarta.validation.constraints.NotBlank
+import java.util.UUID
 
 class SyncCategoryRequest(
     val id: String,
@@ -11,8 +12,9 @@ class SyncCategoryRequest(
     val parentId: String? = null,
     val order: Int
 ) {
-    fun toCommand(): SyncCategoryCommand {
+    fun toCommand(actorUserId: UUID): SyncCategoryCommand {
         return SyncCategoryCommand(
+            actorUserId = actorUserId,
             id = this.id,
             name = this.name,
             parentId = this.parentId,

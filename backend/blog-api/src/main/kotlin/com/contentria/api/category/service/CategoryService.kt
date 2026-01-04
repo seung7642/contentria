@@ -62,8 +62,15 @@ class CategoryService(
 
     @Transactional
     fun syncCategories(blogId: UUID, commands: List<SyncCategoryCommand>) {
+        val actorUserId = commands.firstOrNull()?.actorUserId
+            ?: throw ContentriaException(ErrorCode.INVALID_INPUT_VALUE)
+
         val blog = blogRepository.findById(blogId)
             .orElseThrow { ContentriaException(ErrorCode.NOT_FOUND_BLOG) }
+
+        if (blog.user.id != actorUserId) {
+            throw ContentriaException(ErrorCode.FORBIDDEN_ACCESS_BLOG)
+        }
 
         val existingCategories = categoryRepository.findAllByBlog(blog)
         val existingMap = existingCategories.associateBy { it.id.toString() }
