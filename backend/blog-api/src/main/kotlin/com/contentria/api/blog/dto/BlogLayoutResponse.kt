@@ -1,6 +1,6 @@
 package com.contentria.api.blog.dto
 
-import com.contentria.api.category.dto.CategoryResponse
+import com.contentria.api.category.controller.dto.CategoryResponse
 import com.contentria.api.user.dto.UserSummaryResponse
 
 data class BlogLayoutResponse(

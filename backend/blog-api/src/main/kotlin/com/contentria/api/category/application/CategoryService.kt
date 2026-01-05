@@ -1,18 +1,19 @@
-package com.contentria.api.category.service
+package com.contentria.api.category.application
 
 import com.contentria.api.blog.domain.Blog
 import com.contentria.api.blog.repository.BlogRepository
 import com.contentria.api.category.domain.Category
-import com.contentria.api.category.dto.CategoryInfo
-import com.contentria.api.category.dto.SyncCategoryCommand
-import com.contentria.api.category.repository.CategoryRepository
+import com.contentria.api.category.application.dto.CategoryInfo
+import com.contentria.api.category.application.dto.SyncCategoryCommand
+import com.contentria.api.category.domain.CategoryRepository
 import com.contentria.api.config.exception.ContentriaException
 import com.contentria.api.config.exception.ErrorCode
 import com.contentria.api.post.repository.PostRepository
 import com.contentria.api.utils.SlugUtils
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.*
+import java.util.UUID
+import kotlin.collections.get
 
 @Service
 class CategoryService(
@@ -22,7 +23,7 @@ class CategoryService(
 ) {
     @Transactional(readOnly = true)
     fun getFlattenedCategories(blog: Blog): List<CategoryInfo> {
-        val categories = categoryRepository.findAllByBlogOrderByCreatedAtAsc(blog)
+        val categories = categoryRepository.findAll(blog)
 
         val postCounts = postRepository.findPostCountsByBlog(blog)
             .associate { it.categoryId to it.postCount }
@@ -72,7 +73,7 @@ class CategoryService(
             throw ContentriaException(ErrorCode.FORBIDDEN_ACCESS_BLOG)
         }
 
-        val existingCategories = categoryRepository.findAllByBlog(blog)
+        val existingCategories = categoryRepository.findAll(blog)
         val existingMap = existingCategories.associateBy { it.id.toString() }
 
         // 1. 삭제 처리
@@ -127,23 +128,30 @@ class CategoryService(
      *   - https://docs.hibernate.org/orm/7.2/userguide/html_single/#batch-jdbcbatch
      */
     private fun upsertOne(request: SyncCategoryCommand, blog: Blog, parent: Category?, existing: Category?): Category {
-        val category = existing ?: Category(
-            name = request.name,
-            slug = generateUniqueSlug(blog, request.name),
-            displayOrder = request.order,
-            parent = parent,
-            blog = blog
-        )
-
-        if (category.name != request.name) {
-            category.name = request.name
-            category.slug = generateUniqueSlug(blog, request.name)
+        val finalSlug = if (existing != null && existing.name == request.name) {
+            existing.slug
+        } else {
+            generateUniqueSlug(blog, request.name)
         }
 
-        category.displayOrder = request.order
-        category.parent = parent
-
-        return categoryRepository.save(category)
+        return if (existing == null) {
+            val newCategory = Category.Companion.create(
+                name = request.name,
+                slug = finalSlug,
+                order = request.order,
+                parent = parent,
+                blog = blog
+            )
+            categoryRepository.save(newCategory)
+        } else {
+            existing.update(
+                name = request.name,
+                slug = finalSlug,
+                order = request.order,
+                parent = parent
+            )
+            existing
+        }
     }
 
     private fun generateUniqueSlug(blog: Blog, name: String): String {

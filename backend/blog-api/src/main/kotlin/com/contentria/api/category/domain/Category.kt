@@ -51,4 +51,39 @@ class Category(
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "blog_id", nullable = false)
     var blog: Blog,
-) : BaseEntity()
+) : BaseEntity() {
+
+    fun update(name: String, slug: String, order: Int, parent: Category?) {
+        this.name = name
+        this.slug = slug
+        this.displayOrder = order
+
+        changeParent(parent)
+    }
+
+    private fun changeParent(newParent: Category?) {
+        if (this.parent == newParent) {
+            return
+        }
+
+        // 기존 부모와의 관계 끊기 (JPA 양방향 연관관계 관리)
+        this.parent?.children?.remove(this)
+
+        this.parent = newParent
+        newParent?.children?.add(this)
+    }
+
+    companion object {
+        fun create(name: String, slug: String, order: Int, parent: Category?, blog: Blog): Category {
+            val category = Category(
+                name = name,
+                slug = slug,
+                displayOrder = order,
+                parent = null,
+                blog = blog
+            )
+            category.changeParent(parent)
+            return category
+        }
+    }
+}

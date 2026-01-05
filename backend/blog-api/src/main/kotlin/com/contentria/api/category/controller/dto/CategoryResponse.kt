@@ -1,5 +1,6 @@
-package com.contentria.api.category.dto
+package com.contentria.api.category.controller.dto
 
+import com.contentria.api.category.application.dto.CategoryInfo
 import java.util.UUID
 
 data class CategoryResponse(

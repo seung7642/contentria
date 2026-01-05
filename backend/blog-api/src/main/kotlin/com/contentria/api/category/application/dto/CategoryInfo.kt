@@ -1,4 +1,4 @@
-package com.contentria.api.category.dto
+package com.contentria.api.category.application.dto
 
 import java.util.UUID
 

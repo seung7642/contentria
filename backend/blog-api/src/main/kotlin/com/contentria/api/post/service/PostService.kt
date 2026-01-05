@@ -2,7 +2,7 @@ package com.contentria.api.post.service
 
 import com.contentria.api.blog.domain.Blog
 import com.contentria.api.blog.repository.BlogRepository
-import com.contentria.api.category.repository.CategoryRepository
+import com.contentria.api.category.domain.CategoryRepository
 import com.contentria.api.config.exception.ContentriaException
 import com.contentria.api.config.exception.ErrorCode
 import com.contentria.api.post.domain.Post

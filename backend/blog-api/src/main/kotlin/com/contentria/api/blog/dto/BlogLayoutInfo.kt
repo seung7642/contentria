@@ -1,6 +1,6 @@
 package com.contentria.api.blog.dto
 
-import com.contentria.api.category.dto.CategoryInfo
+import com.contentria.api.category.application.dto.CategoryInfo
 import com.contentria.api.user.dto.UserSummaryInfo
 
 data class BlogLayoutInfo(
