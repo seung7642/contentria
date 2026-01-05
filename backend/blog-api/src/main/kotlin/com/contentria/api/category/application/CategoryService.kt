@@ -6,6 +6,7 @@ import com.contentria.api.category.domain.Category
 import com.contentria.api.category.application.dto.CategoryInfo
 import com.contentria.api.category.application.dto.SyncCategoryCommand
 import com.contentria.api.category.domain.CategoryRepository
+import com.contentria.api.category.domain.CategoryValidator
 import com.contentria.api.config.exception.ContentriaException
 import com.contentria.api.config.exception.ErrorCode
 import com.contentria.api.post.repository.PostRepository
@@ -20,6 +21,7 @@ class CategoryService(
     private val categoryRepository: CategoryRepository,
     private val postRepository: PostRepository,
     private val blogRepository: BlogRepository,
+    private val categoryValidator: CategoryValidator
 ) {
     @Transactional(readOnly = true)
     fun getFlattenedCategories(blog: Blog): List<CategoryInfo> {
@@ -80,46 +82,38 @@ class CategoryService(
         val requestIds = commands.map { it.id }.toSet()
         val toDelete = existingCategories.filterNot { it.id.toString() in requestIds }
         if (toDelete.isNotEmpty()) {
-            validateDeletionCandidates(toDelete, requestIds)
+            categoryValidator.validateDeletable(toDelete, requestIds)
             val sortedToDelete = toDelete.sortedByDescending { it.parent != null }
             categoryRepository.deleteAll(sortedToDelete)
         }
 
         // 2. Upsert 처리
-        val level0Requests = commands.filter { it.parentId == null }
-        val savedParentsMap = level0Requests.associate { request ->
-            val savedEntity = upsertOne(request, blog, null, existingMap[request.id])
-            request.id to savedEntity
-        }
+//        val level0Requests = commands.filter { it.parentId == null }
+//        val savedParentsMap = level0Requests.associate { request ->
+//            val savedEntity = upsertOne(request, blog, null, existingMap[request.id])
+//            request.id to savedEntity
+//        }
+//
+//        val level1Requests = commands.filter { it.parentId != null }
+//        level1Requests.forEach { request ->
+//            val parentId = request.parentId
+//            val parent = savedParentsMap[parentId]
+//                ?: existingMap[parentId]
+//                ?: throw ContentriaException(ErrorCode.INVALID_INPUT_VALUE)
+//
+//            upsertOne(request, blog, parent, existingMap[request.id])
+//        }
 
-        val level1Requests = commands.filter { it.parentId != null }
-        level1Requests.forEach { request ->
-            val parentId = request.parentId
-            val parent = savedParentsMap[parentId]
-                ?: existingMap[parentId]
-                ?: throw ContentriaException(ErrorCode.INVALID_INPUT_VALUE)
+        val sortedCommand = commands.sortedWith(compareBy { it.parentId != null })
+        val processedEntities = existingMap.toMutableMap()
+        sortedCommand.forEach { command ->
+            val parent = command.parentId?.let { parentId ->
+                processedEntities[parentId]
+                    ?: throw ContentriaException(ErrorCode.INVALID_INPUT_VALUE)
+            }
 
-            upsertOne(request, blog, parent, existingMap[request.id])
-        }
-    }
-
-    private fun validateDeletionCandidates(toDelete: List<Category>, requestIds: Set<String>) {
-        // 1. 게시글이 있는 카테고리 삭제 방지
-        val toDeleteIds = toDelete.map { it.id!! }
-        val categoriesWithPosts = categoryRepository.findCategoriesWithPosts(toDeleteIds)
-
-        if (categoriesWithPosts.isNotEmpty()) {
-            throw ContentriaException(ErrorCode.CANNOT_DELETE_CATEGORY)
-        }
-
-        // 2. 자식 카테고리가 남아있는 부모 카테고리 삭제 방지
-        val hasOrphanedChildren = toDelete
-            .asSequence()
-            .filter { it.parent == null }
-            .any { it.children.any { it.id.toString() in requestIds } }
-
-        if (hasOrphanedChildren) {
-            throw ContentriaException(ErrorCode.CANNOT_DELETE_CATEGORY)
+            val savedEntity = upsertOne(command, blog, parent, existingMap[command.id])
+            processedEntities[command.id] = savedEntity
         }
     }
 
@@ -135,7 +129,7 @@ class CategoryService(
         }
 
         return if (existing == null) {
-            val newCategory = Category.Companion.create(
+            val newCategory = Category.create(
                 name = request.name,
                 slug = finalSlug,
                 order = request.order,
