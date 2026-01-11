@@ -1,10 +1,10 @@
 package com.contentria.api.user.controller
 
-import com.contentria.api.config.exception.ContentriaException
-import com.contentria.api.config.exception.ErrorCode
-import com.contentria.api.user.dto.CurrentUserResponse
+import com.contentria.api.global.error.ContentriaException
+import com.contentria.api.global.error.ErrorCode
+import com.contentria.api.user.controller.dto.CurrentUserResponse
 import com.contentria.api.user.security.CustomUserDetails
-import com.contentria.api.user.service.UserService
+import com.contentria.api.user.application.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.Authentication
@@ -25,7 +25,9 @@ class UserController(
         val userDetails = authentication.principal as? CustomUserDetails
             ?: run {
                 log.error { "Authentication principal is not of type CustomUserDetails. It is: ${authentication.principal::class.simpleName}" }
-                throw ContentriaException(ErrorCode.UNEXPECTED_AUTHENTICATION_PRINCIPAL)
+                throw ContentriaException(
+                    ErrorCode.UNEXPECTED_AUTHENTICATION_PRINCIPAL
+                )
             }
 
         val userInfo = userService.getCurrentUserInfo(userDetails.userId!!)

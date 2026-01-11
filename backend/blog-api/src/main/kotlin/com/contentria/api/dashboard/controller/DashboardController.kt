@@ -1,15 +1,14 @@
 package com.contentria.api.dashboard.controller
 
-import com.contentria.api.dashboard.dto.DashboardStatsResponse
-import com.contentria.api.dashboard.dto.PopularPostResponse
+import com.contentria.api.dashboard.controller.dto.DashboardStatsResponse
+import com.contentria.api.dashboard.controller.dto.PopularPostResponse
 import com.contentria.api.dashboard.dto.TimeRange
-import com.contentria.api.dashboard.dto.TrafficChartDataResponse
-import com.contentria.api.dashboard.service.DashboardService
+import com.contentria.api.dashboard.controller.dto.TrafficChartDataResponse
+import com.contentria.api.dashboard.application.DashboardService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 

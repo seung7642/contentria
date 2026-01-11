@@ -1,9 +1,11 @@
 package com.contentria.api.auth.controller
 
-import com.contentria.api.auth.dto.*
-import com.contentria.api.auth.service.AuthService
-import com.contentria.api.auth.service.RefreshTokenService
-import com.contentria.api.utils.CookieUtil
+import com.contentria.api.auth.application.AuthFacade
+import com.contentria.api.auth.controller.dto.*
+import com.contentria.api.global.error.ContentriaException
+import com.contentria.api.global.error.ErrorCode
+import com.contentria.api.global.util.CookieUtil
+import com.contentria.api.global.util.IpResolver
 import com.contentria.common.aop.ApiLog
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletRequest
@@ -17,9 +19,9 @@ private val log = KotlinLogging.logger {}
 @RestController
 @RequestMapping("/auth")
 class AuthController(
-    private val refreshTokenService: RefreshTokenService,
-    private val authService: AuthService,
-    private val cookieUtil: CookieUtil
+    private val authFacade: AuthFacade,
+    private val cookieUtil: CookieUtil,
+    private val ipResolver: IpResolver
 ) {
 
     @ApiLog
@@ -30,16 +32,18 @@ class AuthController(
         response: HttpServletResponse
     ): ResponseEntity<RefreshTokenResponse> {
         log.info { "=== Refresh with $refreshTokenValue ===" }
-        val newTokens = refreshTokenService.refreshTokens(refreshTokenValue)
+        val newTokens = authFacade.refreshTokens(refreshTokenValue)
 
         response.addCookie(cookieUtil.createAccessTokenCookie(newTokens.accessToken, request))
         response.addCookie(cookieUtil.createRefreshTokenCookie(newTokens.refreshToken, request))
 
         log.info { "=== Successfully refreshed token. accessToken:${newTokens.accessToken.substring(0, 10)}, refreshToken:${newTokens.refreshToken.substring(0, 10)}" }
-        return ResponseEntity.ok(RefreshTokenResponse(
-            accessToken = newTokens.accessToken,
-            refreshToken = newTokens.refreshToken
-        ))
+        return ResponseEntity.ok(
+            RefreshTokenResponse(
+                accessToken = newTokens.accessToken,
+                refreshToken = newTokens.refreshToken
+            )
+        )
     }
 
     @PostMapping("/login")
@@ -48,16 +52,22 @@ class AuthController(
         httpRequest: HttpServletRequest,
         httpResponse: HttpServletResponse
     ): ResponseEntity<LoginResponse> {
-        val result = authService.login(request, httpRequest)
+        val clientIp = ipResolver.getClientIp(httpRequest)
+            ?: throw ContentriaException(ErrorCode.CLIENT_IP_NOT_FOUND)
+
+        val command = request.toCommand(clientIp)
+        val result = authFacade.login(command)
 
         httpResponse.addCookie(cookieUtil.createAccessTokenCookie(result.accessToken, httpRequest))
         httpResponse.addCookie(cookieUtil.createRefreshTokenCookie(result.refreshToken, httpRequest))
 
-        return ResponseEntity.ok(LoginResponse(
-            user = result.user,
-            accessToken = result.accessToken,
-            refreshToken = result.refreshToken
-        ))
+        return ResponseEntity.ok(
+            LoginResponse(
+                user = result.user,
+                accessToken = result.accessToken,
+                refreshToken = result.refreshToken
+            )
+        )
     }
 
     @PostMapping("/signup/initiate")
@@ -65,7 +75,11 @@ class AuthController(
         @Valid @RequestBody request: SignUpInitiateRequest,
         httpRequest: HttpServletRequest
     ): ResponseEntity<SignUpInitiateResponse> {
-        val response = authService.initiate(request, httpRequest)
+        val clientIp = ipResolver.getClientIp(httpRequest)
+            ?: throw ContentriaException(ErrorCode.CLIENT_IP_NOT_FOUND)
+
+        val command = request.toCommand(clientIp)
+        val response = authFacade.initiate(command)
         return ResponseEntity.ok(response)
     }
 
@@ -75,7 +89,7 @@ class AuthController(
         httpRequest: HttpServletRequest,
         httpResponse: HttpServletResponse
     ): ResponseEntity<VerifyCodeResponse> {
-        val result = authService.verifyCode(request)
+        val result = authFacade.verifyCode(request)
 
         httpResponse.addCookie(cookieUtil.createAccessTokenCookie(result.accessToken, httpRequest))
         httpResponse.addCookie(cookieUtil.createRefreshTokenCookie(result.refreshToken, httpRequest))
@@ -85,7 +99,11 @@ class AuthController(
 
     @PostMapping("/send-otp")
     fun sendOtp(@Valid @RequestBody request: SendOtpRequest, httpRequest: HttpServletRequest): ResponseEntity<Unit> {
-        authService.sendOtp(request, httpRequest)
+        val clientIp = ipResolver.getClientIp(httpRequest)
+            ?: throw ContentriaException(ErrorCode.CLIENT_IP_NOT_FOUND)
+
+        val command = request.toCommand(clientIp)
+        authFacade.sendOtp(command)
         return ResponseEntity.noContent().build()
     }
 }

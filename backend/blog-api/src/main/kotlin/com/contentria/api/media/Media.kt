@@ -1,11 +1,5 @@
 package com.contentria.api.media
 
-import com.contentria.api.post.Post
-import com.contentria.api.user.domain.User
-import jakarta.persistence.*
-import java.time.ZonedDateTime
-import java.util.UUID
-
 //@Entity
 //@Table(name = "media")
 //class Media(

@@ -1,21 +1,10 @@
 package com.contentria.api.category.domain
 
-import com.contentria.api.blog.domain.Blog
 import com.contentria.api.user.domain.BaseEntity
 import com.contentria.common.config.jpa.GeneratedUuidV7
-import jakarta.persistence.CascadeType
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.FetchType
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.Id
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
-import jakarta.persistence.OneToMany
-import jakarta.persistence.Table
-import jakarta.persistence.UniqueConstraint
+import jakarta.persistence.*
 import org.hibernate.annotations.BatchSize
-import java.util.UUID
+import java.util.*
 
 @Entity
 @Table(
@@ -48,10 +37,13 @@ class Category(
     @BatchSize(size = 100)
     var children: MutableList<Category> = mutableListOf(),
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "blog_id", nullable = false)
-    var blog: Blog,
+    @Column(name = "blog_id", nullable = false, columnDefinition = "uuid")
+    var blogId: UUID,
 ) : BaseEntity() {
+
+    fun shouldUpdateSlug(newName: String): Boolean {
+        return this.name != newName
+    }
 
     fun update(name: String, slug: String, order: Int, parent: Category?) {
         this.name = name
@@ -74,13 +66,13 @@ class Category(
     }
 
     companion object {
-        fun create(name: String, slug: String, order: Int, parent: Category?, blog: Blog): Category {
+        fun create(name: String, slug: String, order: Int = 0, parent: Category? = null, blogId: UUID): Category {
             val category = Category(
                 name = name,
                 slug = slug,
                 displayOrder = order,
                 parent = null,
-                blog = blog
+                blogId = blogId
             )
             category.changeParent(parent)
             return category

@@ -21,7 +21,7 @@ class User(
 
     var username: String? = null,
 
-    var password: String? = null,
+//    var password: String? = null,
 
     var pictureUrl: String? = null,
 
@@ -29,11 +29,11 @@ class User(
     @Column(nullable = false)
     var status: UserStatus = UserStatus.UNVERIFIED,
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    var provider: AuthProvider = AuthProvider.EMAIL,
+//    @Enumerated(EnumType.STRING)
+//    @Column(nullable = false)
+//    var provider: AuthProvider = AuthProvider.EMAIL,
 
-    var providerId: String? = null,
+//    var providerId: String? = null,
 
     @OneToMany(mappedBy = "user", cascade = [(CascadeType.ALL)], orphanRemoval = true)
     var userRoles: MutableSet<UserRole> = mutableSetOf(),
@@ -57,25 +57,25 @@ class User(
 
     // 팩토리 메소드로 생성 방식 표준화
     companion object {
-        fun createEmailUser(email: String, username: String, password: String): User {
+        fun createEmailUser(email: String, username: String): User {
             return User(
                 email = email,
                 username = username,
-                password = password,
+//                password = password,
                 status = UserStatus.UNVERIFIED,
-                provider = AuthProvider.EMAIL,
+//                provider = AuthProvider.EMAIL,
             )
         }
 
-        fun createGoogleUser(email: String, realUsername: String, username: String, pictureUrl: String?, providerId: String): User {
+        fun createGoogleUser(email: String, realUsername: String, username: String, pictureUrl: String?): User {
             return User(
                 email = email,
                 realUsername = realUsername,
                 username = username,
                 pictureUrl = pictureUrl,
                 status = UserStatus.ACTIVE,
-                provider = AuthProvider.GOOGLE,
-                providerId = providerId,
+//                provider = AuthProvider.GOOGLE,
+//                providerId = providerId,
             )
         }
     }

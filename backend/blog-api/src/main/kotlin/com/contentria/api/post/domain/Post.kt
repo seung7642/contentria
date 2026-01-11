@@ -9,9 +9,11 @@ import java.time.ZonedDateTime
 import java.util.*
 
 @Entity
-@Table(name = "posts", uniqueConstraints = [
-    UniqueConstraint(name = "uq_posts_blog_slug", columnNames = ["blog_id", "slug"])
-])
+@Table(
+    name = "posts", uniqueConstraints = [
+        UniqueConstraint(name = "uq_posts_blog_slug", columnNames = ["blog_id", "slug"])
+    ]
+)
 class Post(
     @Id
     @GeneratedValue
@@ -50,11 +52,52 @@ class Post(
 
     var publishedAt: ZonedDateTime? = null,
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "blog_id", nullable = false)
-    var blog: Blog,
+//    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+//    @JoinColumn(name = "blog_id", nullable = false)
+//    var blog: Blog
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id")
-    var category: Category? = null,
-) : BaseEntity()
+    @Column(name = "blog_id", nullable = false, columnDefinition = "uuid")
+    var blogId: UUID,
+
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "category_id")
+//    var category: Category
+
+    @Column(name = "category_id", columnDefinition = "uuid")
+    var categoryId: UUID? = null,
+) : BaseEntity() {
+
+    companion object {
+        fun create(
+            slug: String,
+            title: String,
+            content: String,
+            summary: String? = null,
+            metaTitle: String? = null,
+            metaDescription: String? = null,
+            featuredImageUrl: String? = null,
+            status: PostStatus = PostStatus.DRAFT,
+            likeCount: Int = 0,
+            viewCount: Int = 0,
+            publishedAt: ZonedDateTime? = null,
+            blogId: UUID,
+            categoryId: UUID? = null
+        ) : Post {
+            return Post(
+                slug = slug,
+                title = title,
+                contentMarkdown = content,
+                summary = summary,
+                metaTitle = metaTitle,
+                metaDescription = metaDescription,
+                featuredImageUrl = featuredImageUrl,
+                status = status,
+                likeCount = likeCount,
+                viewCount = viewCount,
+                publishedAt = publishedAt,
+                blogId = blogId,
+                categoryId = categoryId,
+            )
+        }
+    }
+}

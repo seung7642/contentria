@@ -24,7 +24,15 @@ class Blog(
     @Column(columnDefinition = "TEXT")
     var description: String? = null,
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    var user: User,
-) : BaseEntity()
+//    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+//    @JoinColumn(name = "user_id", nullable = false)
+//    var user: User,
+
+    @Column(name = "user_id", nullable = false, columnDefinition = "uuid")
+    var userId: UUID
+) : BaseEntity() {
+
+    fun isOwner(userId: UUID): Boolean {
+        return this.userId == userId
+    }
+}

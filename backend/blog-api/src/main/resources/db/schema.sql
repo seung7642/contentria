@@ -1,13 +1,13 @@
 CREATE TABLE users (
     id UUID PRIMARY KEY,
-    email VARCHAR(255) UNIQUE NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
     real_username VARCHAR(100),
     username VARCHAR(100),
-    password VARCHAR(255),
+--     password VARCHAR(255),
     picture_url TEXT,
     status VARCHAR(50) NOT NULL DEFAULT 'UNVERIFIED', -- 'ACTIVE', 'UNVERIFIED', 'SUSPENDED', 'DELETED'
-    provider VARCHAR(50) NOT NULL, -- 'EMAIL', 'GOOGLE'
-    provider_id TEXT, -- 해당 Provider(구글 로그인)에서의 사용자 ID
+--     provider VARCHAR(50) NOT NULL, -- 'EMAIL', 'GOOGLE'
+--     provider_id TEXT, -- 해당 Provider(구글 로그인)에서의 사용자 ID
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -50,6 +50,23 @@ CREATE TABLE refresh_tokens (
 
 CREATE INDEX idx_refresh_token_user_id ON refresh_token(user_id);
 CREATE INDEX idx_refresh_token_expiry_date ON refresh_token(expiry_date);
+
+CREATE TABLE credentials (
+    id UUID PRIMARY KEY,
+    email VARCHAR(255) NOT NULL,
+    password VARCHAR(255),
+    provider VARCHAR(50) NOT NULL, -- 'EMAIL', 'GOOGLE'
+    provider_id TEXT, -- 해당 Provider(구글 로그인)에서의 사용자 ID
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    user_id UUID NOT NULL,
+
+    CONSTRAINT uq_credentials_email UNIQUE (email),
+    CONSTRAINT fk_credentials_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_credentials_user_id ON credentials(user_id);
 
 CREATE TABLE blogs (
     id UUID PRIMARY KEY,

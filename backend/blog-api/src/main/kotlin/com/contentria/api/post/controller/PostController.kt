@@ -1,10 +1,11 @@
 package com.contentria.api.post.controller
 
-import com.contentria.api.post.dto.CreateNewPostRequest
-import com.contentria.api.post.dto.CreateNewPostResponse
-import com.contentria.api.post.dto.PostDetailResponse
-import com.contentria.api.post.dto.PostSummaryResponse
-import com.contentria.api.post.service.PostService
+import com.contentria.api.post.application.PostFacade
+import com.contentria.api.post.application.PostService
+import com.contentria.api.post.controller.dto.CreateNewPostRequest
+import com.contentria.api.post.controller.dto.CreateNewPostResponse
+import com.contentria.api.post.controller.dto.PostDetailResponse
+import com.contentria.api.post.controller.dto.PostSummaryResponse
 import com.contentria.api.user.security.CustomUserDetails
 import com.contentria.common.aop.ApiLog
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -22,7 +23,8 @@ private val log = KotlinLogging.logger {}
 @RestController
 @RequestMapping
 class PostController(
-    private val postService: PostService
+    private val postService: PostService,
+    private val postFacade: PostFacade
 ) {
 
     @ApiLog
@@ -51,7 +53,7 @@ class PostController(
         @Valid @RequestBody request: CreateNewPostRequest
     ): ResponseEntity<CreateNewPostResponse> {
         log.info { "Creating new post for userId=${userDetails.userId}, request=$request" }
-        val createNewPostInfo = postService.createNewPost(userDetails.userId!!, request.toCommand())
+        val createNewPostInfo = postFacade.createNewPost(userDetails.userId!!, request.toCommand())
         return ResponseEntity.ok(CreateNewPostResponse.from(createNewPostInfo))
     }
 }

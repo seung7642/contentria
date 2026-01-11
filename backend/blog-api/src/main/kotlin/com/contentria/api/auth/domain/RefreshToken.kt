@@ -22,7 +22,10 @@ class RefreshToken(
     @Column(nullable = false)
     var expiryDate: Instant,
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
-    var user: User
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
+//    var user: User
+
+    @Column(name = "user_id", nullable = false)
+    val userId: UUID
 ) : BaseEntity()

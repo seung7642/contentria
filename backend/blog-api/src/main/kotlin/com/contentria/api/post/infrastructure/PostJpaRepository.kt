@@ -1,0 +1,90 @@
+package com.contentria.api.post.infrastructure
+
+import com.contentria.api.post.domain.query.CategoryPostCount
+import com.contentria.api.post.domain.Post
+import com.contentria.api.post.domain.query.PostDetailView
+import com.contentria.api.post.domain.query.PostSummary
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.query.Param
+import org.springframework.stereotype.Repository
+import java.util.*
+
+@Repository
+interface PostJpaRepository : JpaRepository<Post, UUID> {
+
+    // 카테고리별 게시물 수를 한번의 쿼리로 효율적으로 계산
+    @Query(
+        """
+        SELECT new com.contentria.api.post.domain.query.CategoryPostCount(p.categoryId, COUNT(p))
+        FROM Post p
+        WHERE p.blogId = :blogId 
+            AND p.status = com.contentria.api.post.domain.PostStatus.PUBLISHED 
+            AND p.categoryId IS NOT NULL
+        GROUP BY p.categoryId
+    """
+    )
+    fun findPostCountsByBlogId(@Param("blogId") blogId: UUID): List<CategoryPostCount>
+
+    @Query(
+        """
+        SELECT new com.contentria.api.post.domain.query.PostSummary(
+            p.id,
+            p.slug,
+            p.title,
+            CASE 
+                WHEN p.metaDescription IS NOT NULL AND TRIM(p.metaDescription) <> '' THEN p.metaDescription
+                ELSE CONCAT(SUBSTRING(CAST(p.contentMarkdown AS string), 1, 100), '...')
+            END,
+            p.metaTitle,
+            p.metaDescription,
+            p.featuredImageUrl,
+            p.publishedAt,
+            c.name,
+            p.likeCount,
+            p.viewCount
+        )
+        FROM Post p
+        JOIN Blog b ON p.blogId = b.id
+        LEFT JOIN Category c ON p.categoryId = c.id
+        WHERE b.slug = :blogSlug AND p.status = com.contentria.api.post.domain.PostStatus.PUBLISHED
+        ORDER BY p.publishedAt DESC
+    """
+    )
+    fun findPostSummariesByBlogSlug(blogSlug: String, pageable: Pageable): Page<PostSummary>
+
+    @Query("""
+        SELECT new com.contentria.api.post.domain.query.PostDetailView(
+            p.id, p.slug, p.title, p.contentMarkdown, p.metaTitle, p.metaDescription,
+            p.featuredImageUrl, p.status, p.likeCount, p.viewCount, p.publishedAt,
+            b.slug,
+            c.name,
+            u.id, u.username, u.email, u.pictureUrl
+        )
+        FROM Post p
+        JOIN Blog b ON p.blogId = b.id 
+        LEFT JOIN Category c ON p.categoryId = c.id
+        JOIN User u ON b.userId = u.id
+        WHERE b.slug = :blogSlug
+            AND p.slug = :postSlug 
+            AND p.status = com.contentria.api.post.domain.PostStatus.PUBLISHED
+    """)
+    fun findPublishedPostDetailView(blogSlug: String, postSlug: String): PostDetailView?
+
+    @Query("""
+        SELECT p.slug 
+        FROM Post p
+        WHERE p.blogId = :blogId
+            AND (p.slug = :targetSlug OR p.slug LIKE CONCAT(:targetSlug, '-%'))
+    """)
+    fun findSlugsByPrefix(blogId: UUID, targetSlug: String): List<String>
+
+    @Query("""
+        SELECT CASE WHEN COUNT(p) > 0 THEN TRUE ELSE FALSE END
+        FROM Post p
+        WHERE p.categoryId = :categoryId
+    """)
+    fun existsByCategoryId(categoryId: UUID): Boolean
+}

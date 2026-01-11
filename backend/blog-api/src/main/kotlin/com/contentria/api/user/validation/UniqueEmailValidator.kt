@@ -1,11 +1,11 @@
 package com.contentria.api.user.validation
 
-import com.contentria.api.user.repository.UserRepository
+import com.contentria.api.user.infrastructure.UserJpaRepository
 import jakarta.validation.ConstraintValidator
 import jakarta.validation.ConstraintValidatorContext
 
 class UniqueEmailValidator(
-    private val userRepository: UserRepository
+    private val userJpaRepository: UserJpaRepository
 ) : ConstraintValidator<UniqueEmail, String> {
 
     override fun isValid(
@@ -15,6 +15,6 @@ class UniqueEmailValidator(
         if (email == null) {
             return true
         }
-        return !userRepository.existsByEmail(email)
+        return !userJpaRepository.existsByEmail(email)
     }
 }

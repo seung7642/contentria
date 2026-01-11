@@ -1,6 +1,6 @@
 package com.contentria.api.category.controller
 
-import com.contentria.api.blog.service.BlogService
+import com.contentria.api.blog.application.BlogService
 import com.contentria.api.category.controller.dto.CategoryResponse
 import com.contentria.api.category.controller.dto.SyncCategoryRequest
 import com.contentria.api.category.application.CategoryService
@@ -27,7 +27,7 @@ class CategoryController(
     }
 
     @PostMapping
-    fun createCategory(
+    fun syncCategory(
         @PathVariable blogId: UUID,
         @RequestBody @Valid request: List<SyncCategoryRequest>,
         @AuthenticationPrincipal userPrincipal: CustomUserDetails

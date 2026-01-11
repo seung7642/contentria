@@ -1,46 +1,63 @@
 package com.contentria.api.category.application
 
-import com.contentria.api.blog.domain.Blog
-import com.contentria.api.blog.repository.BlogRepository
-import com.contentria.api.category.domain.Category
+import com.contentria.api.blog.domain.BlogRepository
 import com.contentria.api.category.application.dto.CategoryInfo
 import com.contentria.api.category.application.dto.SyncCategoryCommand
+import com.contentria.api.category.domain.Category
 import com.contentria.api.category.domain.CategoryRepository
+import com.contentria.api.category.domain.CategorySlugGenerator
 import com.contentria.api.category.domain.CategoryValidator
-import com.contentria.api.config.exception.ContentriaException
-import com.contentria.api.config.exception.ErrorCode
-import com.contentria.api.post.repository.PostRepository
-import com.contentria.api.utils.SlugUtils
+import com.contentria.api.category.domain.query.CategoryWithCountView
+import com.contentria.api.global.error.ContentriaException
+import com.contentria.api.global.error.ErrorCode
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.UUID
-import kotlin.collections.get
+import java.util.*
 
 @Service
 class CategoryService(
     private val categoryRepository: CategoryRepository,
-    private val postRepository: PostRepository,
     private val blogRepository: BlogRepository,
-    private val categoryValidator: CategoryValidator
+    private val categoryValidator: CategoryValidator,
+    private val categorySlugGenerator: CategorySlugGenerator
 ) {
+    @Transactional
+    fun createSampleCategories(blogId: UUID): Map<String, UUID> {
+        val tech = categoryRepository.save(Category.create(name = "기술", slug = "tech", blogId = blogId, order = 0))
+        val backend = categoryRepository.save(Category.create(name = "백엔드", slug = "backend", blogId = blogId, order = 0, parent = tech))
+        val daily = categoryRepository.save(Category.create(name = "일상", slug = "daily", blogId = blogId, order = 1))
+        return mapOf(
+            "backend" to backend.id!!,
+            "daily" to daily.id!!
+        )
+    }
+
     @Transactional(readOnly = true)
-    fun getFlattenedCategories(blog: Blog): List<CategoryInfo> {
-        val categories = categoryRepository.findAll(blog)
+    fun validateCategoryBelongsToBlog(categoryId: UUID, blogId: UUID) {
+        val category = categoryRepository.findById(categoryId)
+            ?: throw ContentriaException(
+                ErrorCode.NOT_FOUND_CATEGORY
+            )
 
-        val postCounts = postRepository.findPostCountsByBlog(blog)
-            .associate { it.categoryId to it.postCount }
+        if (category.blogId != blogId) {
+            throw ContentriaException(ErrorCode.INVALID_INPUT_VALUE)
+        }
+    }
 
-        val groupedByParent = categories.groupBy { it.parent?.id }
+    @Transactional(readOnly = true)
+    fun getFlattenedCategories(blogId: UUID): List<CategoryInfo> {
+        val categoriesWithCount = categoryRepository.findAllWithPostCount(blogId)
+
+        val groupedByParent = categoriesWithCount.groupBy { it.parentId }
 
         val result = mutableListOf<CategoryInfo>()
-        flattenRecursively(groupedByParent, postCounts, null, 0, result)
+        flattenRecursively(groupedByParent, null, 0, result)
 
         return result
     }
 
     private fun flattenRecursively(
-        groupedCategories: Map<UUID?, List<Category>>,
-        postCounts: Map<UUID, Long>,
+        groupedCategories: Map<UUID?, List<CategoryWithCountView>>,
         parentId: UUID?,
         level: Int,
         result: MutableList<CategoryInfo>
@@ -48,7 +65,6 @@ class CategoryService(
         val children = groupedCategories[parentId] ?: return
 
         for (category in children) {
-            val count = postCounts[category.id] ?: 0L
             result.add(
                 CategoryInfo(
                     id = category.id!!,
@@ -56,64 +72,63 @@ class CategoryService(
                     slug = category.slug,
                     parentId = parentId,
                     level = level,
-                    postCount = count
+                    postCount = category.postCount
                 )
             )
-            flattenRecursively(groupedCategories, postCounts, category.id, level + 1, result)
+            flattenRecursively(groupedCategories, category.id, level + 1, result)
         }
     }
 
     @Transactional
     fun syncCategories(blogId: UUID, commands: List<SyncCategoryCommand>) {
         val actorUserId = commands.firstOrNull()?.actorUserId
-            ?: throw ContentriaException(ErrorCode.INVALID_INPUT_VALUE)
+            ?: throw ContentriaException(
+                ErrorCode.INVALID_INPUT_VALUE
+            )
 
         val blog = blogRepository.findById(blogId)
-            .orElseThrow { ContentriaException(ErrorCode.NOT_FOUND_BLOG) }
+            .orElseThrow {
+                ContentriaException(
+                    ErrorCode.NOT_FOUND_BLOG
+                )
+            }
 
         if (blog.user.id != actorUserId) {
             throw ContentriaException(ErrorCode.FORBIDDEN_ACCESS_BLOG)
         }
 
-        val existingCategories = categoryRepository.findAll(blog)
+        // 데이터 준비
+        val existingCategories = categoryRepository.findAllByBlogId(blogId)
         val existingMap = existingCategories.associateBy { it.id.toString() }
-
-        // 1. 삭제 처리
         val requestIds = commands.map { it.id }.toSet()
+
+        // 삭제 처리
         val toDelete = existingCategories.filterNot { it.id.toString() in requestIds }
         if (toDelete.isNotEmpty()) {
             categoryValidator.validateDeletable(toDelete, requestIds)
+
+            // 삭제 순서 (자식->부모)는 기술적인 문제에 가까우므로 여기서 처리하거나 리포에 위임
             val sortedToDelete = toDelete.sortedByDescending { it.parent != null }
             categoryRepository.deleteAll(sortedToDelete)
         }
 
-        // 2. Upsert 처리
-//        val level0Requests = commands.filter { it.parentId == null }
-//        val savedParentsMap = level0Requests.associate { request ->
-//            val savedEntity = upsertOne(request, blog, null, existingMap[request.id])
-//            request.id to savedEntity
-//        }
-//
-//        val level1Requests = commands.filter { it.parentId != null }
-//        level1Requests.forEach { request ->
-//            val parentId = request.parentId
-//            val parent = savedParentsMap[parentId]
-//                ?: existingMap[parentId]
-//                ?: throw ContentriaException(ErrorCode.INVALID_INPUT_VALUE)
-//
-//            upsertOne(request, blog, parent, existingMap[request.id])
-//        }
+        // 생성/수정 처리
+        // 부모-자식 순서 처리는 '상태 의존적'이므로 응용 서비스가 조율하는 것이 자연스러움
+        val savedParentsMap = mutableMapOf<String, Category>()
 
-        val sortedCommand = commands.sortedWith(compareBy { it.parentId != null })
-        val processedEntities = existingMap.toMutableMap()
-        sortedCommand.forEach { command ->
-            val parent = command.parentId?.let { parentId ->
-                processedEntities[parentId]
-                    ?: throw ContentriaException(ErrorCode.INVALID_INPUT_VALUE)
-            }
+        commands.filter { it.parentId == null }.forEach { command ->
+            val saved = upsertCategory(blogId, command, null, existingMap[command.id])
+            savedParentsMap[command.id] = saved
+        }
 
-            val savedEntity = upsertOne(command, blog, parent, existingMap[command.id])
-            processedEntities[command.id] = savedEntity
+        commands.filter { it.parentId != null }.forEach { command ->
+            val parent = savedParentsMap[command.parentId]
+                ?: existingMap[command.parentId]
+                ?: throw ContentriaException(
+                    ErrorCode.INVALID_INPUT_VALUE
+                )
+
+            upsertCategory(blogId, command, parent, existingMap[command.id])
         }
     }
 
@@ -121,52 +136,35 @@ class CategoryService(
      * 반복문에서 단 건 API 호출을 하지만, 내부적으로 JDBC Batch 처리됨
      *   - https://docs.hibernate.org/orm/7.2/userguide/html_single/#batch-jdbcbatch
      */
-    private fun upsertOne(request: SyncCategoryCommand, blog: Blog, parent: Category?, existing: Category?): Category {
-        val finalSlug = if (existing != null && existing.name == request.name) {
-            existing.slug
+    private fun upsertCategory(
+        blogId: UUID,
+        command: SyncCategoryCommand,
+        parent: Category?,
+        existing: Category?
+    ): Category {
+        val slug = if (existing == null || existing.shouldUpdateSlug(command.name)) {
+            categorySlugGenerator.generate(blogId, command.name)
         } else {
-            generateUniqueSlug(blog, request.name)
+            existing.slug
         }
 
         return if (existing == null) {
             val newCategory = Category.create(
-                name = request.name,
-                slug = finalSlug,
-                order = request.order,
+                blogId = blogId,
+                name = command.name,
+                slug = slug,
+                order = command.order,
                 parent = parent,
-                blog = blog
             )
             categoryRepository.save(newCategory)
         } else {
             existing.update(
-                name = request.name,
-                slug = finalSlug,
-                order = request.order,
+                name = command.name,
+                slug = slug,
+                order = command.order,
                 parent = parent
             )
             existing
         }
-    }
-
-    private fun generateUniqueSlug(blog: Blog, name: String): String {
-        var baseSlug = SlugUtils.toSlug(name)
-
-        val existingSlugs = categoryRepository.findSimilarSlugs(blog, baseSlug)
-        if (existingSlugs.isEmpty()) {
-            return baseSlug
-        }
-
-        val maxSuffix = existingSlugs.asSequence()
-            .mapNotNull { slug ->
-                if (slug === baseSlug) {
-                    0
-                } else {
-                    val suffixStr = slug.substringAfter("$baseSlug-")
-                    suffixStr.toIntOrNull()
-                }
-            }
-            .maxOrNull() ?: 0
-
-        return "$baseSlug-${maxSuffix + 1}"
     }
 }
