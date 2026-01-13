@@ -6,13 +6,15 @@ import com.contentria.api.auth.controller.dto.VerifyCodeRequest
 import com.contentria.api.auth.domain.CredentialRepository
 import com.contentria.api.global.error.ContentriaException
 import com.contentria.api.global.error.ErrorCode
-import com.contentria.api.global.util.IpResolver
 import com.contentria.api.user.application.UserService
 import com.contentria.api.user.controller.dto.CurrentUserResponse
+import com.contentria.api.user.domain.AuthProvider
+import com.contentria.api.user.security.GoogleUserInfo
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.util.*
 
 private val log = KotlinLogging.logger {}
 
@@ -23,7 +25,7 @@ class AuthFacade(
     private val verificationCodeService: VerificationCodeService,
     private val captchaVerifier: CaptchaVerifier,
     private val userService: UserService,
-    private val jwtService: JwtService,
+    private val tokenGenerator: TokenGenerator,
     private val credentialRepository: CredentialRepository,
     private val passwordEncoder: PasswordEncoder,
 ) {
@@ -53,14 +55,14 @@ class AuthFacade(
         }
 
         val user = userService.activateUserByEmail(request.email)
-        val authTokenInfo = AuthTokenInfo(
+        val authTokenCommand = AuthTokenCommand(
             userId = user.id!!,
             email = user.email,
             roles = user.userRoles.map { it.role.name }
         )
 
-        val accessToken = jwtService.generateAccessToken(authTokenInfo)
-        val refreshToken = jwtService.generateRefreshToken(authTokenInfo)
+        val accessToken = tokenGenerator.generateAccessToken(authTokenCommand)
+        val refreshToken = UUID.randomUUID().toString() // Opaque Token
 
         return VerifyCodeInfo(
             accessToken = accessToken,
@@ -84,16 +86,46 @@ class AuthFacade(
 
         val user = userService.findActiveUserById(credential.userId)
 
-        val authTokenInfo = AuthTokenInfo(
+        val authTokenCommand = AuthTokenCommand(
             userId = user.id!!,
             email = user.email,
             roles = user.userRoles.map { it.role.name }
         )
 
-        val accessToken = jwtService.generateAccessToken(authTokenInfo)
+        val accessToken = tokenGenerator.generateAccessToken(authTokenCommand)
         val refreshToken = refreshTokenService.upsertRefreshToken(user.id!!)
 
         log.info { "User logged in successfully: ${user.email}" }
+
+        return LoginInfo(
+            accessToken = accessToken,
+            refreshToken = refreshToken,
+            user = CurrentUserResponse.from(user)
+        )
+    }
+
+    @Transactional
+    fun loginWithSocial(googleUserInfo: GoogleUserInfo): LoginInfo {
+        val user = userService.upsertSocialUser(
+            email = googleUserInfo.email,
+            name = googleUserInfo.name,
+            pictureUrl = googleUserInfo.picture
+        )
+
+        credentialService.upsertSocialCredential(
+            userId = user.id!!,
+            email = user.email,
+            provider = AuthProvider.GOOGLE,
+            providerId = googleUserInfo.id
+        )
+
+        val authToken = AuthTokenCommand(
+            userId = user.id!!,
+            email = user.email,
+            roles = user.userRoles.map { it.role.name }
+        )
+        val accessToken = tokenGenerator.generateAccessToken(authToken)
+        val refreshToken = refreshTokenService.upsertRefreshToken(user.id!!)
 
         return LoginInfo(
             accessToken = accessToken,
@@ -123,13 +155,13 @@ class AuthFacade(
         val refreshToken = refreshTokenService.findValidToken(oldRefreshTokenValue)
 
         val user = userService.findActiveUserById(refreshToken.userId)
-        val authTokenInfo = AuthTokenInfo(
+        val authTokenCommand = AuthTokenCommand(
             userId = user.id!!,
             email = user.email,
             roles = user.userRoles.map { it.role.name }
         )
 
-        val newAccessToken = jwtService.generateAccessToken(authTokenInfo)
+        val newAccessToken = tokenGenerator.generateAccessToken(authTokenCommand)
         val newRefreshToken = refreshTokenService.upsertRefreshToken(refreshToken.userId)
 
         return RefreshedTokensDto(

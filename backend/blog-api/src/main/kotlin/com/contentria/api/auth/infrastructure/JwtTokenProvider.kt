@@ -1,25 +1,26 @@
-package com.contentria.api.auth.application
+package com.contentria.api.auth.infrastructure
 
-import com.contentria.api.auth.application.dto.AuthTokenInfo
+import com.contentria.api.auth.application.TokenGenerator
+import com.contentria.api.auth.application.dto.AuthTokenCommand
 import com.contentria.api.global.properties.AppProperties
-import com.contentria.api.user.domain.User
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.io.Decoders
 import io.jsonwebtoken.security.Keys
-import org.springframework.stereotype.Service
+import org.springframework.stereotype.Component
 import java.time.Instant
 import java.util.*
 import javax.crypto.SecretKey
 
 private val log = KotlinLogging.logger {}
 
-@Service
-class JwtService(
+@Component
+class JwtTokenProvider(
     private val appProperties: AppProperties
-) {
+) : TokenGenerator {
+
     private val secretKey: SecretKey by lazy {
         try {
             val keyBytes = Decoders.BASE64.decode(appProperties.auth.jwt.secret)
@@ -30,18 +31,13 @@ class JwtService(
         }
     }
 
-    fun generateAccessToken(authToken: AuthTokenInfo): String {
+    override fun generateAccessToken(authToken: AuthTokenCommand): String {
         val expiration = Instant.now().plus(appProperties.auth.jwt.accessTokenExpiration)
         val extraClaims = mapOf(
             "userId" to authToken.userId,
             "roles" to authToken.roles
         )
         return generateToken(authToken.email, extraClaims, Date.from(expiration))
-    }
-
-    fun generateRefreshToken(authToken: AuthTokenInfo): String {
-        val expiration = Instant.now().plus(appProperties.auth.jwt.refreshTokenExpiration)
-        return generateToken(authToken.email, emptyMap(), Date.from(expiration))
     }
 
     private fun generateToken(subject: String, extraClaims: Map<String, Any>, expiration: Date): String {
@@ -54,27 +50,21 @@ class JwtService(
             .compact()
     }
 
-    fun getUsernameFromToken(token: String): String {
-        return getAllClaimsFromToken(token).subject
-    }
-
-    fun isTokenValid(token: String, userEmail: String): Boolean {
-        try {
-            val username = getUsernameFromToken(token)
-            return username == userEmail && !isTokenExpired(token)
+    override fun validateToken(token: String): Boolean {
+        return try {
+            val claims = getAllClaimsFromToken(token)
+            !claims.expiration.before(Date())
         } catch (e: JwtException) {
             log.debug { "JWT validation failed: ${e.message}" }
-            return false
+            false
+        } catch (e: Exception) {
+            log.debug { "JWT string is empty or null" }
+            false
         }
     }
 
-    private fun isTokenExpired(token: String): Boolean {
-        return getClaimFromToken(token) { it.expiration }.before(Date())
-    }
-
-    private fun <T> getClaimFromToken(token: String, claimsResolver: (Claims) -> T): T {
-        val claims = getAllClaimsFromToken(token)
-        return claimsResolver(claims)
+    override fun extractSubject(token: String): String {
+        return getAllClaimsFromToken(token).subject
     }
 
     private fun getAllClaimsFromToken(token: String): Claims {

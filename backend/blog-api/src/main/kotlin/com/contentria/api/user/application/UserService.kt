@@ -4,74 +4,100 @@ import com.contentria.api.blog.domain.BlogRepository
 import com.contentria.api.blog.dto.BlogSummary
 import com.contentria.api.global.error.ContentriaException
 import com.contentria.api.global.error.ErrorCode
-import com.contentria.api.user.controller.dto.CurrentUserResponse
-import com.contentria.api.user.domain.Role
-import com.contentria.api.user.domain.RoleRepository
-import com.contentria.api.user.domain.User
-import com.contentria.api.user.domain.UserRepository
-import com.contentria.api.user.domain.UserStatus
 import com.contentria.api.user.application.dto.UserSummaryInfo
+import com.contentria.api.user.controller.dto.CurrentUserResponse
+import com.contentria.api.user.domain.*
 import com.contentria.api.user.security.GoogleUserInfo
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 @Service
 class UserService(
     private val userRepository: UserRepository,
     private val roleRepository: RoleRepository,
     private val blogRepository: BlogRepository,
-    private val passwordEncoder: PasswordEncoder
 ) {
 
+//    @Transactional
+//    fun upsertGoogleUser(googleUserInfo: GoogleUserInfo): User {
+//        return userRepository.findByEmail(googleUserInfo.email)?.let { existingUser ->
+//            var updated = false
+//            if (existingUser.realUsername != googleUserInfo.name) {
+//                existingUser.realUsername = googleUserInfo.name
+//                updated = true
+//            }
+//            if (existingUser.pictureUrl != googleUserInfo.picture) {
+//                existingUser.pictureUrl = googleUserInfo.picture
+//                updated = true
+//            }
+//            if (updated) {
+//                log.info { "Updating existing user info for email [${existingUser.email}]" }
+//            } else{
+//                log.debug { "Existing user found for email [${existingUser.email}]. No updates needed." }
+//            }
+//            existingUser
+//        } ?: run {
+//            log.info { "Creating a new user for Google account email [${googleUserInfo.email}]" }
+//            val userRole = roleRepository.findByName("ROLE_USER")
+//                ?: throw ContentriaException(ErrorCode.REQUIRED_ROLE_NOT_FOUND)
+//
+//            val newUser = User.createGoogleUser(
+//                email = googleUserInfo.email,
+//                realUsername = googleUserInfo.name,
+//                username = googleUserInfo.name,
+//                pictureUrl = googleUserInfo.picture,
+//                providerId = googleUserInfo.id
+//            )
+//
+//            newUser.userRoles.clear()
+//            newUser.addRole(userRole)
+//
+//            try {
+//                val savedUser = userRepository.save(newUser)
+//                log.info { "Successfully saved new user with email [${newUser.email}]" }
+//                savedUser
+//            } catch (e: Exception) {
+//                log.error(e) { "Failed to save new Google user with email [${googleUserInfo.email}]: ${e.message}" }
+//                throw ContentriaException(
+//                    ErrorCode.INTERNAL_SERVER_ERROR
+//                )
+//            }
+//        }
+//    }
+
     @Transactional
-    fun upsertGoogleUser(googleUserInfo: GoogleUserInfo): User {
-        return userRepository.findByEmail(googleUserInfo.email)?.let { existingUser ->
+    fun upsertSocialUser(email: String, name: String, pictureUrl: String?): User {
+        return userRepository.findByEmail(email)?.let { existingUser ->
             var updated = false
-            if (existingUser.realUsername != googleUserInfo.name) {
-                existingUser.realUsername = googleUserInfo.name
+            if (existingUser.realUsername != name) {
+                existingUser.realUsername = name
                 updated = true
             }
-            if (existingUser.pictureUrl != googleUserInfo.picture) {
-                existingUser.pictureUrl = googleUserInfo.picture
+            if (existingUser.pictureUrl != pictureUrl) {
+                existingUser.pictureUrl = pictureUrl
                 updated = true
             }
+            if (existingUser.status.isUnverified()) {
+                existingUser.status = UserStatus.ACTIVE
+                updated = true
+            }
+
             if (updated) {
-                logger.info { "Updating existing user info for email [${existingUser.email}]" }
-            } else{
-                logger.debug { "Existing user found for email [${existingUser.email}]. No updates needed." }
+                log.info { "Updated social user profile: $email" }
             }
             existingUser
         } ?: run {
-            logger.info { "Creating a new user for Google account email [${googleUserInfo.email}]" }
-            val userRole = roleRepository.findByName("ROLE_USER")
+            log.info { "Creating new social user: $email" }
+            val newUser = User.createSocialUser(email, name, name, pictureUrl)
+            val userRole = roleRepository.findByName(Role.USER)
                 ?: throw ContentriaException(ErrorCode.REQUIRED_ROLE_NOT_FOUND)
 
-            val newUser = User.createGoogleUser(
-                email = googleUserInfo.email,
-                realUsername = googleUserInfo.name,
-                username = googleUserInfo.name,
-                pictureUrl = googleUserInfo.picture,
-                providerId = googleUserInfo.id
-            )
-
-            newUser.userRoles.clear()
             newUser.addRole(userRole)
-
-            try {
-                val savedUser = userRepository.save(newUser)
-                logger.info { "Successfully saved new user with email [${newUser.email}]" }
-                savedUser
-            } catch (e: Exception) {
-                logger.error(e) { "Failed to save new Google user with email [${googleUserInfo.email}]: ${e.message}" }
-                throw ContentriaException(
-                    ErrorCode.INTERNAL_SERVER_ERROR
-                )
-            }
+            userRepository.save(newUser)
         }
     }
 

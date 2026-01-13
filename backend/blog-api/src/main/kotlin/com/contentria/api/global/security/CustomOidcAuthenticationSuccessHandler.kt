@@ -1,15 +1,11 @@
 package com.contentria.api.global.security
 
-import com.contentria.api.auth.application.JwtService
-import com.contentria.api.auth.application.RefreshTokenService
-import com.contentria.api.auth.application.dto.AuthTokenInfo
-import com.contentria.api.global.properties.AppProperties
+import com.contentria.api.auth.application.AuthFacade
 import com.contentria.api.global.error.ContentriaException
 import com.contentria.api.global.error.ErrorCode
-import com.contentria.api.user.domain.User
-import com.contentria.api.user.security.GoogleUserInfo
-import com.contentria.api.user.application.UserService
+import com.contentria.api.global.properties.AppProperties
 import com.contentria.api.global.util.CookieUtil
+import com.contentria.api.user.security.GoogleUserInfo
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -24,9 +20,7 @@ private val log = KotlinLogging.logger {}
 
 @Component
 class CustomOidcAuthenticationSuccessHandler(
-    private val userService: UserService,
-    private val jwtService: JwtService,
-    private val refreshTokenService: RefreshTokenService,
+    private val authFacade: AuthFacade,
     private val cookieUtil: CookieUtil,
     appProperties: AppProperties,
 ) : SimpleUrlAuthenticationSuccessHandler() {
@@ -62,18 +56,19 @@ class CustomOidcAuthenticationSuccessHandler(
         )
 
         try {
-            val user: User = userService.upsertGoogleUser(googleUserInfo)
+            val loginInfo = authFacade.loginWithSocial(googleUserInfo)
+//            val user: User = userService.upsertGoogleUser(googleUserInfo)
+//
+//            val authTokenInfo = AuthTokenInfo(
+//                userId = user.id!!,
+//                email = user.email,
+//                roles = user.userRoles.map { it.role.name }
+//            )
+//            val accessToken = jwtService.generateAccessToken(authTokenInfo)
+//            val refreshToken = refreshTokenService.upsertRefreshToken(user.id!!)
 
-            val authTokenInfo = AuthTokenInfo(
-                userId = user.id!!,
-                email = user.email,
-                roles = user.userRoles.map { it.role.name }
-            )
-            val accessToken = jwtService.generateAccessToken(authTokenInfo)
-            val refreshToken = refreshTokenService.upsertRefreshToken(user.id!!)
-
-            response.addCookie(cookieUtil.createAccessTokenCookie(accessToken, request))
-            response.addCookie(cookieUtil.createRefreshTokenCookie(refreshToken, request))
+            response.addCookie(cookieUtil.createAccessTokenCookie(loginInfo.accessToken, request))
+            response.addCookie(cookieUtil.createRefreshTokenCookie(loginInfo.refreshToken, request))
 
             clearAuthenticationAttributes(request) // Clear temporary session data used by Spring Security
             SecurityContextHolder.clearContext()

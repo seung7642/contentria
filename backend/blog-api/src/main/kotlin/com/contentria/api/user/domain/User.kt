@@ -67,7 +67,7 @@ class User(
             )
         }
 
-        fun createGoogleUser(email: String, realUsername: String, username: String, pictureUrl: String?): User {
+        fun createSocialUser(email: String, realUsername: String, username: String, pictureUrl: String?): User {
             return User(
                 email = email,
                 realUsername = realUsername,

@@ -4,6 +4,7 @@ import com.contentria.api.auth.domain.Credential
 import com.contentria.api.auth.domain.CredentialRepository
 import com.contentria.api.global.error.ContentriaException
 import com.contentria.api.global.error.ErrorCode
+import com.contentria.api.user.domain.AuthProvider
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -29,5 +30,22 @@ class CredentialService(
         )
 
         credentialRepository.save(credential)
+    }
+
+    @Transactional
+    fun upsertSocialCredential(userId: UUID, email: String, provider: AuthProvider, providerId: String) {
+        val credential = credentialRepository.findByEmail(email)
+            ?: Credential(
+                userId = userId,
+                email = email,
+                provider = provider,
+                providerId = providerId,
+                password = null
+            ).also { credentialRepository.save(it) }
+
+        if (credential.provider != provider || credential.providerId != providerId) {
+            credential.provider = provider
+            credential.providerId = providerId
+        }
     }
 }

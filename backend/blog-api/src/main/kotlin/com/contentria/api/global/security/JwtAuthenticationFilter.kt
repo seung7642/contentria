@@ -1,6 +1,6 @@
 package com.contentria.api.global.security
 
-import com.contentria.api.auth.application.JwtService
+import com.contentria.api.auth.application.TokenGenerator
 import com.contentria.api.user.security.CustomUserDetailsService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.FilterChain
@@ -16,7 +16,7 @@ private val log = KotlinLogging.logger {}
 
 @Component
 class JwtAuthenticationFilter(
-    private val jwtService: JwtService,
+    private val tokenGenerator: TokenGenerator,
     private val customUserDetailsService: CustomUserDetailsService,
 ) : OncePerRequestFilter() {
 
@@ -26,11 +26,16 @@ class JwtAuthenticationFilter(
         filterChain: FilterChain
     ) {
         log.debug { "Start JwtAuthenticationFilter..." }
+
         try {
             val jwt = resolveToken(request)
 
             if (jwt != null && SecurityContextHolder.getContext().authentication == null) {
-                authenticateUser(jwt, request)
+                if (tokenGenerator.validateToken(jwt)) {
+                    authenticateUser(jwt, request)
+                } else {
+                    log.warn { "Invalid JWT Token" }
+                }
             }
         } catch (e: Exception) {
             log.warn { "JWT Processing Failed: ${e.message}" }
@@ -43,27 +48,21 @@ class JwtAuthenticationFilter(
     private fun resolveToken(request: HttpServletRequest): String? {
         val authHeader = request.getHeader("Authorization")
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            val bearerToken = authHeader.substring(7)
-            log.info { "Found Bearer token in Authorization header: $bearerToken" }
-            return bearerToken
+            log.debug { "JWT Found Authorization" }
+            return authHeader.substring(7)
         }
 
-        val accessToken = request.cookies?.find { it.name == "accessToken" }?.value
-        val refreshToken = request.cookies?.find { it.name == "refreshToken" }?.value
-        log.info { "Found accessToken in cookies: $accessToken, refreshToken:${refreshToken}" }
-        return accessToken
+        return request.cookies?.find { it.name == "accessToken" }?.value
     }
 
     private fun authenticateUser(jwt: String, request: HttpServletRequest) {
-        val userEmail = jwtService.getUsernameFromToken(jwt)
-
+        val userEmail = tokenGenerator.extractSubject(jwt)
         val userDetails = this.customUserDetailsService.loadUserByUsername(userEmail)
-        if (jwtService.isTokenValid(jwt, userDetails.username)) {
-            val authToken = UsernamePasswordAuthenticationToken(userDetails, null, userDetails.authorities)
-            authToken.details = WebAuthenticationDetailsSource().buildDetails(request)
 
-            SecurityContextHolder.getContext().authentication = authToken
-            log.debug { "Authenticated user '$userEmail', setting security context." }
-        }
+        val authToken = UsernamePasswordAuthenticationToken.authenticated(userDetails, null, userDetails.authorities)
+        authToken.details = WebAuthenticationDetailsSource().buildDetails(request)
+
+        SecurityContextHolder.getContext().authentication = authToken
+        log.debug { "Authenticated user '$userEmail', setting security context." }
     }
 }
