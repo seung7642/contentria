@@ -1,6 +1,6 @@
 package com.contentria.api.global.security
 
-import com.contentria.api.auth.application.TokenGenerator
+import com.contentria.api.auth.application.TokenProvider
 import com.contentria.api.user.security.CustomUserDetailsService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.FilterChain
@@ -16,7 +16,7 @@ private val log = KotlinLogging.logger {}
 
 @Component
 class JwtAuthenticationFilter(
-    private val tokenGenerator: TokenGenerator,
+    private val tokenProvider: TokenProvider,
     private val customUserDetailsService: CustomUserDetailsService,
 ) : OncePerRequestFilter() {
 
@@ -31,7 +31,7 @@ class JwtAuthenticationFilter(
             val jwt = resolveToken(request)
 
             if (jwt != null && SecurityContextHolder.getContext().authentication == null) {
-                if (tokenGenerator.validateToken(jwt)) {
+                if (tokenProvider.validateToken(jwt)) {
                     authenticateUser(jwt, request)
                 } else {
                     log.warn { "Invalid JWT Token" }
@@ -56,7 +56,7 @@ class JwtAuthenticationFilter(
     }
 
     private fun authenticateUser(jwt: String, request: HttpServletRequest) {
-        val userEmail = tokenGenerator.extractSubject(jwt)
+        val userEmail = tokenProvider.extractSubject(jwt)
         val userDetails = this.customUserDetailsService.loadUserByUsername(userEmail)
 
         val authToken = UsernamePasswordAuthenticationToken.authenticated(userDetails, null, userDetails.authorities)

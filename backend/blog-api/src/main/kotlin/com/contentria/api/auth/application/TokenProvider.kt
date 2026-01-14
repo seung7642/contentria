@@ -2,7 +2,7 @@ package com.contentria.api.auth.application
 
 import com.contentria.api.auth.application.dto.AuthTokenCommand
 
-interface TokenGenerator {
+interface TokenProvider {
 
     fun generateAccessToken(command: AuthTokenCommand): String
 

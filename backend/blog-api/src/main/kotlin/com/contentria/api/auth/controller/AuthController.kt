@@ -74,13 +74,13 @@ class AuthController(
     fun initiateSignUp(
         @Valid @RequestBody request: SignUpInitiateRequest,
         httpRequest: HttpServletRequest
-    ): ResponseEntity<SignUpInitiateResponse> {
+    ): ResponseEntity<Unit> {
         val clientIp = ipResolver.getClientIp(httpRequest)
             ?: throw ContentriaException(ErrorCode.CLIENT_IP_NOT_FOUND)
 
         val command = request.toCommand(clientIp)
-        val response = authFacade.initiate(command)
-        return ResponseEntity.ok(response)
+        authFacade.initiate(command)
+        return ResponseEntity.ok().build()
     }
 
     @PostMapping("/verify-code")
@@ -89,7 +89,7 @@ class AuthController(
         httpRequest: HttpServletRequest,
         httpResponse: HttpServletResponse
     ): ResponseEntity<VerifyCodeResponse> {
-        val result = authFacade.verifyCode(request)
+        val result = authFacade.verifyCode(request.toCommand())
 
         httpResponse.addCookie(cookieUtil.createAccessTokenCookie(result.accessToken, httpRequest))
         httpResponse.addCookie(cookieUtil.createRefreshTokenCookie(result.refreshToken, httpRequest))

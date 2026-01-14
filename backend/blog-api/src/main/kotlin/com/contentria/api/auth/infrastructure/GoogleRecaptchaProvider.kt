@@ -1,6 +1,6 @@
 package com.contentria.api.auth.infrastructure
 
-import com.contentria.api.auth.application.CaptchaVerifier
+import com.contentria.api.auth.application.CaptchaProvider
 import com.contentria.api.auth.application.dto.CaptchaCommand
 import com.contentria.api.auth.application.dto.CaptchaVersion
 import com.contentria.api.auth.controller.dto.RecaptchaRequest
@@ -19,7 +19,7 @@ private val log = KotlinLogging.logger {}
 class GoogleRecaptchaAdapter(
     private val webClient: WebClient,
     appProperties: AppProperties
-) : CaptchaVerifier {
+) : CaptchaProvider {
 
     private val recaptchaProperties = appProperties.auth.recaptcha
 

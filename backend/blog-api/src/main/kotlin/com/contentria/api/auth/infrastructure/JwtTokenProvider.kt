@@ -1,6 +1,6 @@
 package com.contentria.api.auth.infrastructure
 
-import com.contentria.api.auth.application.TokenGenerator
+import com.contentria.api.auth.application.TokenProvider
 import com.contentria.api.auth.application.dto.AuthTokenCommand
 import com.contentria.api.global.properties.AppProperties
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -19,7 +19,7 @@ private val log = KotlinLogging.logger {}
 @Component
 class JwtTokenProvider(
     private val appProperties: AppProperties
-) : TokenGenerator {
+) : TokenProvider {
 
     private val secretKey: SecretKey by lazy {
         try {

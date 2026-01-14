@@ -102,7 +102,7 @@ class UserService(
     }
 
     @Transactional
-    fun createUnverifiedUser(email: String, name: String, password: String?): User {
+    fun createUnverifiedUser(email: String, name: String): User {
         userRepository.findByEmail(email)?.let { user ->
             if (user.status.isActive()) {
                 throw ContentriaException(ErrorCode.ALREADY_EXISTS_EMAIL)
@@ -143,6 +143,18 @@ class UserService(
     @Transactional(readOnly = true)
     fun findActiveUserById(userId: UUID): User {
         val user = userRepository.findActiveById(userId)
+            ?: throw ContentriaException(ErrorCode.USER_NOT_FOUND)
+
+        if (!user.status.isActive()) {
+            throw ContentriaException(ErrorCode.USER_NOT_ACTIVATED)
+        }
+
+        return user
+    }
+
+    @Transactional(readOnly = true)
+    fun findActiveUserByEmail(email: String): User {
+        val user = userRepository.findByEmail(email)
             ?: throw ContentriaException(ErrorCode.USER_NOT_FOUND)
 
         if (!user.status.isActive()) {

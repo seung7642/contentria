@@ -53,5 +53,8 @@ enum class ErrorCode(
     MARKDOWN_PROCESSING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MD0000", "An error occurred while processing the markdown content."),
     EMPTY_MARKDOWN_CONTENT(HttpStatus.BAD_REQUEST, "MD0001", "Markdown content cannot be empty."),
     MARKDOWN_CONTENT_TOO_LARGE(HttpStatus.BAD_REQUEST, "MD0002", "Markdown content exceeds the maximum allowed length."),
+
+    // Cache
+    NOT_FOUND_CACHE(HttpStatus.NOT_FOUND, "CA0000", "Not found cache. Please contact support.")
     ;
 }

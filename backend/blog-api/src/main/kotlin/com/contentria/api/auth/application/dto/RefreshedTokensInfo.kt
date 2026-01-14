@@ -1,6 +1,6 @@
 package com.contentria.api.auth.application.dto
 
-data class RefreshedTokensDto(
+data class RefreshedTokensInfo(
     val accessToken: String,
     val refreshToken: String
 )

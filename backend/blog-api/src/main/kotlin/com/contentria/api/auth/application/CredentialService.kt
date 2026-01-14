@@ -48,4 +48,16 @@ class CredentialService(
             credential.providerId = providerId
         }
     }
+
+    @Transactional(readOnly = true)
+    fun authenticate(email: String, rawPassword: String?): Credential {
+        val credential = (credentialRepository.findByEmail(email)
+            ?: throw ContentriaException(ErrorCode.INVALID_CREDENTIALS))
+
+        if (!passwordEncoder.matches(rawPassword, credential.password)) {
+            throw ContentriaException(ErrorCode.INVALID_CREDENTIALS)
+        }
+
+        return credential
+    }
 }
