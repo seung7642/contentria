@@ -1,10 +1,10 @@
 package com.contentria.api.blog.controller
 
+import com.contentria.api.auth.infrastructure.security.AuthUserDetails
 import com.contentria.api.blog.application.BlogFacade
 import com.contentria.api.blog.controller.dto.BlogLayoutResponse
 import com.contentria.api.blog.controller.dto.CreateBlogRequest
 import com.contentria.api.blog.controller.dto.CreateBlogResponse
-import com.contentria.api.user.security.CustomUserDetails
 import jakarta.validation.Valid
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -24,7 +24,7 @@ class BlogController(
     @PostMapping("/create")
     @PreAuthorize("isAuthenticated()")
     fun createBlog(
-        @AuthenticationPrincipal userDetails: CustomUserDetails,
+        @AuthenticationPrincipal userDetails: AuthUserDetails,
         @Valid @RequestBody request: CreateBlogRequest
     ): ResponseEntity<CreateBlogResponse> {
         val userId = requireNotNull(userDetails.userId) {

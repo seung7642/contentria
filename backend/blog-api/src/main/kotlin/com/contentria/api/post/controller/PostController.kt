@@ -1,12 +1,12 @@
 package com.contentria.api.post.controller
 
+import com.contentria.api.auth.infrastructure.security.AuthUserDetails
 import com.contentria.api.post.application.PostFacade
 import com.contentria.api.post.application.PostService
 import com.contentria.api.post.controller.dto.CreateNewPostRequest
 import com.contentria.api.post.controller.dto.CreateNewPostResponse
 import com.contentria.api.post.controller.dto.PostDetailResponse
 import com.contentria.api.post.controller.dto.PostSummaryResponse
-import com.contentria.api.user.security.CustomUserDetails
 import com.contentria.common.aop.ApiLog
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.validation.Valid
@@ -49,7 +49,7 @@ class PostController(
 
     @PostMapping("/posts")
     fun createNewPost(
-        @AuthenticationPrincipal userDetails: CustomUserDetails,
+        @AuthenticationPrincipal userDetails: AuthUserDetails,
         @Valid @RequestBody request: CreateNewPostRequest
     ): ResponseEntity<CreateNewPostResponse> {
         log.info { "Creating new post for userId=${userDetails.userId}, request=$request" }

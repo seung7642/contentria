@@ -1,10 +1,10 @@
 package com.contentria.api.category.controller
 
+import com.contentria.api.auth.infrastructure.security.AuthUserDetails
 import com.contentria.api.blog.application.BlogService
+import com.contentria.api.category.application.CategoryService
 import com.contentria.api.category.controller.dto.CategoryResponse
 import com.contentria.api.category.controller.dto.SyncCategoryRequest
-import com.contentria.api.category.application.CategoryService
-import com.contentria.api.user.security.CustomUserDetails
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -30,7 +30,7 @@ class CategoryController(
     fun syncCategory(
         @PathVariable blogId: UUID,
         @RequestBody @Valid request: List<SyncCategoryRequest>,
-        @AuthenticationPrincipal userPrincipal: CustomUserDetails
+        @AuthenticationPrincipal userPrincipal: AuthUserDetails
     ): ResponseEntity<Void> {
         val actorUserId = userPrincipal.userId
         categoryService.syncCategories(blogId, request.map { it.toCommand(actorUserId!!) })

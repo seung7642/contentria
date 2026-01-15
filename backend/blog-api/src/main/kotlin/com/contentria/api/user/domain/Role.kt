@@ -2,7 +2,6 @@ package com.contentria.api.user.domain
 
 import com.contentria.common.config.jpa.GeneratedUuidV7
 import jakarta.persistence.*
-import org.springframework.security.core.GrantedAuthority
 import java.util.*
 
 @Entity
@@ -19,10 +18,7 @@ class Role(
 
     @Column(length = 255)
     val description: String? = null,
-
-) : GrantedAuthority, BaseEntity() {
-
-    override fun getAuthority(): String = name
+) : BaseEntity() {
 
     companion object {
         const val USER = "ROLE_USER"

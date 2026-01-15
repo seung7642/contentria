@@ -7,7 +7,6 @@ import com.contentria.api.global.error.ErrorCode
 import com.contentria.api.user.application.dto.UserSummaryInfo
 import com.contentria.api.user.controller.dto.CurrentUserResponse
 import com.contentria.api.user.domain.*
-import com.contentria.api.user.security.GoogleUserInfo
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
