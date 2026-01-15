@@ -3,123 +3,81 @@ package com.contentria.api.auth.infrastructure
 import com.contentria.api.auth.application.CaptchaProvider
 import com.contentria.api.auth.application.dto.CaptchaCommand
 import com.contentria.api.auth.application.dto.CaptchaVersion
-import com.contentria.api.auth.controller.dto.RecaptchaRequest
-import com.contentria.api.auth.infrastructure.dto.GoogleRecaptchaRequest
 import com.contentria.api.auth.infrastructure.dto.GoogleRecaptchaResponse
+import com.contentria.api.global.error.ContentriaException
+import com.contentria.api.global.error.ErrorCode
 import com.contentria.api.global.properties.AppProperties
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
+import org.springframework.util.LinkedMultiValueMap
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
-import reactor.core.publisher.Mono
 
 private val log = KotlinLogging.logger {}
 
 @Component
-class GoogleRecaptchaAdapter(
+class GoogleRecaptchaProvider(
     private val webClient: WebClient,
     appProperties: AppProperties
 ) : CaptchaProvider {
 
     private val recaptchaProperties = appProperties.auth.recaptcha
 
-    override fun verify(command: CaptchaCommand): Boolean {
-        return when (command.version) {
-            CaptchaVersion.V2 -> isV2TokenValid(command.token, command.clientIp)
-            CaptchaVersion.V3 -> isV3TokenValid(
-                token = command.token,
-                clientIp = command.clientIp,
-                expectedAction = command.action,
-                scoreThreshold = recaptchaProperties.scoreThreshold
-            )
+    override fun verify(command: CaptchaCommand) {
+        val secretKey = when (command.version) {
+            CaptchaVersion.V2 -> recaptchaProperties.v2SecretKey
+            CaptchaVersion.V3 -> recaptchaProperties.v3SecretKey
         }
-    }
 
-    fun isValid(request: RecaptchaRequest, action: String, clientIp: String?): Boolean {
-        return if (request.hasRecaptchaV2Token()) {
-            isV2TokenValid(request.recaptchaV2Token!!, clientIp)
-        } else if (request.hasRecaptchaV3Token()) {
-            isV3TokenValid(
-                request.recaptchaV3Token!!,
-                clientIp,
-                action,
-                recaptchaProperties.scoreThreshold
-            )
-        } else {
-            false
+        if (secretKey.isBlank()) {
+            log.error { "reCAPTCHA ${command.version} secret key is missing." }
+            throw ContentriaException(ErrorCode.INTERNAL_SERVER_ERROR)
         }
-    }
 
-    private fun isV2TokenValid(token: String, clientIp: String?): Boolean {
-        val response = verifyV2(token, clientIp)
-        return response.success
-    }
-
-    private fun isV3TokenValid(token: String, clientIp: String?, expectedAction: String, scoreThreshold: Double): Boolean {
-        val response = verifyV3(token, clientIp)
+        val response = callGoogleApi(secretKey, command.token, command.clientIp)
 
         if (!response.success) {
-            log.warn { "reCAPTCHA V3 verification failed. Google Errors: ${response.errorCodes}" }
-            return false
+            log.warn { "reCAPTCHA verification failed. ErrorCodes: ${response.errorCodes}" }
+            throw ContentriaException(ErrorCode.RECAPTCHA_VERIFICATION_FAILED)
         }
-        if (response.action != expectedAction) {
+
+        if (command.version.isV3()) {
+            validateV3Specifics(response, command.action, recaptchaProperties.scoreThreshold)
+        }
+    }
+
+    private fun validateV3Specifics(
+        response: GoogleRecaptchaResponse,
+        expectedAction: String?,
+        threshold: Double
+    ) {
+        if (expectedAction != null && response.action != expectedAction) {
             log.warn { "reCAPTCHA action mismatch. Expected: $expectedAction, Got: ${response.action}" }
-            return false
+            throw ContentriaException(ErrorCode.RECAPTCHA_V3_ACTION_MISMATCH)
         }
-        if ((response.score ?: 0.0) < scoreThreshold) {
-            log.info { "reCAPTCHA score is below threshold. Score: ${response.score}, Threshold: $scoreThreshold" }
-            return false
+
+        val score = response.score ?: 0.0
+        if (score < threshold) {
+            log.info { "reCAPTCHA score too low. Score: $score, Threshold: $threshold" }
+            throw ContentriaException(ErrorCode.RECAPTCHA_VERIFICATION_FAILED)
         }
-        return true
     }
 
-    private fun verifyV3(token: String, clientIp: String?): GoogleRecaptchaResponse {
-        if (recaptchaProperties.v3SecretKey.isBlank()) {
-            log.warn { "reCAPTCHA v3 secret key is not configured. Verification will be skipped." }
-            return createErrorResponse("missing-v3-secret-key")
+    private fun callGoogleApi(secret: String, token: String, ip: String?): GoogleRecaptchaResponse {
+        val formData = LinkedMultiValueMap<String, String>().apply {
+            add("secret", secret)
+            add("response", token)
+            if (ip != null) {
+                add("remoteip", ip)
+            }
         }
 
-        val requestBody = GoogleRecaptchaRequest(
-            secret = recaptchaProperties.v3SecretKey,
-            response = token,
-            remoteip = clientIp
-        )
-
-        return callGoogleApi(requestBody).block()!!
-    }
-
-    private fun verifyV2(token: String, clientIp: String?): GoogleRecaptchaResponse {
-        if (recaptchaProperties.v2SecretKey.isBlank()) {
-            log.warn { "reCAPTCHA v2 secret key is not configured. Verification will be skipped." }
-            return createErrorResponse("missing-v2-secret-key")
-        }
-
-        val requestBody = GoogleRecaptchaRequest(
-            secret = recaptchaProperties.v2SecretKey,
-            response = token,
-            remoteip = clientIp
-        )
-
-        return callGoogleApi(requestBody).block()!!
-    }
-
-    private fun callGoogleApi(requestBody: GoogleRecaptchaRequest): Mono<GoogleRecaptchaResponse> {
         return webClient.post()
             .uri(recaptchaProperties.siteVerifyUrl)
-            .body(BodyInserters.fromFormData(requestBody.toFormData()))
+            .body(BodyInserters.fromFormData(formData))
             .retrieve()
             .bodyToMono(GoogleRecaptchaResponse::class.java)
-            .doOnError { e -> log.error(e) { "reCAPTCHA API call failed" } }
-    }
-
-    private fun createErrorResponse(errorCode: String): GoogleRecaptchaResponse {
-        return GoogleRecaptchaResponse(
-            success = false,
-            score = null,
-            action = null,
-            hostname = null,
-            errorCodes = listOf(errorCode),
-            challengeTimestamp = null
-        )
+            .block()
+            ?: throw ContentriaException(ErrorCode.RECAPTCHA_API_ERROR)
     }
 }

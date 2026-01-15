@@ -4,5 +4,5 @@ import com.contentria.api.auth.application.dto.CaptchaCommand
 
 interface CaptchaProvider {
 
-    fun verify(command: CaptchaCommand): Boolean
+    fun verify(command: CaptchaCommand)
 }

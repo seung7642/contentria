@@ -136,11 +136,6 @@ class UserService(
     }
 
     @Transactional(readOnly = true)
-    fun findByEmail(email: String): User? {
-        return userRepository.findByEmail(email)
-    }
-
-    @Transactional(readOnly = true)
     fun findActiveUserById(userId: UUID): User {
         val user = userRepository.findActiveById(userId)
             ?: throw ContentriaException(ErrorCode.USER_NOT_FOUND)

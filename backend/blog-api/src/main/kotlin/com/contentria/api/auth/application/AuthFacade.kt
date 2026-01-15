@@ -25,9 +25,7 @@ class AuthFacade(
 ) {
     @Transactional
     fun initiate(command: SignUpInitiateCommand) {
-        if (!captchaProvider.verify(command.captcha)) {
-            throw ContentriaException(ErrorCode.RECAPTCHA_VERIFICATION_FAILED)
-        }
+        captchaProvider.verify(command.captcha)
 
         val user = userService.createUnverifiedUser(command.email, command.name)
 
@@ -59,9 +57,7 @@ class AuthFacade(
 
     @Transactional
     fun login(command: LoginCommand): LoginInfo {
-        if (!captchaProvider.verify(command.captcha)) {
-            throw ContentriaException(ErrorCode.RECAPTCHA_VERIFICATION_FAILED)
-        }
+        captchaProvider.verify(command.captcha)
 
         val credential = credentialService.authenticate(command.email, command.password)
 
@@ -102,9 +98,7 @@ class AuthFacade(
 
     @Transactional
     fun sendOtp(command: SendOtpCommand) {
-        if (!captchaProvider.verify(command.captcha)) {
-            throw ContentriaException(ErrorCode.RECAPTCHA_VERIFICATION_FAILED)
-        }
+        captchaProvider.verify(command.captcha)
 
         val user = userService.findActiveUserByEmail(command.email)
 
