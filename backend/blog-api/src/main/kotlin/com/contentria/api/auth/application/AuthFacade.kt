@@ -1,8 +1,6 @@
 package com.contentria.api.auth.application
 
 import com.contentria.api.auth.application.dto.*
-import com.contentria.api.global.error.ContentriaException
-import com.contentria.api.global.error.ErrorCode
 import com.contentria.api.user.application.UserService
 import com.contentria.api.user.controller.dto.CurrentUserResponse
 import com.contentria.api.user.domain.AuthProvider
@@ -40,10 +38,7 @@ class AuthFacade(
 
     @Transactional
     fun verifyCode(command: VerifyCodeCommand): VerifyCodeInfo {
-        val isVerified = verificationCodeProvider.verifyCode(command.email, command.verificationCode)
-        if (!isVerified) {
-            throw ContentriaException(ErrorCode.INVALID_VERIFICATION_CODE)
-        }
+        verificationCodeProvider.verifyCode(command.email, command.verificationCode)
 
         val user = userService.activateUserByEmail(command.email)
         val (accessToken, refreshToken) = generateTokens(user)

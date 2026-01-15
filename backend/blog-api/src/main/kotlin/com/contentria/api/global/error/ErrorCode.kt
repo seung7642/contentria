@@ -17,6 +17,7 @@ enum class ErrorCode(
     RECAPTCHA_VERIFICATION_FAILED(HttpStatus.FORBIDDEN, "C0005", "reCAPTCHA verification failed. Please try again."),
     RECAPTCHA_V3_ACTION_MISMATCH(HttpStatus.BAD_REQUEST, "C0006", "reCAPTCHA action mismatch."),
     RECAPTCHA_API_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "C0007", "Error occurred while verifying reCAPTCHA token."),
+    TOO_MANY_REQUESTS(HttpStatus.TOO_MANY_REQUESTS, "C0008", "Too many requests. Please try again later."),
 
     // Sign Up
     INVALID_VERIFICATION_CODE(HttpStatus.BAD_REQUEST, "SU0000", "Invalid or expired verification code"),
