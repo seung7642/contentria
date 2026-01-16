@@ -8,12 +8,14 @@ import java.util.UUID
 data class AuthUserDetails(
     val userId: UUID,
     val email: String,
-    private val roles: List<String>
+    private val rawRoles: List<String>
 ) : UserDetails {
 
-    override fun getAuthorities(): Collection<GrantedAuthority?>? {
-        return roles.map { SimpleGrantedAuthority(it) }
-    }
+    private val authorities: Collection<GrantedAuthority> = rawRoles.map {
+        SimpleGrantedAuthority(it)
+    }.toSet()
+
+    override fun getAuthorities(): Collection<GrantedAuthority?>? = authorities
 
     /**
      * In JWT authentication, a password is not required, so we return null.

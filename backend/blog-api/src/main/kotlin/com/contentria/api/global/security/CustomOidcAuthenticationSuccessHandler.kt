@@ -1,11 +1,12 @@
 package com.contentria.api.global.security
 
 import com.contentria.api.auth.application.AuthFacade
+import com.contentria.api.auth.application.dto.SocialLoginCommand
 import com.contentria.api.global.error.ContentriaException
 import com.contentria.api.global.error.ErrorCode
 import com.contentria.api.global.properties.AppProperties
 import com.contentria.api.global.util.CookieUtil
-import com.contentria.api.user.security.GoogleUserInfo
+import com.contentria.api.user.domain.AuthProvider
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -38,34 +39,22 @@ class CustomOidcAuthenticationSuccessHandler(
         val oidcUser = authentication.principal as? OidcUser
             ?: run {
                 log.error {"Authentication principal is not an OidcUser: ${authentication.principal}"}
-                throw ContentriaException(
-                    ErrorCode.OIDC_INVALID_PRINCIPAL
-                )
+                throw ContentriaException(ErrorCode.OIDC_INVALID_PRINCIPAL)
             }
 
-        val googleUserInfo = GoogleUserInfo(
-            id = oidcUser.subject,
+        val socialLoginCommand = SocialLoginCommand(
             email = oidcUser.email ?: run {
                 log.error { "Email not found in OIDC claims for user: ${oidcUser.subject}" }
-                throw ContentriaException(
-                    ErrorCode.OIDC_MISSING_EMAIL
-                )
+                throw ContentriaException(ErrorCode.OIDC_MISSING_EMAIL)
             },
             name = oidcUser.fullName ?: oidcUser.givenName ?: oidcUser.subject,
-            picture = oidcUser.picture
+            picture = oidcUser.picture,
+            provider = AuthProvider.GOOGLE,
+            providerId = oidcUser.subject,
         )
 
         try {
-            val loginInfo = authFacade.loginWithSocial(googleUserInfo)
-//            val user: User = userService.upsertGoogleUser(googleUserInfo)
-//
-//            val authTokenInfo = AuthTokenInfo(
-//                userId = user.id!!,
-//                email = user.email,
-//                roles = user.userRoles.map { it.role.name }
-//            )
-//            val accessToken = jwtService.generateAccessToken(authTokenInfo)
-//            val refreshToken = refreshTokenService.upsertRefreshToken(user.id!!)
+            val loginInfo = authFacade.loginWithSocial(socialLoginCommand)
 
             response.addCookie(cookieUtil.createAccessTokenCookie(loginInfo.accessToken, request))
             response.addCookie(cookieUtil.createRefreshTokenCookie(loginInfo.refreshToken, request))
@@ -78,15 +67,16 @@ class CustomOidcAuthenticationSuccessHandler(
 
             log.info { "OIDC authentication success handler ended." }
         } catch (e: Exception) {
-            log.error(e) { "Error during post-authentication processing for user: ${googleUserInfo.email}" }
+            log.error(e) { "Error during post-authentication processing for user: ${socialLoginCommand.email}" }
 
             response.addCookie(cookieUtil.clearAccessTokenCookie(request))
             response.addCookie(cookieUtil.clearRefreshTokenCookie(request))
 
-            if (e is ContentriaException) throw e
-            else throw ContentriaException(
-                ErrorCode.OIDC_POST_PROCESSING_FAILED
-            )
+            if (e is ContentriaException) {
+                throw e
+            } else {
+                throw ContentriaException(ErrorCode.OIDC_POST_PROCESSING_FAILED)
+            }
         }
     }
 }

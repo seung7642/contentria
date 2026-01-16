@@ -1,13 +1,13 @@
 package com.contentria.api.global.security
 
 import com.contentria.api.auth.application.TokenProvider
-import com.contentria.api.auth.infrastructure.security.AuthUserDetailsService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
@@ -17,7 +17,7 @@ private val log = KotlinLogging.logger {}
 @Component
 class JwtAuthenticationFilter(
     private val tokenProvider: TokenProvider,
-    private val userDetailsService: AuthUserDetailsService,
+    private val userDetailsService: UserDetailsService,
 ) : OncePerRequestFilter() {
 
     override fun doFilterInternal(
@@ -57,7 +57,7 @@ class JwtAuthenticationFilter(
 
     private fun authenticateUser(jwt: String, request: HttpServletRequest) {
         val userEmail = tokenProvider.extractSubject(jwt)
-        val userDetails = this.userDetailsService.loadUserByUsername(userEmail)
+        val userDetails = userDetailsService.loadUserByUsername(userEmail)
 
         val authToken = UsernamePasswordAuthenticationToken.authenticated(userDetails, null, userDetails.authorities)
         authToken.details = WebAuthenticationDetailsSource().buildDetails(request)

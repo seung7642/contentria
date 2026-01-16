@@ -20,7 +20,7 @@ class AuthUserDetailsService(
             return AuthUserDetails(
                 userId = user.id!!,
                 email = user.email,
-                roles = user.userRoles.map { it.role.name }
+                rawRoles = user.userRoles.map { it.role.name }
             )
         } catch (e: Exception) {
             // Instead of using the project's exception policy `ContentriaException`,

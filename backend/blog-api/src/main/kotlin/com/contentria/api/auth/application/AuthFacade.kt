@@ -3,9 +3,7 @@ package com.contentria.api.auth.application
 import com.contentria.api.auth.application.dto.*
 import com.contentria.api.user.application.UserService
 import com.contentria.api.user.controller.dto.CurrentUserResponse
-import com.contentria.api.user.domain.AuthProvider
 import com.contentria.api.user.domain.User
-import com.contentria.api.user.security.GoogleUserInfo
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -69,18 +67,18 @@ class AuthFacade(
     }
 
     @Transactional
-    fun loginWithSocial(googleUserInfo: GoogleUserInfo): LoginInfo {
+    fun loginWithSocial(command: SocialLoginCommand): LoginInfo {
         val user = userService.upsertSocialUser(
-            email = googleUserInfo.email,
-            name = googleUserInfo.name,
-            pictureUrl = googleUserInfo.picture
+            email = command.email,
+            name = command.name,
+            pictureUrl = command.picture
         )
 
         credentialService.upsertSocialCredential(
             userId = user.id!!,
             email = user.email,
-            provider = AuthProvider.GOOGLE,
-            providerId = googleUserInfo.id
+            provider = command.provider,
+            providerId = command.providerId
         )
         val (accessToken, refreshToken) = generateTokens(user)
 
