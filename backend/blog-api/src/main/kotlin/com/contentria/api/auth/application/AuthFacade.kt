@@ -2,8 +2,7 @@ package com.contentria.api.auth.application
 
 import com.contentria.api.auth.application.dto.*
 import com.contentria.api.user.application.UserService
-import com.contentria.api.user.controller.dto.CurrentUserResponse
-import com.contentria.api.user.domain.User
+import com.contentria.api.user.application.dto.UserInfo
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -26,7 +25,7 @@ class AuthFacade(
         val user = userService.createUnverifiedUser(command.email, command.name)
 
         credentialService.createPasswordCredential(
-            userId = user.id!!,
+            userId = user.userId,
             email = command.email,
             rawPassword = command.password
         )
@@ -44,7 +43,7 @@ class AuthFacade(
         return VerifyCodeInfo(
             accessToken = accessToken,
             refreshToken = refreshToken,
-            user = CurrentUserResponse.from(user)
+            user = user
         )
     }
 
@@ -54,7 +53,7 @@ class AuthFacade(
 
         val credential = credentialService.authenticate(command.email, command.password)
 
-        val user = userService.findActiveUserById(credential.userId)
+        val user = userService.getActiveUserInfo(credential.userId)
         val (accessToken, refreshToken) = generateTokens(user)
 
         log.info { "User logged in successfully: ${user.email}" }
@@ -62,7 +61,7 @@ class AuthFacade(
         return LoginInfo(
             accessToken = accessToken,
             refreshToken = refreshToken,
-            user = CurrentUserResponse.from(user)
+            user = user
         )
     }
 
@@ -75,7 +74,7 @@ class AuthFacade(
         )
 
         credentialService.upsertSocialCredential(
-            userId = user.id!!,
+            userId = user.userId,
             email = user.email,
             provider = command.provider,
             providerId = command.providerId
@@ -85,7 +84,7 @@ class AuthFacade(
         return LoginInfo(
             accessToken = accessToken,
             refreshToken = refreshToken,
-            user = CurrentUserResponse.from(user)
+            user = user
         )
     }
 
@@ -93,15 +92,15 @@ class AuthFacade(
     fun sendOtp(command: SendOtpCommand) {
         captchaProvider.verify(command.captcha)
 
-        val user = userService.findActiveUserByEmail(command.email)
+        val user = userService.getActiveUserInfo(command.email)
 
-        verificationCodeProvider.sendVerificationCode(command.email, user.username)
+        verificationCodeProvider.sendVerificationCode(command.email, user.name)
     }
 
     @Transactional
     fun refreshTokens(oldRefreshTokenValue: String): RefreshedTokensInfo {
         val validRefreshToken = refreshTokenService.findValidToken(oldRefreshTokenValue)
-        val user = userService.findActiveUserById(validRefreshToken.userId)
+        val user = userService.getActiveUserInfo(validRefreshToken.userId)
 
         val (accessToken, refreshToken) = generateTokens(user)
 
@@ -111,17 +110,16 @@ class AuthFacade(
         )
     }
 
-    private fun generateTokens(user: User): Pair<String, String> {
-        val userId = user.id!!
+    private fun generateTokens(userInfo: UserInfo): Pair<String, String> {
 
         val authTokenCommand = AuthTokenCommand(
-            userId = userId,
-            email = user.email,
-            roles = user.userRoles.map { it.role.name }
+            userId = userInfo.userId,
+            email = userInfo.email,
+            roles = userInfo.roles
         )
 
         val accessToken = tokenProvider.generateAccessToken(authTokenCommand)
-        val refreshToken = refreshTokenService.upsertRefreshToken(userId)
+        val refreshToken = refreshTokenService.upsertRefreshToken(userInfo.userId)
         return Pair(accessToken, refreshToken)
     }
 }

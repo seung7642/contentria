@@ -1,6 +1,6 @@
 package com.contentria.api.blog.controller.dto
 
-import com.contentria.api.blog.application.dto.BlogInfo
+import com.contentria.api.blog.application.dto.BlogSummaryInfo
 import com.contentria.api.blog.application.dto.BlogLayoutInfo
 import com.contentria.api.category.controller.dto.CategoryResponse
 import com.contentria.api.user.controller.dto.UserSummaryResponse
@@ -34,7 +34,7 @@ data class BlogLayoutResponse(
                 )
             }
 
-            fun from(info: BlogInfo): Blog {
+            fun from(info: BlogSummaryInfo): Blog {
                 return Blog(
                     title = info.title,
                     slug = info.slug,

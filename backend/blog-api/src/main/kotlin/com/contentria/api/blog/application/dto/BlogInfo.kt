@@ -1,18 +1,26 @@
 package com.contentria.api.blog.application.dto
 
 import com.contentria.api.blog.domain.Blog
+import java.time.ZonedDateTime
+import java.util.UUID
 
 data class BlogInfo(
-    val title: String,
+    val id: UUID,
     val slug: String,
-    val description: String
+    val title: String,
+    val description: String,
+    val createdAt: ZonedDateTime,
+    val userId: UUID
 ) {
     companion object {
         fun from(blog: Blog): BlogInfo {
             return BlogInfo(
-                title = blog.title,
+                id = blog.id!!,
                 slug = blog.slug,
-                description = blog.description ?: ""
+                title = blog.title,
+                description = blog.description ?: "",
+                createdAt = blog.createdAt,
+                userId = blog.userId
             )
         }
     }

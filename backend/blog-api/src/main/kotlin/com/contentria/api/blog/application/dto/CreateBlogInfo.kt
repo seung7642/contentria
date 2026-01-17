@@ -12,13 +12,13 @@ data class CreateBlogInfo(
     val createdAt: ZonedDateTime
 ) {
     companion object {
-        fun from(blog: Blog): CreateBlogInfo {
+        fun from(blogInfo: BlogInfo): CreateBlogInfo {
             return CreateBlogInfo(
-                id = blog.id!!,
-                slug = blog.slug,
-                title = blog.title,
-                description = blog.description,
-                createdAt = blog.createdAt
+                id = blogInfo.id!!,
+                slug = blogInfo.slug,
+                title = blogInfo.title,
+                description = blogInfo.description,
+                createdAt = blogInfo.createdAt
             )
         }
     }

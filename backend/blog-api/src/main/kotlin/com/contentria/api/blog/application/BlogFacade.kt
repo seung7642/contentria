@@ -1,9 +1,9 @@
 package com.contentria.api.blog.application
 
 import com.contentria.api.blog.application.dto.BlogInfo
+import com.contentria.api.blog.application.dto.BlogSummaryInfo
 import com.contentria.api.blog.application.dto.BlogLayoutInfo
 import com.contentria.api.blog.application.dto.CreateBlogCommand
-import com.contentria.api.blog.application.dto.CreateBlogInfo
 import com.contentria.api.category.application.CategoryService
 import com.contentria.api.post.application.PostService
 import com.contentria.api.user.application.UserService
@@ -25,18 +25,22 @@ class BlogFacade(
     private val resourceLoader: ResourceLoader
 ) {
     @Transactional
-    fun createBlogWithSamples(userId: UUID, request: CreateBlogCommand): CreateBlogInfo {
-        val user = userService.findActiveUserById(userId)
-        val savedBlog = blogService.createBlog(userId, request.slug, user.email)
-        val createdCategoryIds = categoryService.createSampleCategories(savedBlog.id!!)
+    fun createBlogWithSamples(userId: UUID, request: CreateBlogCommand): BlogInfo {
+        val user = userService.getActiveUserInfo(userId)
+
+        val savedBlogInfo = blogService.createBlog(userId, request.slug, user.email)
+
+        val createdCategoryIds = categoryService.createSampleCategories(savedBlogInfo.id)
         val sampleContents = mapOf(
             "backendPost" to readMarkdownContent("classpath:samples/backend-post.md"),
             "dailyPost" to readMarkdownContent("classpath:samples/daily-post.md")
         )
-        postService.createSamplePosts(savedBlog.id!!, createdCategoryIds, sampleContents)
 
-        log.info { "Created blog with samples. email:${user.email}, slug:${savedBlog.slug}" }
-        return CreateBlogInfo.from(savedBlog)
+        postService.createSamplePosts(savedBlogInfo.id, createdCategoryIds, sampleContents)
+
+        log.info { "Created blog with samples. email:${user.email}, slug:${savedBlogInfo.slug}" }
+
+        return savedBlogInfo
     }
 
     private fun readMarkdownContent(resourcePath: String): String {
@@ -51,14 +55,14 @@ class BlogFacade(
 
     @Transactional(readOnly = true)
     fun getBlogLayout(slug: String): BlogLayoutInfo {
-        val blog = blogService.getBlogBySlug(slug)
+        val blog = blogService.getBlogInfo(slug)
 
         val ownerInfo = userService.getUserSummary(blog.userId)
 
         val categories = categoryService.getFlattenedCategories(blog.id!!)
 
         return BlogLayoutInfo(
-            blog = BlogInfo.from(blog),
+            blog = BlogSummaryInfo.from(blog),
             owner = ownerInfo,
             categories = categories
         )

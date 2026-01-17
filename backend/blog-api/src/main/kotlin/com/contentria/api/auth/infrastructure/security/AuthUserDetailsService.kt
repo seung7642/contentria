@@ -15,12 +15,12 @@ class AuthUserDetailsService(
     @Transactional(readOnly = true)
     override fun loadUserByUsername(email: String): UserDetails {
         try {
-            val user = userService.findActiveUserByEmail(email)
+            val user = userService.getActiveUserInfo(email)
 
             return AuthUserDetails(
-                userId = user.id!!,
+                userId = user.userId,
                 email = user.email,
-                rawRoles = user.userRoles.map { it.role.name }
+                rawRoles = user.roles
             )
         } catch (e: Exception) {
             // Instead of using the project's exception policy `ContentriaException`,

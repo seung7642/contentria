@@ -1,11 +1,9 @@
 package com.contentria.api.user.application
 
-import com.contentria.api.blog.domain.BlogRepository
-import com.contentria.api.blog.dto.BlogSummary
 import com.contentria.api.global.error.ContentriaException
 import com.contentria.api.global.error.ErrorCode
+import com.contentria.api.user.application.dto.UserInfo
 import com.contentria.api.user.application.dto.UserSummaryInfo
-import com.contentria.api.user.controller.dto.CurrentUserResponse
 import com.contentria.api.user.domain.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
@@ -17,8 +15,7 @@ private val log = KotlinLogging.logger {}
 @Service
 class UserService(
     private val userRepository: UserRepository,
-    private val roleRepository: RoleRepository,
-    private val blogRepository: BlogRepository,
+    private val roleRepository: RoleRepository
 ) {
 
 //    @Transactional
@@ -69,7 +66,7 @@ class UserService(
 //    }
 
     @Transactional
-    fun upsertSocialUser(email: String, name: String, pictureUrl: String?): User {
+    fun upsertSocialUser(email: String, name: String, pictureUrl: String?): UserInfo {
         return userRepository.findByEmail(email)?.let { existingUser ->
             var updated = false
             if (existingUser.realUsername != name) {
@@ -88,20 +85,22 @@ class UserService(
             if (updated) {
                 log.info { "Updated social user profile: $email" }
             }
-            existingUser
+
+            UserInfo.from(existingUser)
         } ?: run {
             log.info { "Creating new social user: $email" }
             val newUser = User.createSocialUser(email, name, name, pictureUrl)
+
             val userRole = roleRepository.findByName(Role.USER)
                 ?: throw ContentriaException(ErrorCode.REQUIRED_ROLE_NOT_FOUND)
-
             newUser.addRole(userRole)
-            userRepository.save(newUser)
+
+            UserInfo.from(userRepository.save(newUser))
         }
     }
 
     @Transactional
-    fun createUnverifiedUser(email: String, name: String): User {
+    fun createUnverifiedUser(email: String, name: String): UserInfo {
         userRepository.findByEmail(email)?.let { user ->
             if (user.status.isActive()) {
                 throw ContentriaException(ErrorCode.ALREADY_EXISTS_EMAIL)
@@ -121,21 +120,22 @@ class UserService(
 
         newUser.addRole(defaultRole)
 
-        return userRepository.save(newUser)
+        val savedUser = userRepository.save(newUser)
+        return UserInfo.from(savedUser)
     }
 
     @Transactional
-    fun activateUserByEmail(email: String): User {
+    fun activateUserByEmail(email: String): UserInfo {
         val user = userRepository.findByEmail(email)
             ?: throw ContentriaException(ErrorCode.USER_NOT_FOUND)
 
         user.status = UserStatus.ACTIVE
 
-        return user
+        return UserInfo.from(user)
     }
 
     @Transactional(readOnly = true)
-    fun findActiveUserById(userId: UUID): User {
+    fun getActiveUserInfo(userId: UUID): UserInfo {
         val user = userRepository.findActiveById(userId)
             ?: throw ContentriaException(ErrorCode.USER_NOT_FOUND)
 
@@ -143,11 +143,11 @@ class UserService(
             throw ContentriaException(ErrorCode.USER_NOT_ACTIVATED)
         }
 
-        return user
+        return UserInfo.from(user)
     }
 
     @Transactional(readOnly = true)
-    fun findActiveUserByEmail(email: String): User {
+    fun getActiveUserInfo(email: String): UserInfo {
         val user = userRepository.findByEmail(email)
             ?: throw ContentriaException(ErrorCode.USER_NOT_FOUND)
 
@@ -155,22 +155,7 @@ class UserService(
             throw ContentriaException(ErrorCode.USER_NOT_ACTIVATED)
         }
 
-        return user
-    }
-
-    @Transactional(readOnly = true)
-    fun getCurrentUserInfo(userId: UUID): CurrentUserResponse {
-        val user = findActiveUserById(userId)
-
-        val blogs = blogRepository.findAllByUserId(userId)
-
-        return CurrentUserResponse(
-            userId = user.id,
-            email = user.email,
-            name = user.realUsername,
-            profileImage = user.pictureUrl,
-            blogs = blogs.map { BlogSummary.from(it) }
-        )
+        return UserInfo.from(user)
     }
 
     @Transactional(readOnly = true)

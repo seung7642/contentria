@@ -1,5 +1,6 @@
 package com.contentria.api.blog.application
 
+import com.contentria.api.blog.application.dto.BlogInfo
 import com.contentria.api.blog.domain.Blog
 import com.contentria.api.blog.domain.BlogRepository
 import com.contentria.api.global.error.ContentriaException
@@ -16,7 +17,7 @@ class BlogService(
     private val blogRepository: BlogRepository
 ) {
     @Transactional
-    fun createBlog(userId: UUID, slug: String, title: String): Blog {
+    fun createBlog(userId: UUID, slug: String, title: String): BlogInfo {
         if (blogRepository.existsBySlug(slug)) {
             throw ContentriaException(ErrorCode.DUPLICATE_BLOG_SLUG)
         }
@@ -26,29 +27,29 @@ class BlogService(
             title = title,
             userId = userId
         )
-        return blogRepository.save(blog)
+
+        val savedBlog = blogRepository.save(blog)
+        return BlogInfo.from(savedBlog)
     }
 
-//    @Transactional(readOnly = true)
-//    fun getBlogByBlogId(blogId: UUID): Blog {
-//        return blogRepository.findById(blogId)
-//            .orElseThrow { ContentriaException(ErrorCode.NOT_FOUND_BLOG) }
-//    }
+    @Transactional(readOnly = true)
+    fun getBlogInfo(slug: String): BlogInfo {
+        val blog = (blogRepository.findBySlug(slug)
+            ?: throw ContentriaException(ErrorCode.NOT_FOUND_BLOG))
 
-    @Transactional
-    fun getBlogBySlug(slug: String): Blog {
-        return blogRepository.findBySlug(slug)
-            ?: throw ContentriaException(
-                ErrorCode.NOT_FOUND_BLOG
-            )
+        return BlogInfo.from(blog)
+    }
+
+    @Transactional(readOnly = true)
+    fun getBlogInfos(userId: UUID): List<BlogInfo> {
+        val blogs = blogRepository.findAllByUserId(userId)
+        return blogs.map { BlogInfo.from(it) }
     }
 
     @Transactional(readOnly = true)
     fun validateBlogOwner(blogId: UUID, userId: UUID) {
-        val blog = (blogRepository.findById(blogId)
-            ?: throw ContentriaException(
-                ErrorCode.NOT_FOUND_BLOG
-            ))
+        val blog = blogRepository.findById(blogId)
+            ?: throw ContentriaException(ErrorCode.NOT_FOUND_BLOG)
 
         if (!blog.isOwner(userId)) {
             throw ContentriaException(ErrorCode.INVALID_INPUT_VALUE)
