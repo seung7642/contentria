@@ -12,18 +12,6 @@ data class CurrentUserResponse(
     val profileImage: String?,
     val blogResponses: List<BlogResponse> = emptyList()
 ) {
-    companion object {
-        fun from(userInfo: UserInfo, blogInfos: List<BlogInfo>): CurrentUserResponse {
-            return CurrentUserResponse(
-                userId = userInfo.userId,
-                email = userInfo.email,
-                name = userInfo.name,
-                profileImage = userInfo.pictureUrl,
-                blogResponses = blogInfos.map { BlogResponse.from(it) }
-            )
-        }
-    }
-
     data class BlogResponse(
         val id: UUID,
         val slug: String,
@@ -34,13 +22,25 @@ data class CurrentUserResponse(
         companion object {
             fun from(blogInfo: BlogInfo): BlogResponse {
                 return BlogResponse(
-                    id = blogInfo.id,
+                    id = blogInfo.blogId,
                     slug = blogInfo.slug,
                     title = blogInfo.title,
                     description = blogInfo.description,
                     createdAt = blogInfo.createdAt
                 )
             }
+        }
+    }
+
+    companion object {
+        fun from(userInfo: UserInfo, blogInfos: List<BlogInfo>): CurrentUserResponse {
+            return CurrentUserResponse(
+                userId = userInfo.userId,
+                email = userInfo.email,
+                name = userInfo.name,
+                profileImage = userInfo.pictureUrl,
+                blogResponses = blogInfos.map { BlogResponse.from(it) }
+            )
         }
     }
 }

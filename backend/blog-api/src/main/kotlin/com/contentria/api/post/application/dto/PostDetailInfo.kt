@@ -2,27 +2,15 @@ package com.contentria.api.post.application.dto
 
 import com.contentria.api.post.domain.PostStatus
 import com.contentria.api.post.domain.query.PostDetailView
-import com.contentria.api.user.application.dto.UserSummaryInfo
+import com.contentria.api.user.application.dto.UserPublicInfo
 import java.time.ZonedDateTime
 import java.util.UUID
 
 data class PostDetailInfo(
-    val post: Post,
-    val owner: UserSummaryInfo
+    val post: PostInfo,
+    val author: UserPublicInfo
 ) {
-    companion object {
-        fun from(view: PostDetailView): PostDetailInfo {
-            return PostDetailInfo(
-                post = Post.from(view),
-                owner = UserSummaryInfo(
-                    username = view.writerName,
-                    pictureUrl = view.writerProfileUrl
-                )
-            )
-        }
-    }
-
-    data class Post(
+    data class PostInfo(
         val id: UUID,
         val slug: String,
         val title: String,
@@ -38,8 +26,8 @@ data class PostDetailInfo(
         val blogSlug: String
     ) {
         companion object {
-            fun from(view: PostDetailView): Post {
-                return Post(
+            fun from(view: PostDetailView): PostInfo {
+                return PostInfo(
                     id = view.id,
                     slug = view.slug,
                     title = view.title,
@@ -55,6 +43,19 @@ data class PostDetailInfo(
                     blogSlug = view.blogSlug
                 )
             }
+        }
+    }
+
+    companion object {
+        fun from(view: PostDetailView): PostDetailInfo {
+            return PostDetailInfo(
+                post = PostInfo.from(view),
+                author = UserPublicInfo(
+                    userId = view.writerId,
+                    username = view.writerName,
+                    pictureUrl = view.writerProfileUrl
+                )
+            )
         }
     }
 }

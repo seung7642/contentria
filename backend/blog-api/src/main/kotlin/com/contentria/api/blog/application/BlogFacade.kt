@@ -1,7 +1,6 @@
 package com.contentria.api.blog.application
 
 import com.contentria.api.blog.application.dto.BlogInfo
-import com.contentria.api.blog.application.dto.BlogSummaryInfo
 import com.contentria.api.blog.application.dto.BlogLayoutInfo
 import com.contentria.api.blog.application.dto.CreateBlogCommand
 import com.contentria.api.category.application.CategoryService
@@ -12,7 +11,7 @@ import org.springframework.core.io.ResourceLoader
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.nio.charset.StandardCharsets
-import java.util.UUID
+import java.util.*
 
 private val log = KotlinLogging.logger {  }
 
@@ -30,13 +29,13 @@ class BlogFacade(
 
         val savedBlogInfo = blogService.createBlog(userId, request.slug, user.email)
 
-        val createdCategoryIds = categoryService.createSampleCategories(savedBlogInfo.id)
+        val createdCategoryIds = categoryService.createSampleCategories(savedBlogInfo.blogId)
         val sampleContents = mapOf(
             "backendPost" to readMarkdownContent("classpath:samples/backend-post.md"),
             "dailyPost" to readMarkdownContent("classpath:samples/daily-post.md")
         )
 
-        postService.createSamplePosts(savedBlogInfo.id, createdCategoryIds, sampleContents)
+        postService.createSamplePosts(savedBlogInfo.blogId, createdCategoryIds, sampleContents)
 
         log.info { "Created blog with samples. email:${user.email}, slug:${savedBlogInfo.slug}" }
 
@@ -59,10 +58,10 @@ class BlogFacade(
 
         val ownerInfo = userService.getUserSummary(blog.userId)
 
-        val categories = categoryService.getFlattenedCategories(blog.id!!)
+        val categories = categoryService.getFlattenedCategories(blog.blogId!!)
 
         return BlogLayoutInfo(
-            blog = BlogSummaryInfo.from(blog),
+            blog = blog,
             owner = ownerInfo,
             categories = categories
         )

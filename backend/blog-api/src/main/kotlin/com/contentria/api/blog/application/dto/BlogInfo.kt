@@ -5,7 +5,7 @@ import java.time.ZonedDateTime
 import java.util.UUID
 
 data class BlogInfo(
-    val id: UUID,
+    val blogId: UUID,
     val slug: String,
     val title: String,
     val description: String,
@@ -15,7 +15,7 @@ data class BlogInfo(
     companion object {
         fun from(blog: Blog): BlogInfo {
             return BlogInfo(
-                id = blog.id!!,
+                blogId = blog.id!!,
                 slug = blog.slug,
                 title = blog.title,
                 description = blog.description ?: "",

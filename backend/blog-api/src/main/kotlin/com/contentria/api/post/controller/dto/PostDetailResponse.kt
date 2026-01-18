@@ -1,24 +1,15 @@
 package com.contentria.api.post.controller.dto
 
 import com.contentria.api.post.application.dto.PostDetailInfo
-import com.contentria.api.user.controller.dto.UserSummaryResponse
+import com.contentria.api.user.application.dto.UserPublicInfo
 import java.time.ZonedDateTime
-import java.util.UUID
+import java.util.*
 
 data class PostDetailResponse(
-    val post: Post,
-    val owner: UserSummaryResponse
+    val post: PostResponse,
+    val author: AuthorResponse
 ) {
-    companion object {
-        fun from(postDetailInfo: PostDetailInfo): PostDetailResponse {
-            return PostDetailResponse(
-                post = Post.from(postDetailInfo.post),
-                owner = UserSummaryResponse.from(postDetailInfo.owner)
-            )
-        }
-    }
-
-    data class Post(
+    data class PostResponse(
         val id: UUID,
         val slug: String,
         val title: String,
@@ -30,8 +21,8 @@ data class PostDetailResponse(
         val categoryName: String?
     ) {
         companion object {
-            fun from(post: PostDetailInfo.Post): Post {
-                return Post(
+            fun from(post: PostDetailInfo.PostInfo): PostResponse {
+                return PostResponse(
                     id = post.id,
                     slug = post.slug,
                     title = post.title,
@@ -43,6 +34,31 @@ data class PostDetailResponse(
                     categoryName = post.categoryName
                 )
             }
+        }
+    }
+
+    data class AuthorResponse(
+        val userId: UUID,
+        val username: String,
+        val profileImageUrl: String?
+    ) {
+        companion object {
+            fun from(info: UserPublicInfo): AuthorResponse {
+                return AuthorResponse(
+                    userId = info.userId,
+                    username = info.username,
+                    profileImageUrl = info.pictureUrl
+                )
+            }
+        }
+    }
+
+    companion object {
+        fun from(postDetailInfo: PostDetailInfo): PostDetailResponse {
+            return PostDetailResponse(
+                post = PostResponse.from(postDetailInfo.post),
+                author = AuthorResponse.from(postDetailInfo.author)
+            )
         }
     }
 }

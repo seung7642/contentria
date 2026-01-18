@@ -14,7 +14,7 @@ data class CreateBlogResponse(
     companion object {
         fun from(blogInfo: BlogInfo): CreateBlogResponse {
             return CreateBlogResponse(
-                id = blogInfo.id,
+                id = blogInfo.blogId,
                 slug = blogInfo.slug,
                 title = blogInfo.title,
                 description = blogInfo.description,

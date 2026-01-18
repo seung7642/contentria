@@ -1,46 +1,55 @@
 package com.contentria.api.blog.controller.dto
 
-import com.contentria.api.blog.application.dto.BlogSummaryInfo
+import com.contentria.api.blog.application.dto.BlogInfo
 import com.contentria.api.blog.application.dto.BlogLayoutInfo
 import com.contentria.api.category.controller.dto.CategoryResponse
-import com.contentria.api.user.controller.dto.UserSummaryResponse
+import com.contentria.api.user.application.dto.UserPublicInfo
+import java.util.*
 
 data class BlogLayoutResponse(
-    val blog: Blog,
-    val owner: UserSummaryResponse,
+    val blog: BlogResponse,
+    val owner: OwnerResponse,
     val categories: List<CategoryResponse>,
 ) {
-    companion object {
-        fun from(info: BlogLayoutInfo): BlogLayoutResponse {
-            return BlogLayoutResponse(
-                blog = Blog.from(info.blog),
-                owner = UserSummaryResponse.from(info.owner),
-                categories = info.categories.map { CategoryResponse.from(it) }
-            )
-        }
-    }
-
-    data class Blog(
+    data class BlogResponse(
         val title: String,
         val slug: String,
         val description: String?
     ) {
         companion object {
-            fun from(blog: Blog): Blog {
-                return Blog(
-                    title = blog.title,
-                    slug = blog.slug,
-                    description = blog.description
-                )
-            }
-
-            fun from(info: BlogSummaryInfo): Blog {
-                return Blog(
+            fun from(info: BlogInfo): BlogResponse {
+                return BlogResponse(
                     title = info.title,
                     slug = info.slug,
                     description = info.description
                 )
             }
+        }
+    }
+
+    data class OwnerResponse(
+        val userId: UUID,
+        val name: String,
+        val profileImageUrl: String?
+    ) {
+        companion object {
+            fun from(info: UserPublicInfo): OwnerResponse {
+                return OwnerResponse(
+                    userId = info.userId,
+                    name = info.username,
+                    profileImageUrl = info.pictureUrl
+                )
+            }
+        }
+    }
+
+    companion object {
+        fun from(info: BlogLayoutInfo): BlogLayoutResponse {
+            return BlogLayoutResponse(
+                blog = BlogResponse.from(info.blog),
+                owner = OwnerResponse.from(info.owner),
+                categories = info.categories.map { CategoryResponse.from(it) }
+            )
         }
     }
 }
