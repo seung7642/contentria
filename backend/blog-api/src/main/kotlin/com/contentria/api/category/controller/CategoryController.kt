@@ -1,7 +1,7 @@
 package com.contentria.api.category.controller
 
 import com.contentria.api.auth.infrastructure.security.AuthUserDetails
-import com.contentria.api.blog.application.BlogService
+import com.contentria.api.category.application.CategoryFacade
 import com.contentria.api.category.application.CategoryService
 import com.contentria.api.category.controller.dto.CategoryResponse
 import com.contentria.api.category.controller.dto.SyncCategoryRequest
@@ -14,25 +14,30 @@ import java.util.*
 @RestController
 @RequestMapping("/categories")
 class CategoryController(
+    private val categoryFacade: CategoryFacade,
     private val categoryService: CategoryService,
-    private val blogService: BlogService
 ) {
 
     @GetMapping
-    fun getCategories(@RequestParam blogId: UUID): ResponseEntity<List<CategoryResponse>> {
-        val blog = blogService.getBlogByBlogId(blogId)
-        val categories = categoryService.getFlattenedCategories(blog)
-        val responses = categories.map { CategoryResponse.from(it) }
+    fun getCategories(
+        @AuthenticationPrincipal userDetails: AuthUserDetails,
+        @RequestParam blogId: UUID
+    ): ResponseEntity<List<CategoryResponse>> {
+        val categoryInfos = categoryFacade.getCategories(
+            userId = userDetails.userId,
+            blogId = blogId
+        )
+        val responses = categoryInfos.map { CategoryResponse.from(it) }
         return ResponseEntity.ok(responses)
     }
 
     @PostMapping
     fun syncCategory(
+        @AuthenticationPrincipal userDetails: AuthUserDetails,
         @PathVariable blogId: UUID,
-        @RequestBody @Valid request: List<SyncCategoryRequest>,
-        @AuthenticationPrincipal userPrincipal: AuthUserDetails
+        @RequestBody @Valid request: List<SyncCategoryRequest>
     ): ResponseEntity<Void> {
-        val actorUserId = userPrincipal.userId
+        val actorUserId = userDetails.userId
         categoryService.syncCategories(blogId, request.map { it.toCommand(actorUserId!!) })
         return ResponseEntity.ok().build()
     }

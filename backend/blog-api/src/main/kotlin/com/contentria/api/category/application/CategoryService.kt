@@ -102,11 +102,9 @@ class CategoryService(
             )
 
         val blog = blogRepository.findById(blogId)
-            .orElseThrow {
-                ContentriaException(ErrorCode.NOT_FOUND_BLOG)
-            }
+            ?: throw ContentriaException(ErrorCode.NOT_FOUND_BLOG)
 
-        if (blog.user.id != actorUserId) {
+        if (blog.userId != actorUserId) {
             throw ContentriaException(ErrorCode.FORBIDDEN_ACCESS_BLOG)
         }
 

@@ -1,7 +1,6 @@
 package com.contentria.api.blog.domain
 
-import com.contentria.api.user.domain.User
-import java.util.UUID
+import java.util.*
 
 interface BlogRepository {
 

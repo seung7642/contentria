@@ -61,13 +61,7 @@ class AuthController(
         httpResponse.addCookie(cookieUtil.createAccessTokenCookie(result.accessToken, httpRequest))
         httpResponse.addCookie(cookieUtil.createRefreshTokenCookie(result.refreshToken, httpRequest))
 
-        return ResponseEntity.ok(
-            LoginResponse(
-                user = result.user,
-                accessToken = result.accessToken,
-                refreshToken = result.refreshToken
-            )
-        )
+        return ResponseEntity.ok(LoginResponse.from(result.user, result.accessToken, result.refreshToken))
     }
 
     @PostMapping("/signup/initiate")
@@ -89,12 +83,12 @@ class AuthController(
         httpRequest: HttpServletRequest,
         httpResponse: HttpServletResponse
     ): ResponseEntity<VerifyCodeResponse> {
-        val result = authFacade.verifyCode(request.toCommand())
+        val verifyCodeInfo = authFacade.verifyCode(request.toCommand())
 
-        httpResponse.addCookie(cookieUtil.createAccessTokenCookie(result.accessToken, httpRequest))
-        httpResponse.addCookie(cookieUtil.createRefreshTokenCookie(result.refreshToken, httpRequest))
+        httpResponse.addCookie(cookieUtil.createAccessTokenCookie(verifyCodeInfo.accessToken, httpRequest))
+        httpResponse.addCookie(cookieUtil.createRefreshTokenCookie(verifyCodeInfo.refreshToken, httpRequest))
 
-        return ResponseEntity.ok(VerifyCodeResponse(result.user))
+        return ResponseEntity.ok(VerifyCodeResponse.from(verifyCodeInfo))
     }
 
     @PostMapping("/send-otp")
