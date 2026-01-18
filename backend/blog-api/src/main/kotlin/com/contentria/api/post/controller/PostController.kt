@@ -33,7 +33,7 @@ class PostController(
         @RequestParam blogSlug: String,
         @PageableDefault(sort = ["publishedAt"], direction = Sort.Direction.DESC) pageable: Pageable
     ): ResponseEntity<Page<PostSummaryResponse>> {
-        val postsPage = postService.getPostsByBlogSlug(blogSlug, pageable)
+        val postsPage = postService.getPosts(blogSlug, pageable)
         return ResponseEntity.ok(postsPage.map { PostSummaryResponse.from(it) })
     }
 
@@ -43,7 +43,7 @@ class PostController(
         @PathVariable blogSlug: String,
         @PathVariable postSlug: String
     ): ResponseEntity<PostDetailResponse> {
-        val postDetailAndOwnerInfo = postService.getPostDetail(blogSlug, postSlug)
+        val postDetailAndOwnerInfo = postFacade.getPostDetail(blogSlug, postSlug)
         return ResponseEntity.ok(PostDetailResponse.from(postDetailAndOwnerInfo))
     }
 

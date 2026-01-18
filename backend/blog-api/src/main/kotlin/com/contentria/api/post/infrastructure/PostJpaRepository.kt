@@ -1,8 +1,7 @@
 package com.contentria.api.post.infrastructure
 
-import com.contentria.api.post.domain.query.CategoryPostCount
 import com.contentria.api.post.domain.Post
-import com.contentria.api.post.domain.query.PostDetailView
+import com.contentria.api.post.domain.query.CategoryPostCount
 import com.contentria.api.post.domain.query.PostSummary
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -56,13 +55,7 @@ interface PostJpaRepository : JpaRepository<Post, UUID> {
     fun findPostSummariesByBlogSlug(blogSlug: String, pageable: Pageable): Page<PostSummary>
 
     @Query("""
-        SELECT new com.contentria.api.post.domain.query.PostDetailView(
-            p.id, p.slug, p.title, p.contentMarkdown, p.metaTitle, p.metaDescription,
-            p.featuredImageUrl, p.status, p.likeCount, p.viewCount, p.publishedAt,
-            b.slug,
-            c.name,
-            u.id, u.username, u.email, u.pictureUrl
-        )
+        SELECT p
         FROM Post p
         JOIN Blog b ON p.blogId = b.id 
         LEFT JOIN Category c ON p.categoryId = c.id
@@ -71,7 +64,7 @@ interface PostJpaRepository : JpaRepository<Post, UUID> {
             AND p.slug = :postSlug 
             AND p.status = com.contentria.api.post.domain.PostStatus.PUBLISHED
     """)
-    fun findPublishedPostDetailView(blogSlug: String, postSlug: String): PostDetailView?
+    fun findPublishedPost(blogSlug: String, postSlug: String): Post?
 
     @Query("""
         SELECT p.slug 

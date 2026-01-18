@@ -56,9 +56,9 @@ class BlogFacade(
     fun getBlogLayout(slug: String): BlogLayoutInfo {
         val blog = blogService.getBlogInfo(slug)
 
-        val ownerInfo = userService.getUserSummary(blog.userId)
+        val ownerInfo = userService.getActiveUserInfo(blog.userId)
 
-        val categories = categoryService.getFlattenedCategories(blog.blogId!!)
+        val categories = categoryService.getFlattenedCategories(blog.blogId)
 
         return BlogLayoutInfo(
             blog = blog,

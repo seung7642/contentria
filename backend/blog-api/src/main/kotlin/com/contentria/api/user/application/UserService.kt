@@ -3,7 +3,6 @@ package com.contentria.api.user.application
 import com.contentria.api.global.error.ContentriaException
 import com.contentria.api.global.error.ErrorCode
 import com.contentria.api.user.application.dto.UserInfo
-import com.contentria.api.user.application.dto.UserPublicInfo
 import com.contentria.api.user.domain.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
@@ -156,17 +155,5 @@ class UserService(
         }
 
         return UserInfo.from(user)
-    }
-
-    @Transactional(readOnly = true)
-    fun getUserSummary(userId: UUID): UserPublicInfo {
-        val user = userRepository.findById(userId)
-            ?: throw ContentriaException(ErrorCode.USER_NOT_FOUND)
-
-        return UserPublicInfo(
-            userId = user.id!!,
-            username = user.username!!,
-            pictureUrl = user.pictureUrl
-        )
     }
 }

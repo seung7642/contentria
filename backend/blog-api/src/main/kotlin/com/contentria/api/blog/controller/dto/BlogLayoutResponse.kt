@@ -3,7 +3,7 @@ package com.contentria.api.blog.controller.dto
 import com.contentria.api.blog.application.dto.BlogInfo
 import com.contentria.api.blog.application.dto.BlogLayoutInfo
 import com.contentria.api.category.controller.dto.CategoryResponse
-import com.contentria.api.user.application.dto.UserPublicInfo
+import com.contentria.api.user.application.dto.UserInfo
 import java.util.*
 
 data class BlogLayoutResponse(
@@ -33,10 +33,10 @@ data class BlogLayoutResponse(
         val profileImageUrl: String?
     ) {
         companion object {
-            fun from(info: UserPublicInfo): OwnerResponse {
+            fun from(info: UserInfo): OwnerResponse {
                 return OwnerResponse(
                     userId = info.userId,
-                    name = info.username,
+                    name = info.name,
                     profileImageUrl = info.pictureUrl
                 )
             }

@@ -1,7 +1,6 @@
 package com.contentria.api.post.domain
 
 import com.contentria.api.post.domain.query.CategoryPostCount
-import com.contentria.api.post.domain.query.PostDetailView
 import com.contentria.api.post.domain.query.PostSummary
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -19,7 +18,7 @@ interface PostRepository {
 
     fun findPostSummariesByBlogSlug(blogSlug: String, pageable: Pageable): Page<PostSummary>
 
-    fun findPublishedPostDetailView(blogSlug: String, postSlug: String): PostDetailView?
+    fun findPublishedPost(blogSlug: String, postSlug: String): Post?
 
     fun findSlugsByPrefix(blogId: UUID, targetSlug: String): List<String>
 

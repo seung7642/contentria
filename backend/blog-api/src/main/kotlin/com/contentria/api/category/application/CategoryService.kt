@@ -45,6 +45,21 @@ class CategoryService(
     }
 
     @Transactional(readOnly = true)
+    fun getCategoryInfo(categoryId: UUID): CategoryInfo {
+        val category = categoryRepository.findById(categoryId)
+            ?: throw ContentriaException(ErrorCode.NOT_FOUND_CATEGORY)
+
+        return CategoryInfo(
+            id = category.id!!,
+            name = category.name,
+            slug = category.slug,
+            parentId = category.parent?.id,
+            level = -1,
+            postCount = 0
+        )
+    }
+
+    @Transactional(readOnly = true)
     fun getFlattenedCategories(blogId: UUID): List<CategoryInfo> {
         val categoriesWithCount = categoryRepository.findAllWithPostCount(blogId)
 
@@ -88,9 +103,7 @@ class CategoryService(
 
         val blog = blogRepository.findById(blogId)
             .orElseThrow {
-                ContentriaException(
-                    ErrorCode.NOT_FOUND_BLOG
-                )
+                ContentriaException(ErrorCode.NOT_FOUND_BLOG)
             }
 
         if (blog.user.id != actorUserId) {

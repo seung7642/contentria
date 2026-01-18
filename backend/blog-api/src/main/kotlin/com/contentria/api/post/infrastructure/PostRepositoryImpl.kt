@@ -3,13 +3,12 @@ package com.contentria.api.post.infrastructure
 import com.contentria.api.post.domain.Post
 import com.contentria.api.post.domain.PostRepository
 import com.contentria.api.post.domain.query.CategoryPostCount
-import com.contentria.api.post.domain.query.PostDetailView
 import com.contentria.api.post.domain.query.PostSummary
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Repository
-import java.util.UUID
+import java.util.*
 
 @Repository
 class PostRepositoryImpl(
@@ -47,11 +46,11 @@ class PostRepositoryImpl(
         return postJpaRepository.findPostSummariesByBlogSlug(blogSlug, pageable)
     }
 
-    override fun findPublishedPostDetailView(
+    override fun findPublishedPost(
         blogSlug: String,
         postSlug: String
-    ): PostDetailView? {
-        return postJpaRepository.findPublishedPostDetailView(blogSlug, postSlug)
+    ): Post? {
+        return postJpaRepository.findPublishedPost(blogSlug, postSlug)
     }
 
     override fun findSlugsByPrefix(

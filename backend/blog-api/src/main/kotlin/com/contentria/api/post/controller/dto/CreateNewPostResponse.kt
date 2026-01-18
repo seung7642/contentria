@@ -13,7 +13,7 @@ data class CreateNewPostResponse(
     val metaDescription: String?,
     val publishedAt: ZonedDateTime?,
     val status: PostStatus,
-    val categoryName: String?
+    val categoryId: UUID?
 ) {
     companion object {
         fun from(info: CreateNewPostInfo): CreateNewPostResponse {
@@ -25,7 +25,7 @@ data class CreateNewPostResponse(
                 metaDescription = info.metaDescription,
                 publishedAt = info.publishedAt,
                 status = info.status,
-                categoryName = info.categoryName
+                categoryId = info.categoryId
             )
         }
     }

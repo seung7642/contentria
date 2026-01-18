@@ -2,7 +2,7 @@ package com.contentria.api.post.application
 
 import com.contentria.api.global.error.ContentriaException
 import com.contentria.api.global.error.ErrorCode
-import com.contentria.api.post.application.dto.PostDetailInfo
+import com.contentria.api.post.application.dto.PostContentInfo
 import com.contentria.api.post.application.dto.PostSummaryInfo
 import com.contentria.api.post.domain.Post
 import com.contentria.api.post.domain.PostRepository
@@ -49,19 +49,17 @@ class PostService(
     }
 
     @Transactional(readOnly = true)
-    fun getPostsByBlogSlug(blogSlug: String, pageable: Pageable): Page<PostSummaryInfo> {
+    fun getPosts(blogSlug: String, pageable: Pageable): Page<PostSummaryInfo> {
         val postSummaries = postRepository.findPostSummariesByBlogSlug(blogSlug, pageable)
         return postSummaries.map { PostSummaryInfo.from(it) }
     }
 
     @Transactional(readOnly = true)
-    fun getPostDetail(blogSlug: String, postSlug: String): PostDetailInfo {
-        val post = postRepository.findPublishedPostDetailView(blogSlug, postSlug)
-            ?: throw ContentriaException(
-                ErrorCode.NOT_FOUND_POST
-            )
+    fun getPublishedPost(blogSlug: String, postSlug: String): PostContentInfo {
+        val post = postRepository.findPublishedPost(blogSlug, postSlug)
+            ?: throw ContentriaException(ErrorCode.NOT_FOUND_POST)
 
-        return PostDetailInfo.from(post)
+        return PostContentInfo.from(post)
     }
 
     @Transactional(readOnly = true)

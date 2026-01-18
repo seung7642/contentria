@@ -41,6 +41,14 @@ class BlogService(
     }
 
     @Transactional(readOnly = true)
+    fun getBlogInfo(blogId: UUID): BlogInfo {
+        val blog = (blogRepository.findById(blogId)
+            ?: throw ContentriaException(ErrorCode.NOT_FOUND_BLOG))
+
+        return BlogInfo.from(blog)
+    }
+
+    @Transactional(readOnly = true)
     fun getBlogInfos(userId: UUID): List<BlogInfo> {
         val blogs = blogRepository.findAllByUserId(userId)
         return blogs.map { BlogInfo.from(it) }
