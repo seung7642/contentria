@@ -2,7 +2,6 @@ package com.contentria.api.user.domain
 
 import com.contentria.common.config.jpa.GeneratedUuidV7
 import jakarta.persistence.*
-import org.springframework.security.core.GrantedAuthority
 import java.util.*
 
 @Entity
@@ -46,24 +45,12 @@ class User(
         return userRole
     }
 
-    fun hasRole(roleName: String): Boolean {
-        val roleNameWithPrefix = if (roleName.startsWith("ROLE_")) roleName else "ROLE_$roleName"
-        return userRoles.any { it.role.authority == roleNameWithPrefix.uppercase() }
-    }
-
-    fun isAdmin(): Boolean = hasRole("ADMIN")
-
-    fun getAuthorities(): List<GrantedAuthority> = userRoles.map { it.role }
-
-    // 팩토리 메소드로 생성 방식 표준화
     companion object {
         fun createEmailUser(email: String, username: String): User {
             return User(
                 email = email,
                 username = username,
-//                password = password,
                 status = UserStatus.UNVERIFIED,
-//                provider = AuthProvider.EMAIL,
             )
         }
 
@@ -74,8 +61,6 @@ class User(
                 username = username,
                 pictureUrl = pictureUrl,
                 status = UserStatus.ACTIVE,
-//                provider = AuthProvider.GOOGLE,
-//                providerId = providerId,
             )
         }
     }

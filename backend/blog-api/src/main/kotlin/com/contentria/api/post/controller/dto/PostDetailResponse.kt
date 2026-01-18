@@ -1,13 +1,16 @@
 package com.contentria.api.post.controller.dto
 
+import com.contentria.api.post.application.dto.PostContentInfo
 import com.contentria.api.post.application.dto.PostDetailInfo
-import com.contentria.api.user.application.dto.UserPublicInfo
+import com.contentria.api.user.application.dto.UserInfo
 import java.time.ZonedDateTime
 import java.util.*
 
 data class PostDetailResponse(
     val post: PostResponse,
-    val author: AuthorResponse
+    val author: AuthorResponse,
+    val blogSlug: String,
+    val categoryName: String?
 ) {
     data class PostResponse(
         val id: UUID,
@@ -17,11 +20,10 @@ data class PostDetailResponse(
         val metaTitle: String?,
         val metaDescription: String?,
         val featuredImageUrl: String?,
-        val publishedAt: ZonedDateTime?,
-        val categoryName: String?
+        val publishedAt: ZonedDateTime?
     ) {
         companion object {
-            fun from(post: PostDetailInfo.PostInfo): PostResponse {
+            fun from(post: PostContentInfo): PostResponse {
                 return PostResponse(
                     id = post.id,
                     slug = post.slug,
@@ -31,7 +33,6 @@ data class PostDetailResponse(
                     metaDescription = post.metaDescription,
                     featuredImageUrl = post.featuredImageUrl,
                     publishedAt = post.publishedAt,
-                    categoryName = post.categoryName
                 )
             }
         }
@@ -43,10 +44,10 @@ data class PostDetailResponse(
         val profileImageUrl: String?
     ) {
         companion object {
-            fun from(info: UserPublicInfo): AuthorResponse {
+            fun from(info: UserInfo): AuthorResponse {
                 return AuthorResponse(
                     userId = info.userId,
-                    username = info.username,
+                    username = info.name,
                     profileImageUrl = info.pictureUrl
                 )
             }
@@ -57,7 +58,9 @@ data class PostDetailResponse(
         fun from(postDetailInfo: PostDetailInfo): PostDetailResponse {
             return PostDetailResponse(
                 post = PostResponse.from(postDetailInfo.post),
-                author = AuthorResponse.from(postDetailInfo.author)
+                author = AuthorResponse.from(postDetailInfo.author),
+                blogSlug = postDetailInfo.blogSlug,
+                categoryName = postDetailInfo.categoryName
             )
         }
     }
