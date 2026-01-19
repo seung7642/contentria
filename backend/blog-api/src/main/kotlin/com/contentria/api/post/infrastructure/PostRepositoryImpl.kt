@@ -60,7 +60,7 @@ class PostRepositoryImpl(
         return postJpaRepository.findSlugsByPrefix(blogId, targetSlug)
     }
 
-    override fun existsByCategoryId(categoryId: UUID): Boolean {
-        return postJpaRepository.existsByCategoryId(categoryId)
+    override fun existsByCategoryIdIn(categoryIds: List<UUID>): Boolean {
+        return postJpaRepository.existsByCategoryIdIn(categoryIds)
     }
 }

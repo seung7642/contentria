@@ -37,8 +37,8 @@ class CategoryController(
         @PathVariable blogId: UUID,
         @RequestBody @Valid request: List<SyncCategoryRequest>
     ): ResponseEntity<Void> {
-        val actorUserId = userDetails.userId
-        categoryService.syncCategories(blogId, request.map { it.toCommand(actorUserId!!) })
+        val userId = userDetails.userId
+        categoryFacade.syncCategories(blogId, userId, request.map { it.toCommand(userId!!) })
         return ResponseEntity.ok().build()
     }
 }

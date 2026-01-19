@@ -8,20 +8,15 @@ import org.springframework.stereotype.Component
  * 도메인 서비스
  */
 @Component
-class CategoryValidator(
-    private val categoryRepository: CategoryRepository
-) {
-    fun validateDeletable(toDelete: List<Category>, requestIds: Set<String>) {
-        val toDeleteIds = toDelete.map { it.id!! }
-        val categoriesWithPosts = categoryRepository.findCategoriesWithPosts(toDeleteIds)
-        if (categoriesWithPosts.isNotEmpty()) {
-            throw ContentriaException(ErrorCode.CANNOT_DELETE_CATEGORY)
-        }
-
-        val hasOrphanedChildren = toDelete
-            .asSequence()
+class CategoryValidator {
+    fun validateInternalRules(toDelete: List<Category>, requestIds: Set<String>) {
+        val hasOrphanedChildren = toDelete.asSequence()
             .filter { it.parent == null }
-            .any { it.children.any { it.id.toString() in requestIds } }
+            .any { category ->
+                category.children.any { child ->
+                    child.id.toString() !in requestIds
+                }
+            }
 
         if (hasOrphanedChildren) {
             throw ContentriaException(ErrorCode.CANNOT_DELETE_CATEGORY)

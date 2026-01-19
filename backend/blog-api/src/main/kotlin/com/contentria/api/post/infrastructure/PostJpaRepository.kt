@@ -74,10 +74,5 @@ interface PostJpaRepository : JpaRepository<Post, UUID> {
     """)
     fun findSlugsByPrefix(blogId: UUID, targetSlug: String): List<String>
 
-    @Query("""
-        SELECT CASE WHEN COUNT(p) > 0 THEN TRUE ELSE FALSE END
-        FROM Post p
-        WHERE p.categoryId = :categoryId
-    """)
-    fun existsByCategoryId(categoryId: UUID): Boolean
+    fun existsByCategoryIdIn(categoryIds: List<UUID>): Boolean
 }

@@ -31,10 +31,6 @@ class CategoryRepositoryImpl(
         return jpaRepository.findAllByBlogIdOrderByCreatedAtAsc(blogId)
     }
 
-    override fun findCategoriesWithPosts(categoryIds: List<UUID>): List<Category> {
-        return jpaRepository.findCategoriesWithPosts(categoryIds)
-    }
-
     override fun findSimilarSlugs(
         blogId: UUID,
         targetSlug: String

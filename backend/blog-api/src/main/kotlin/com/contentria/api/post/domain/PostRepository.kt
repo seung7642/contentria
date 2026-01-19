@@ -22,5 +22,5 @@ interface PostRepository {
 
     fun findSlugsByPrefix(blogId: UUID, targetSlug: String): List<String>
 
-    fun existsByCategoryId(categoryId: UUID): Boolean
+    fun existsByCategoryIdIn(categoryIds: List<UUID>): Boolean
 }

@@ -95,36 +95,19 @@ class CategoryService(
     }
 
     @Transactional
-    fun syncCategories(blogId: UUID, commands: List<SyncCategoryCommand>) {
-        val actorUserId = commands.firstOrNull()?.actorUserId
-            ?: throw ContentriaException(
-                ErrorCode.INVALID_INPUT_VALUE
-            )
-
-        val blog = blogRepository.findById(blogId)
-            ?: throw ContentriaException(ErrorCode.NOT_FOUND_BLOG)
-
-        if (blog.userId != actorUserId) {
-            throw ContentriaException(ErrorCode.FORBIDDEN_ACCESS_BLOG)
-        }
-
-        // 데이터 준비
-        val existingCategories = categoryRepository.findAllByBlogId(blogId)
-        val existingMap = existingCategories.associateBy { it.id.toString() }
+    fun applySync(blogId: UUID, commands: List<SyncCategoryCommand>, existingCategories: List<Category>) {
         val requestIds = commands.map { it.id }.toSet()
+        val existingMap = existingCategories.associateBy { it.id.toString() }
 
-        // 삭제 처리
-        val toDelete = existingCategories.filterNot { it.id.toString() in requestIds }
+        val toDelete = existingCategories.filter { it.id.toString() !in requestIds }
+
         if (toDelete.isNotEmpty()) {
-            categoryValidator.validateDeletable(toDelete, requestIds)
+            categoryValidator.validateInternalRules(toDelete, requestIds)
 
-            // 삭제 순서 (자식->부모)는 기술적인 문제에 가까우므로 여기서 처리하거나 리포에 위임
             val sortedToDelete = toDelete.sortedByDescending { it.parent != null }
             categoryRepository.deleteAll(sortedToDelete)
         }
 
-        // 생성/수정 처리
-        // 부모-자식 순서 처리는 '상태 의존적'이므로 응용 서비스가 조율하는 것이 자연스러움
         val savedParentsMap = mutableMapOf<String, Category>()
 
         commands.filter { it.parentId == null }.forEach { command ->
@@ -135,9 +118,7 @@ class CategoryService(
         commands.filter { it.parentId != null }.forEach { command ->
             val parent = savedParentsMap[command.parentId]
                 ?: existingMap[command.parentId]
-                ?: throw ContentriaException(
-                    ErrorCode.INVALID_INPUT_VALUE
-                )
+                ?: throw ContentriaException(ErrorCode.INVALID_INPUT_VALUE)
 
             upsertCategory(blogId, command, parent, existingMap[command.id])
         }
@@ -177,5 +158,10 @@ class CategoryService(
             )
             existing
         }
+    }
+
+    @Transactional(readOnly = true)
+    internal fun getCategories(blogId: UUID): List<Category> {
+        return categoryRepository.findAllByBlogId(blogId)
     }
 }

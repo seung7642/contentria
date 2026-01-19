@@ -63,6 +63,7 @@ CREATE TABLE credentials (
     user_id UUID NOT NULL,
 
     CONSTRAINT uq_credentials_email UNIQUE (email),
+    CONSTRAINT uq_credentials_provider_id UNIQUE (provider, provider_id),
     CONSTRAINT fk_credentials_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 

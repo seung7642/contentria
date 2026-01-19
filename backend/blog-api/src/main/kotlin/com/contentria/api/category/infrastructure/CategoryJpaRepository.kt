@@ -19,9 +19,6 @@ interface CategoryJpaRepository : JpaRepository<Category, UUID> {
     """)
     fun findSimilarSlugs(@Param("blogId") blogId: UUID, @Param("targetSlug") targetSlug: String): List<String>
 
-    @Query("SELECT DISTINCT c FROM Category c JOIN Post p ON p.category = c WHERE c.id IN :categoryIds")
-    fun findCategoriesWithPosts(@Param("categoryIds") categoryIds: List<UUID>): List<Category>
-
     @Query("""
         SELECT new com.contentria.api.category.domain.query.CategoryWithCountView(
             c.id, c.name, c.slug, c.parent.id, COUNT(p.id)

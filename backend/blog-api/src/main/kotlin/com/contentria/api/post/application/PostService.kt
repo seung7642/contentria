@@ -63,8 +63,8 @@ class PostService(
     }
 
     @Transactional(readOnly = true)
-    fun existsByCategoryId(categoryId: UUID): Boolean {
-        return postRepository.existsByCategoryId(categoryId)
+    fun existsByCategoryIds(categoryIds: List<UUID>): Boolean {
+        return postRepository.existsByCategoryIdIn(categoryIds)
     }
 
     @Transactional
