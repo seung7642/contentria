@@ -11,7 +11,7 @@ import java.util.*
 
 @Service
 class CategoryService(
-    private val categoryPrivateService: CategoryPrivateService,
+    private val categoryInternalService: CategoryInternalService,
     private val categoryRepository: CategoryRepository,
 ) {
     @Transactional(readOnly = true)
@@ -31,7 +31,7 @@ class CategoryService(
 
     @Transactional(readOnly = true)
     fun getFlattenedCategoryInfos(blogId: UUID): List<CategoryInfo> {
-        return categoryPrivateService.getFlattenedCategoryInfos(blogId)
+        return categoryInternalService.getFlattenedCategoryInfos(blogId)
     }
 
     @Transactional

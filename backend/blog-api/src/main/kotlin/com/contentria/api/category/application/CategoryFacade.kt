@@ -12,7 +12,7 @@ import java.util.*
 
 @Component
 class CategoryFacade(
-    private val categoryPrivateService: CategoryPrivateService,
+    private val categoryInternalService: CategoryInternalService,
     private val blogService: BlogService,
     private val postService: PostService
 ) {
@@ -21,14 +21,14 @@ class CategoryFacade(
         blogService.validateBlogOwner(blogId, userId)
 
         // 아래 코드 에러. 해당 함수는 CategoryService에 위치
-        return categoryPrivateService.getFlattenedCategoryInfos(blogId)
+        return categoryInternalService.getFlattenedCategoryInfos(blogId)
     }
 
     @Transactional
     fun syncCategories(blogId: UUID, userId: UUID, commands: List<SyncCategoryCommand>) {
         blogService.validateBlogOwner(blogId, userId)
 
-        val existingCategories = categoryPrivateService.getCategories(blogId)
+        val existingCategories = categoryInternalService.getCategories(blogId)
 
         val requestIds = commands.map { it.id }.toSet()
         val toDelete = existingCategories.filter { it.id.toString() !in requestIds }
@@ -40,6 +40,6 @@ class CategoryFacade(
             }
         }
 
-        categoryPrivateService.applySync(blogId, commands, existingCategories)
+        categoryInternalService.applySync(blogId, commands, existingCategories)
     }
 }

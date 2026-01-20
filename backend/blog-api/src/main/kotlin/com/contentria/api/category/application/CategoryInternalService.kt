@@ -15,7 +15,7 @@ import java.util.UUID
 import kotlin.collections.get
 
 @Service
-class CategoryPrivateService(
+class CategoryInternalService(
     private val categoryRepository: CategoryRepository,
     private val categoryValidator: CategoryValidator,
     private val categorySlugGenerator: CategorySlugGenerator
