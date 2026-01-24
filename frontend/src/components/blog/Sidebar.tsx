@@ -1,20 +1,20 @@
 import Image from 'next/image';
 import CategoryItem from './CategoryItem';
-import { BlogSummary } from '@/types/api/blogs';
+import { BlogResponse } from '@/types/api/blogs';
 import { getHighResGoogleProfileImage } from '@/lib/imageUtil';
-import { UserSummaryResponse } from '@/types/api/user';
+import { OwnerResponse } from '@/types/api/user';
 import { CategoryResponse } from '@/types/api/category';
 import { buildCategoryTree } from '@/lib/categoryTree';
 
 interface SidebarProps {
-  blog: BlogSummary;
-  owner: UserSummaryResponse;
+  blog: BlogResponse;
+  owner: OwnerResponse;
   categories: CategoryResponse[];
 }
 
 export default function Sidebar({ blog, owner, categories }: SidebarProps) {
   const profileImageUrl =
-    getHighResGoogleProfileImage(owner.pictureUrl, 256) ?? '/images/default-profile.png';
+    getHighResGoogleProfileImage(owner.profileImageUrl, 256) ?? '/images/default-profile.png';
   const blogDescription = blog.description ?? '블로그에 오신 것을 환영합니다.';
 
   const categoryTree = buildCategoryTree(categories, blog.slug);

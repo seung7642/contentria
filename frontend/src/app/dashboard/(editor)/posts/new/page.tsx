@@ -1,5 +1,5 @@
+import { getMyBlogAction } from '@/actions/blog';
 import { getCategoriesAction } from '@/actions/category';
-import { getUserProfileAction } from '@/actions/user';
 import { PostEditorClient } from '@/components/dashboard/editor/PostEditorClient';
 import { Metadata } from 'next';
 
@@ -9,8 +9,8 @@ export const metadata: Metadata = {
 };
 
 export default async function NewPostPage() {
-  const user = await getUserProfileAction();
-  const blogId = user?.blogs?.[0]?.id;
+  const blogInfos = await getMyBlogAction();
+  const blogId = blogInfos?.[0]?.id;
   if (!blogId) {
     return <div>블로그를 먼저 생성해주세요.</div>;
   }

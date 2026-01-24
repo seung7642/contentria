@@ -1,5 +1,5 @@
+import { getMyBlogAction } from '@/actions/blog';
 import { getCategoriesAction } from '@/actions/category';
-import { getUserProfileAction } from '@/actions/user';
 import CategoryManager from '@/components/dashboard/categories/CategoryManager';
 import { PATHS } from '@/constants/paths';
 import { Metadata } from 'next';
@@ -10,12 +10,12 @@ export const metadata: Metadata = {
 };
 
 export default async function CategoriesPage() {
-  const user = await getUserProfileAction();
-  if (!user?.blogs || user.blogs.length === 0) {
+  const blogInfos = await getMyBlogAction();
+  if (!blogInfos || blogInfos.length === 0) {
     redirect(PATHS.DASHBOARD);
   }
 
-  const blogSlug = user.blogs[0].slug;
+  const blogSlug = blogInfos[0].slug;
   const categories = await getCategoriesAction();
 
   return (

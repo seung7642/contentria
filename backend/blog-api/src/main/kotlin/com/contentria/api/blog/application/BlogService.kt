@@ -16,34 +16,18 @@ private val log = KotlinLogging.logger {}
 class BlogService(
     private val blogRepository: BlogRepository
 ) {
-    @Transactional
-    fun createBlog(userId: UUID, slug: String, title: String): BlogInfo {
-        if (blogRepository.existsBySlug(slug)) {
-            throw ContentriaException(ErrorCode.DUPLICATE_BLOG_SLUG)
-        }
-
-        val blog = Blog(
-            slug = slug,
-            title = title,
-            userId = userId
-        )
-
-        val savedBlog = blogRepository.save(blog)
-        return BlogInfo.from(savedBlog)
-    }
-
     @Transactional(readOnly = true)
     fun getBlogInfo(slug: String): BlogInfo {
-        val blog = (blogRepository.findBySlug(slug)
-            ?: throw ContentriaException(ErrorCode.NOT_FOUND_BLOG))
+        val blog = blogRepository.findBySlug(slug)
+            ?: throw ContentriaException(ErrorCode.NOT_FOUND_BLOG)
 
         return BlogInfo.from(blog)
     }
 
     @Transactional(readOnly = true)
     fun getBlogInfo(blogId: UUID): BlogInfo {
-        val blog = (blogRepository.findById(blogId)
-            ?: throw ContentriaException(ErrorCode.NOT_FOUND_BLOG))
+        val blog = blogRepository.findById(blogId)
+            ?: throw ContentriaException(ErrorCode.NOT_FOUND_BLOG)
 
         return BlogInfo.from(blog)
     }
@@ -52,6 +36,22 @@ class BlogService(
     fun getBlogInfos(userId: UUID): List<BlogInfo> {
         val blogs = blogRepository.findAllByUserId(userId)
         return blogs.map { BlogInfo.from(it) }
+    }
+
+    @Transactional
+    fun createBlog(userId: UUID, slug: String, title: String): BlogInfo {
+        if (blogRepository.existsBySlug(slug)) {
+            throw ContentriaException(ErrorCode.DUPLICATE_BLOG_SLUG)
+        }
+
+        val savedBlog = blogRepository.save(
+            Blog(
+                slug = slug,
+                title = title,
+                userId = userId
+            )
+        )
+        return BlogInfo.from(savedBlog)
     }
 
     @Transactional(readOnly = true)

@@ -69,7 +69,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
     notFound();
   }
 
-  const { post, owner } = postDetailResponse;
+  const { post, author: owner } = postDetailResponse;
   const { contentMarkdown } = post;
   const markdown = `
 # 이것은 H1 제목입니다

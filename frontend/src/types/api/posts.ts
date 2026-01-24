@@ -1,4 +1,4 @@
-import { UserSummaryResponse } from './user';
+import { AuthorResponse, UserSummaryResponse } from './user';
 
 export interface PostSummary {
   id: string;
@@ -18,18 +18,18 @@ export interface PostDetail {
   id: string;
   slug: string;
   title: string;
-  summary: string;
   contentMarkdown: string;
   metaTitle: string | null;
   metaDescription: string | null;
   featuredImageUrl: string | null;
   publishedAt: string;
-  categoryName: string;
 }
 
 export interface PostDetailResponse {
   post: PostDetail;
-  owner: UserSummaryResponse;
+  author: AuthorResponse;
+  blogSlug: string;
+  categoryName: string | null;
 }
 
 export type PostStatus = 'DRAFT' | 'PUBLISHED';

@@ -13,10 +13,16 @@ import TrafficChart from './TrafficChart';
 import StatCard from './StatCard';
 import { TimeRange } from '@/types/api/dashboard';
 import { User } from '@/types/api/user';
+import { BlogInfo } from '@/types/api/blogs';
 
-export default function DashboardContent({ user }: { user: User }) {
+interface DashboardContentProps {
+  user: User | null;
+  blogInfos: BlogInfo[] | null;
+}
+
+export default function DashboardContent({ user, blogInfos }: DashboardContentProps) {
   const [timeRange, setTimeRange] = useState<TimeRange>('2weeks');
-  const slug = user.blogs[0]?.slug;
+  const slug = blogInfos?.[0]?.slug;
 
   const { data: stats } = useDashboadStatsQuery(slug!);
   const { data: popularPosts } = usePopularPostsQuery(slug!);

@@ -3,8 +3,11 @@ package com.contentria.api.blog.controller
 import com.contentria.api.auth.infrastructure.security.AuthUserDetails
 import com.contentria.api.blog.application.BlogFacade
 import com.contentria.api.blog.controller.dto.BlogLayoutResponse
+import com.contentria.api.blog.controller.dto.BlogResponse
 import com.contentria.api.blog.controller.dto.CreateBlogRequest
 import com.contentria.api.blog.controller.dto.CreateBlogResponse
+import com.contentria.api.global.error.ContentriaException
+import com.contentria.api.global.error.ErrorCode
 import jakarta.validation.Valid
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -20,6 +23,23 @@ import org.springframework.web.bind.annotation.*
 class BlogController(
     private val blogFacade: BlogFacade
 ) {
+    @GetMapping("/me")
+    @PreAuthorize("isAuthenticated()")
+    fun getMyBlog(@AuthenticationPrincipal userDetails: AuthUserDetails): ResponseEntity<List<BlogResponse>> {
+        val userId = userDetails.userId
+
+        val blogInfo = blogFacade.getMyBlog(userId)
+        return ResponseEntity.ok(blogInfo.map { BlogResponse.from(it) })
+    }
+
+    @GetMapping("/layout/{slug}")
+    fun getBlogBySlug(
+        @PathVariable slug: String,
+        @PageableDefault(size = 10, sort = ["publishedAt"], direction = Sort.Direction.DESC) pageable: Pageable,
+    ): ResponseEntity<BlogLayoutResponse> {
+        val blogDetail = blogFacade.getBlogLayout(slug)
+        return ResponseEntity.ok(BlogLayoutResponse.from(blogDetail))
+    }
 
     @PostMapping("/create")
     @PreAuthorize("isAuthenticated()")
@@ -32,14 +52,5 @@ class BlogController(
         }
         val blogResponse = blogFacade.createBlogWithSamples(userId, request.toCommand())
         return ResponseEntity.status(HttpStatus.CREATED).body(CreateBlogResponse.from(blogResponse))
-    }
-
-    @GetMapping("/layout/{slug}")
-    fun getBlogBySlug(
-        @PathVariable slug: String,
-        @PageableDefault(size = 10, sort = ["publishedAt"], direction = Sort.Direction.DESC) pageable: Pageable,
-    ): ResponseEntity<BlogLayoutResponse> {
-        val blogDetail = blogFacade.getBlogLayout(slug)
-        return ResponseEntity.ok(BlogLayoutResponse.from(blogDetail))
     }
 }

@@ -1,4 +1,4 @@
-import { UserSummaryResponse } from './user';
+import { OwnerResponse, UserSummaryResponse } from './user';
 import { CategoryResponse } from './category';
 
 export interface CategoryNode {
@@ -11,7 +11,7 @@ export interface CategoryNode {
   // children: CategoryNode[];
 }
 
-export interface BlogSummary {
+export interface BlogInfo {
   id: string;
   slug: string;
   title: string;
@@ -19,9 +19,16 @@ export interface BlogSummary {
 }
 
 export interface BlogLayoutResponse {
-  blog: BlogSummary;
-  owner: UserSummaryResponse;
+  blog: BlogResponse;
+  owner: OwnerResponse;
   categories: CategoryResponse[];
+}
+
+export interface BlogResponse {
+  id: string;
+  slug: string;
+  title: string;
+  description: string | null;
 }
 
 export interface CreateBlogPayload {

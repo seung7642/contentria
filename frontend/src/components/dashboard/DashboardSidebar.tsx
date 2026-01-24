@@ -6,13 +6,18 @@ import { useState } from 'react';
 import { LayoutDashboard, FileText, Settings, Menu, X, Home, FolderTree } from 'lucide-react';
 import { useUserProfile } from '@/hooks/queries/useUserQuery';
 import SidebarMenuItem from './DashboardSidebarMenuItem';
+import { BlogInfo } from '@/types/api/blogs';
 
-export default function DashboardSidebar() {
+interface DashboardSidebarProps {
+  blogInfos: BlogInfo[] | null;
+}
+
+export default function DashboardSidebar({ blogInfos }: DashboardSidebarProps) {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const { data: user, isPending: isUserLoading } = useUserProfile();
-  const hasBlog = user?.blogs.length;
+  const hasBlog = (blogInfos?.length ?? 0) > 0 ? true : false;
 
   const navItems = [
     {

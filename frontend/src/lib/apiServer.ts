@@ -72,6 +72,7 @@ async function fetchExtended<T>(url: string, options: FetchOptions = {}): Promis
 
   if (!response.ok) {
     const errorData: Partial<ApiErrorResponse> = await response.json().catch(() => ({}));
+    console.log('❌ [apiServer] API error response:', errorData);
     throw ApiError.from(errorData, response.status);
   }
 

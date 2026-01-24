@@ -2,7 +2,6 @@
 
 import apiServer from '@/lib/apiServer';
 import { UpdateProfilePayload, User } from '@/types/api/user';
-import { cookies } from 'next/headers';
 
 export async function getUserProfileAction(
   shouldRedirectOn401: boolean = true

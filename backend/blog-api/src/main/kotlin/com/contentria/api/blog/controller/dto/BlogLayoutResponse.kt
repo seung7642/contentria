@@ -1,6 +1,5 @@
 package com.contentria.api.blog.controller.dto
 
-import com.contentria.api.blog.application.dto.BlogInfo
 import com.contentria.api.blog.application.dto.BlogLayoutInfo
 import com.contentria.api.category.controller.dto.CategoryResponse
 import com.contentria.api.user.application.dto.UserInfo
@@ -11,22 +10,6 @@ data class BlogLayoutResponse(
     val owner: OwnerResponse,
     val categories: List<CategoryResponse>,
 ) {
-    data class BlogResponse(
-        val title: String,
-        val slug: String,
-        val description: String?
-    ) {
-        companion object {
-            fun from(info: BlogInfo): BlogResponse {
-                return BlogResponse(
-                    title = info.title,
-                    slug = info.slug,
-                    description = info.description
-                )
-            }
-        }
-    }
-
     data class OwnerResponse(
         val userId: UUID,
         val name: String,

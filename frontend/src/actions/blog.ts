@@ -1,7 +1,18 @@
 'use server';
 
 import apiServer from '@/lib/apiServer';
-import { BlogLayoutResponse, CreateBlogPayload, CreateBlogResponse } from '@/types/api/blogs';
+import {
+  BlogInfo,
+  BlogLayoutResponse,
+  CreateBlogPayload,
+  CreateBlogResponse,
+} from '@/types/api/blogs';
+
+export async function getMyBlogAction(): Promise<BlogInfo[] | null> {
+  return await apiServer.get<BlogInfo[]>(`/api/blogs/me`, {
+    requireAuth: true,
+  });
+}
 
 export async function getBlogLayoutAction(slug: string): Promise<BlogLayoutResponse | null> {
   return await apiServer.get<BlogLayoutResponse>(`/api/blogs/layout/${slug}`, {

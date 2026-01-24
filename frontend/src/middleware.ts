@@ -4,7 +4,7 @@ import { PATHS } from './constants/paths';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
 export async function middleware(request: NextRequest) {
-  console.log('Middleware executed for path:', request.nextUrl.pathname);
+  console.log('[Middleware] executed for path:', request.nextUrl.pathname);
 
   const { pathname } = request.nextUrl;
 
@@ -48,9 +48,11 @@ export async function middleware(request: NextRequest) {
   }
 
   if (isProtectedPage && !accessToken) {
+    console.log('[Middleware] No access token for protected page. Redirecting to login.');
     return redirectToLogin(request, pathname);
   }
 
+  console.log('[Middleware] Completed checks. Proceeding to next middleware or route.');
   return NextResponse.next();
 }
 

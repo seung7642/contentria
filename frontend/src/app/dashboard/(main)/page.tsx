@@ -7,15 +7,17 @@ import {
   getPopularPostsAction,
   getTrafficDataAction,
 } from '@/actions/dashboard';
+import { getMyBlogAction } from '@/actions/blog';
 
 export default async function DashboardPage() {
   const user = await getUserProfileAction();
+  const blogInfos = user ? await getMyBlogAction() : null;
 
-  if (!user?.blogs || user.blogs.length === 0) {
+  if (!blogInfos || blogInfos.length === 0) {
     return <CreateBlogWelcome />;
   }
 
-  const slug = user.blogs[0].slug;
+  const slug = blogInfos[0].slug;
   const queryClient = new QueryClient();
 
   await Promise.all([
@@ -35,7 +37,7 @@ export default async function DashboardPage() {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <DashboardContent user={user} />
+      <DashboardContent user={user} blogInfos={blogInfos} />
     </HydrationBoundary>
   );
 }
