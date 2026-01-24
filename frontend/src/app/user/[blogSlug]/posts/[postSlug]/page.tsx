@@ -14,6 +14,8 @@ import { visit } from 'unist-util-visit';
 import TableOfContents from '@/components/blog/TableOfContents';
 import { getPostDetailAction } from '@/actions/post';
 import { notFound } from 'next/navigation';
+import GithubSlugger from 'github-slugger';
+import { toString } from 'mdast-util-to-string';
 
 interface PostDetailPageProps {
   params: Promise<{
@@ -41,17 +43,16 @@ async function getHeadingsFromMarkdown(markdown: string): Promise<Heading[]> {
   const processor = unified().use(remarkParse);
   const tree = processor.parse(markdown);
 
+  const slugger = new GithubSlugger();
+
   visit(tree, 'heading', (node) => {
-    const textNode = node.children[0];
-    if (node.depth >= 1 && node.depth <= 2 && textNode && 'value' in textNode) {
-      // slug는 rehype-slug가 생성하는 방식과 동일하게 만든다.
-      const id = textNode.value
-        .toLowerCase()
-        .replace(/\s+/g, '-')
-        .replace(/[^\w-]+/g, '');
+    if (node.depth >= 1 && node.depth <= 2) {
+      const text = toString(node);
+      const id = slugger.slug(text);
+
       headings.push({
         id,
-        text: textNode.value,
+        text,
         level: node.depth,
       });
     }
@@ -69,7 +70,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
     notFound();
   }
 
-  const { post, author: owner } = postDetailResponse;
+  const { post, author } = postDetailResponse;
   const { contentMarkdown } = post;
   const markdown = `
 # 이것은 H1 제목입니다
@@ -114,6 +115,7 @@ greet('World');
   `;
 
   const headings = await getHeadingsFromMarkdown(contentMarkdown);
+  console.log('Extracted headings:', headings);
 
   return (
     <div className="relative mx-auto flex w-full max-w-7xl justify-center">
@@ -121,7 +123,7 @@ greet('World');
         <div className="mb-8">
           <h1 className="mb-4 text-4xl font-bold text-gray-900">{post.title}</h1>
           <div className="flex items-center space-x-3 text-sm text-gray-500">
-            <span className="font-semibold text-gray-800">{owner.username}</span>
+            <span className="font-semibold text-gray-800">{author.username}</span>
             <span>•</span>
             <span>{new Date(post.publishedAt).toLocaleDateString('ko-KR')}</span>
           </div>
