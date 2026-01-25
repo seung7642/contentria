@@ -15,7 +15,6 @@ export default async function CategoriesPage() {
     redirect(PATHS.DASHBOARD);
   }
 
-  const blogSlug = blogInfos[0].slug;
   const categories = await getCategoriesAction();
 
   return (
@@ -26,7 +25,7 @@ export default async function CategoriesPage() {
       </div>
 
       <div className="rounded-lg border bg-white p-6 shadow-sm">
-        <CategoryManager initialCategories={categories} blogSlug={blogSlug} />
+        <CategoryManager initialCategories={categories} blogInfo={blogInfos[0]} />
       </div>
     </div>
   );

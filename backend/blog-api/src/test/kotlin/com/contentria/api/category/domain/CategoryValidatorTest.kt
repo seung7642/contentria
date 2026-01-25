@@ -13,65 +13,62 @@ class CategoryValidatorTest {
     private val validator = CategoryValidator()
 
     @Test
-    @DisplayName("부모 카테고리를 삭제할 때, 자식 카테고리가 삭제 목록에 없으면 예외가 발생해야 한다.")
-    fun should_ThrowException_when_ParentDeleted_But_ChildIsNot() {
-        val parent = createCategory(id = "00000000-0000-0000-0000-000000000001", parent = null)
-        val child = createCategory(id = "00000000-0000-0000-0000-000000000002", parent = parent)
+    @DisplayName("부모 카테고리가 삭제될 때, 자식이 여전히 그 부모를 참조하려고 하면 예외가 발생해야 한다.")
+    fun should_ThrowException_when_SurvivingChild_References_DeletedParent() {
+        val parent = createCategory(id = "parent-uuid", parent = null)
+        val child = createCategory(id = "child-uuid", parent = parent)
 
         val toDelete = listOf(parent)
-        val requestIds = setOf(parent.id.toString())
 
-        assertThatThrownBy {
-            validator.validateInternalRules(toDelete, requestIds)
-        }
+        val futureParentMap = mapOf(child.id.toString() to parent.id.toString())
+
+        assertThatThrownBy { validator.validateReferentialIntegrity(toDelete, futureParentMap) }
             .isInstanceOf(ContentriaException::class.java)
             .hasFieldOrPropertyWithValue("errorCode", ErrorCode.CANNOT_DELETE_CATEGORY)
     }
 
     @Test
-    @DisplayName("부모와 자식 카테고리를 모두 삭제 목록에 포함하면 검증을 통과해야 한다.")
-    fun should_Pass_when_ParentAndChild_BothDeleted() {
-        val parent = createCategory(id = "00000000-0000-0000-0000-000000000001", parent = null)
-        val child = createCategory(id = "00000000-0000-0000-0000-000000000002", parent = parent)
+    @DisplayName("부모 카테고리가 삭제되더라도, 자식이 독립(Root)하거나 다른 부모로 이동하면 검증을 통과해야 한다.")
+    fun should_Pass_when_Child_Moves_Or_BecomesRoot() {
+        val parent = createCategory(id = "parent-uuid", parent = null)
+        val child = createCategory(id = "child-uuid", parent = parent)
 
-        val toDelete = listOf(parent, child)
-        val requestIds = setOf(parent.id.toString(), child.id.toString())
+        val toDelete = listOf(parent)
+
+        val futureParentMap = mapOf(
+            child.id.toString() to null
+        )
 
         // No exception should be thrown
-        assertThatCode {
-            validator.validateInternalRules(toDelete, requestIds)
-        }
+        assertThatCode { validator.validateReferentialIntegrity(toDelete, futureParentMap) }
             .doesNotThrowAnyException()
     }
 
     @Test
-    @DisplayName("자식만 삭제하는 경우에는 부모가 존재하더라도 검증을 통과해야 한다.")
-    fun should_Pass_when_OnlyChildDeleted() {
-        val parent = createCategory(id = "00000000-0000-0000-0000-000000000001", parent = null)
-        val child = createCategory(id = "00000000-0000-0000-0000-000000000002", parent = parent)
+    @DisplayName("부모와 자식 카테고리가 모두 삭제되는 경우(Cascading Delete)에는 검증을 통과해야 한다.")
+    fun should_Pass_when_ParentAndChild_BothDeleted() {
+        val parent = createCategory(id = "parent-uuid", parent = null)
+        val child = createCategory(id = "child-uuid", parent = parent)
 
-        val toDelete = listOf(child)
-        val requestIds = setOf(child.id.toString())
+        val toDelete = listOf(parent, child)
+
+        val futureParentMap = emptyMap<String, String?>()
 
         // No exception should be thrown
-        assertThatCode {
-            validator.validateInternalRules(toDelete, requestIds)
-        }
+        assertThatCode { validator.validateReferentialIntegrity(toDelete, futureParentMap) }
             .doesNotThrowAnyException()
     }
 
     @Test
     @DisplayName("자식이 없는 독립적인 카테고리를 삭제할 때는 검증을 통과해야 한다.")
     fun should_Pass_when_IndependentCategoryDeleted() {
-        val category = createCategory(id = "00000000-0000-0000-0000-000000000001", parent = null)
+        val category = createCategory(id = "single-uuid", parent = null)
 
         val toDelete = listOf(category)
-        val requestIds = setOf(category.id.toString())
 
-        // No exception should be thrown
-        assertThatCode {
-            validator.validateInternalRules(toDelete, requestIds)
-        }
+        val futureParentMap = emptyMap<String, String?>()
+
+        assertThatCode { validator.validateReferentialIntegrity(toDelete, futureParentMap) }
             .doesNotThrowAnyException()
     }
 
@@ -87,7 +84,7 @@ class CategoryValidatorTest {
             blogId = UUID.randomUUID()
         )
 
-        setEntityId(category, UUID.fromString(id))
+        setEntityId(category, parseUuid(id))
 
         return category
     }
@@ -96,5 +93,13 @@ class CategoryValidatorTest {
         val field = entity.javaClass.getDeclaredField("id")
         field.isAccessible = true
         field.set(entity, id)
+    }
+
+    private fun parseUuid(id: String): UUID {
+        return try {
+            UUID.fromString(id)
+        } catch (e: IllegalArgumentException) {
+            UUID.nameUUIDFromBytes(id.toByteArray())
+        }
     }
 }

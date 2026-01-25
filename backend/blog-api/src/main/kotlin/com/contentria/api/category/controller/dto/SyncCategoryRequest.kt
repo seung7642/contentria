@@ -13,9 +13,8 @@ class SyncCategoryRequest(
     val parentId: String? = null,
     val order: Int
 ) {
-    fun toCommand(actorUserId: UUID): SyncCategoryCommand {
+    fun toCommand(): SyncCategoryCommand {
         return SyncCategoryCommand(
-            actorUserId = actorUserId,
             id = this.id,
             name = this.name,
             parentId = this.parentId,

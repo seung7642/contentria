@@ -68,7 +68,8 @@ class CategoryInternalService(
         val toDelete = existingCategories.filter { it.id.toString() !in requestIds }
 
         if (toDelete.isNotEmpty()) {
-            categoryValidator.validateInternalRules(toDelete, requestIds)
+            val futureParentMap = commands.associate { it.id to it.parentId }
+            categoryValidator.validateReferentialIntegrity(toDelete, futureParentMap)
 
             val sortedToDelete = toDelete.sortedByDescending { it.parent != null }
             categoryRepository.deleteAll(sortedToDelete)

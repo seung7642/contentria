@@ -27,13 +27,16 @@ import { Plus, RotateCcw, Save } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import SortableItem from './SortableItem';
 import CategoryItemCard from './CategoryItemCard';
+import { BlogInfo } from '@/types/api/blogs';
+import { syncCategoriesAction } from '@/actions/category';
+import { v7 as uuidv7 } from 'uuid';
 
 interface CategoryManagerProps {
   initialCategories: CategoryResponse[];
-  blogSlug: string;
+  blogInfo: BlogInfo;
 }
 
-export default function CategoryManager({ initialCategories, blogSlug }: CategoryManagerProps) {
+export default function CategoryManager({ initialCategories, blogInfo }: CategoryManagerProps) {
   const [items, setItems] = useState<CategoryResponse[]>(initialCategories);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -170,18 +173,6 @@ export default function CategoryManager({ initialCategories, blogSlug }: Categor
     setOverId(null);
   };
 
-  const handleAddCategory = () => {
-    const newCategory: CategoryResponse = {
-      id: `new-${Date.now()}`,
-      name: '새 카테고리',
-      slug: '',
-      parentId: null,
-      level: 0,
-      postCount: 0,
-    };
-    setItems([...items, newCategory]);
-  };
-
   // 들여쓰기
   const handleIndent = (id: string) => {
     const index = items.findIndex((item) => item.id === id);
@@ -259,17 +250,19 @@ export default function CategoryManager({ initialCategories, blogSlug }: Categor
 
   const handleSave = async () => {
     setIsSaving(true);
+
     try {
       // 최종적으로 서버에 보낼 때는 현재 리스트의 순서(index)를 order로 확정한다.
       const payload = items.map((item, index) => ({
-        id: item.id.startsWith('new-') ? null : item.id,
+        id: item.id,
         name: item.name,
         parentId: item.level === 0 ? null : item.parentId,
         order: index,
       }));
+
       console.log('Saving categories payload:', payload);
 
-      // await updateCategoriesAction(blogSlug, payload);
+      await syncCategoriesAction(blogInfo?.id, payload);
       alert('카테고리가 성공적으로 저장되었습니다.');
     } catch (error) {
       console.error('Failed to save categories:', error);
@@ -277,6 +270,18 @@ export default function CategoryManager({ initialCategories, blogSlug }: Categor
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleAddCategory = () => {
+    const newCategory: CategoryResponse = {
+      id: uuidv7(),
+      name: '새 카테고리',
+      slug: '',
+      parentId: null,
+      level: 0,
+      postCount: 0,
+    };
+    setItems([...items, newCategory]);
   };
 
   const handleAddSubCategory = (parentId: string) => {
@@ -291,7 +296,7 @@ export default function CategoryManager({ initialCategories, blogSlug }: Categor
     }
 
     const newCategory: CategoryResponse = {
-      id: `new-${Date.now()}`,
+      id: uuidv7(),
       name: '새 하위 카테고리',
       slug: '',
       parentId: parentId,

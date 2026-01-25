@@ -76,6 +76,10 @@ async function fetchExtended<T>(url: string, options: FetchOptions = {}): Promis
     throw ApiError.from(errorData, response.status);
   }
 
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
   return response.json();
 }
 

@@ -31,14 +31,14 @@ class CategoryController(
         return ResponseEntity.ok(responses)
     }
 
-    @PostMapping
+    @PostMapping("/sync/{blogId}")
     fun syncCategory(
         @AuthenticationPrincipal userDetails: AuthUserDetails,
         @PathVariable blogId: UUID,
         @RequestBody @Valid request: List<SyncCategoryRequest>
     ): ResponseEntity<Void> {
         val userId = userDetails.userId
-        categoryFacade.syncCategories(blogId, userId, request.map { it.toCommand(userId!!) })
-        return ResponseEntity.ok().build()
+        categoryFacade.syncCategories(blogId, userId, request.map { it.toCommand() })
+        return ResponseEntity.noContent().build()
     }
 }

@@ -10,3 +10,10 @@ export interface CategoryResponse {
 export interface CategoryTreeNode extends CategoryResponse {
   children: CategoryTreeNode[];
 }
+
+export interface SyncCategoryPayload {
+  id: string | null;
+  name: string;
+  parentId: string | null;
+  order: number;
+}
