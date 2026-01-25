@@ -16,6 +16,7 @@ import { getPostDetailAction } from '@/actions/post';
 import { notFound } from 'next/navigation';
 import GithubSlugger from 'github-slugger';
 import { toString } from 'mdast-util-to-string';
+import AnalyticsTracker from '@/components/analytics/AnalyticsTracker';
 
 interface PostDetailPageProps {
   params: Promise<{
@@ -70,7 +71,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
     notFound();
   }
 
-  const { post, author } = postDetailResponse;
+  const { post, author, blogId } = postDetailResponse;
   const { contentMarkdown } = post;
   const markdown = `
 # 이것은 H1 제목입니다
@@ -118,53 +119,57 @@ greet('World');
   console.log('Extracted headings:', headings);
 
   return (
-    <div className="relative mx-auto flex w-full max-w-7xl justify-center">
-      <div className="w-full max-w-4xl">
-        <div className="mb-8">
-          <h1 className="mb-4 text-4xl font-bold text-gray-900">{post.title}</h1>
-          <div className="flex items-center space-x-3 text-sm text-gray-500">
-            <span className="font-semibold text-gray-800">{author.username}</span>
-            <span>•</span>
-            <span>{new Date(post.publishedAt).toLocaleDateString('ko-KR')}</span>
-          </div>
-        </div>
-        <hr className="mb-8" />
+    <>
+      <AnalyticsTracker blogId={blogId} postId={post.id} />
 
-        <article className="prose max-w-none flex-shrink-0">
-          <Markdown
-            remarkPlugins={[remarkGfm]}
-            rehypePlugins={[
-              rehypeSlug,
-              [rehypeAutolinkHeadings, { behavior: 'wrap' }],
-              [rehypeShiftHeading, { shift: 1 }],
-            ]}
-            components={{
-              code(props) {
-                const { children, className, node, ref, ...rest } = props;
-                const match = /language-(\w+)/.exec(className || '');
-                return match ? (
-                  <SyntaxHighlighter
-                    {...rest}
-                    PreTag="div"
-                    children={String(children).replace(/\n$/, '')}
-                    language={match[1]}
-                    style={dracula}
-                  />
-                ) : (
-                  <code {...rest} className={className}>
-                    {children}
-                  </code>
-                );
-              },
-            }}
-          >
-            {contentMarkdown}
-          </Markdown>
-        </article>
+      <div className="relative mx-auto flex w-full max-w-7xl justify-center">
+        <div className="w-full max-w-4xl">
+          <div className="mb-8">
+            <h1 className="mb-4 text-4xl font-bold text-gray-900">{post.title}</h1>
+            <div className="flex items-center space-x-3 text-sm text-gray-500">
+              <span className="font-semibold text-gray-800">{author.username}</span>
+              <span>•</span>
+              <span>{new Date(post.publishedAt).toLocaleDateString('ko-KR')}</span>
+            </div>
+          </div>
+          <hr className="mb-8" />
+
+          <article className="prose max-w-none flex-shrink-0">
+            <Markdown
+              remarkPlugins={[remarkGfm]}
+              rehypePlugins={[
+                rehypeSlug,
+                [rehypeAutolinkHeadings, { behavior: 'wrap' }],
+                [rehypeShiftHeading, { shift: 1 }],
+              ]}
+              components={{
+                code(props) {
+                  const { children, className, node, ref, ...rest } = props;
+                  const match = /language-(\w+)/.exec(className || '');
+                  return match ? (
+                    <SyntaxHighlighter
+                      {...rest}
+                      PreTag="div"
+                      children={String(children).replace(/\n$/, '')}
+                      language={match[1]}
+                      style={dracula}
+                    />
+                  ) : (
+                    <code {...rest} className={className}>
+                      {children}
+                    </code>
+                  );
+                },
+              }}
+            >
+              {contentMarkdown}
+            </Markdown>
+          </article>
+        </div>
+        <div className="ml-8 hidden w-64 flex-shrink-0 lg:block">
+          <TableOfContents headings={headings} />
+        </div>
       </div>
-      <div className="ml-8 hidden w-64 flex-shrink-0 lg:block">
-        <TableOfContents headings={headings} />
-      </div>
-    </div>
+    </>
   );
 }

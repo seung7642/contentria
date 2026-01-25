@@ -5,6 +5,7 @@ import CustomPagination from '@/components/common/CustomPagination';
 import PostCard from '@/components/blog/PostCard';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import AnalyticsTracker from '@/components/analytics/AnalyticsTracker';
 
 interface UserBlogPageProps {
   params: Promise<{
@@ -59,21 +60,25 @@ export default async function BlogPage({ params, searchParams }: UserBlogPagePro
   const totalPages = postsPage?.page.totalPages ?? 0;
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 py-6">
-      <h1 className="mb-8 text-3xl font-bold">최신 글</h1>
-      <div className="space-y-4">
-        {initialPosts.length > 0 ? (
-          initialPosts.map((post) => <PostCard key={post.id} blogSlug={blogSlug} post={post} />)
-        ) : (
-          <div className="flex h-40 items-center justify-center rounded-lg border-2 border-dashed border-gray-300">
-            <p className="text-center text-gray-500">아직 작성된 글이 없습니다.</p>
-          </div>
-        )}
-      </div>
+    <>
+      <AnalyticsTracker blogId={layoutData.blog.id} />
 
-      <div className="mt-10">
-        <CustomPagination totalPages={totalPages} />
+      <div className="mx-auto w-full max-w-4xl px-4 py-6">
+        <h1 className="mb-8 text-3xl font-bold">최신 글</h1>
+        <div className="space-y-4">
+          {initialPosts.length > 0 ? (
+            initialPosts.map((post) => <PostCard key={post.id} blogSlug={blogSlug} post={post} />)
+          ) : (
+            <div className="flex h-40 items-center justify-center rounded-lg border-2 border-dashed border-gray-300">
+              <p className="text-center text-gray-500">아직 작성된 글이 없습니다.</p>
+            </div>
+          )}
+        </div>
+
+        <div className="mt-10">
+          <CustomPagination totalPages={totalPages} />
+        </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -52,6 +52,12 @@ class PostFacade(
 
         val authorInfo = userService.getActiveUserInfo(blogInfo.userId)
 
-        return PostDetailInfo.from(post, authorInfo, blogInfo.slug, categoryInfo?.name)
+        return PostDetailInfo.from(
+            postContentInfo = post,
+            userInfo = authorInfo,
+            blogId = blogInfo.blogId,
+            blogSlug = blogInfo.slug,
+            categoryName = categoryInfo?.name
+        )
     }
 }

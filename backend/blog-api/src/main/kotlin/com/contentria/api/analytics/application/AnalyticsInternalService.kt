@@ -26,6 +26,7 @@ class AnalyticsInternalService(
                 refererUrl = command.refererUrl
             )
             visitLogRepository.save(visitLog)
+            log.debug { "Successfully saved a visit log." }
         } catch (e: Exception) {
             log.error(e) { "Failed to save visit log async" }
         }

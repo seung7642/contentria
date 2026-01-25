@@ -9,6 +9,7 @@ import java.util.*
 data class PostDetailResponse(
     val post: PostResponse,
     val author: AuthorResponse,
+    val blogId: UUID,
     val blogSlug: String,
     val categoryName: String?
 ) {
@@ -59,6 +60,7 @@ data class PostDetailResponse(
             return PostDetailResponse(
                 post = PostResponse.from(postDetailInfo.post),
                 author = AuthorResponse.from(postDetailInfo.author),
+                blogId = postDetailInfo.blogId,
                 blogSlug = postDetailInfo.blogSlug,
                 categoryName = postDetailInfo.categoryName
             )

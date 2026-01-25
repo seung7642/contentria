@@ -28,6 +28,7 @@ export interface PostDetail {
 export interface PostDetailResponse {
   post: PostDetail;
   author: AuthorResponse;
+  blogId: string;
   blogSlug: string;
   categoryName: string | null;
 }
