@@ -5,11 +5,14 @@ import com.contentria.api.category.application.CategoryFacade
 import com.contentria.api.category.application.CategoryService
 import com.contentria.api.category.controller.dto.CategoryResponse
 import com.contentria.api.category.controller.dto.SyncCategoryRequest
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import java.util.*
+
+private val log = KotlinLogging.logger {  }
 
 @RestController
 @RequestMapping("/categories")

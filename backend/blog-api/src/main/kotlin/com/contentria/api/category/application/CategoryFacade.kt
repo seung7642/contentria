@@ -6,9 +6,12 @@ import com.contentria.api.category.application.dto.SyncCategoryCommand
 import com.contentria.api.global.error.ContentriaException
 import com.contentria.api.global.error.ErrorCode
 import com.contentria.api.post.application.PostService
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
+
+private val log = KotlinLogging.logger {  }
 
 @Component
 class CategoryFacade(

@@ -139,6 +139,34 @@ CREATE INDEX idx_posts_blog_id_status_published_at ON posts(blog_id, status, pub
 CREATE INDEX idx_posts_category_id ON posts(category_id);
 CREATE INDEX idx_posts_status ON posts(status);
 
+CREATE TABLE visit_logs (
+    id UUID PRIMARY KEY,
+    blog_id UUID NOT NULL,
+    post_id UUID, -- NULL이면 블로그 홈 방문, 값이 있으면 특정 게시글 방문
+    visitor_ip VARCHAR(45), -- IP 주소 (방문자 중복 제거용, 개인정보 보호를 위해 해싱 필요)
+    user_agent TEXT, -- 기기 정보 (예: 모바일/PC 구분 등)
+    referer_url TEXT, -- 유입 경로 (예: 검색 엔진, 소셜 미디어 등)
+    visited_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_logs_blog FOREIGN KEY (blog_id) REFERENCES blogs(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_visit_logs_date ON visit_logs (blog_id, visited_at);
+
+CREATE TABLE daily_statistics (
+    id UUID PRIMARY KEY,
+    blog_id UUID NOT NULL,
+    post_id UUID, -- 특정 게시글 통계라면 ID, 블로그 전체 통계라면 NULL
+    stat_date DATE NOT NULL, -- 통계 날짜 (예: 2026-01-01)
+    visit_count INT DEFAULT 0, -- 방문자 수 (UV (Unique View): IP 기준 중복 제거)
+    view_count INT DEFAULT 0, -- 조회수 (PV (Page View): 단순 클릭 수)
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT uq_daily_stats UNIQUE (blog_id, post_id, stat_date),
+    CONSTRAINT fk_stats_blog FOREIGN KEY (blog_id) REFERENCES blogs(id) ON DELETE CASCADE
+);
+
 CREATE TABLE media (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL, -- 미디어를 업로드한 사용자 ID
