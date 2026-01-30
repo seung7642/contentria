@@ -32,10 +32,21 @@ class DashboardFacade(
         val visitStats = analyticsService.getVisitStats(blogInfo.blogId)
 
         return DashboardStatsInfo(
+            todayViews = visitStats.todayViews,
+            todayViewsGrowthRate = calculateGrowthRate(visitStats.todayViews, visitStats.yesterdayViews),
             todayVisitors = visitStats.todayVisitors,
+            todayGrowthRate = calculateGrowthRate(visitStats.todayVisitors, visitStats.yesterdayVisitors),
             weekVisitors = visitStats.weekVisitors,
+            weekGrowthRate = calculateGrowthRate(visitStats.weekVisitors, visitStats.prevWeekVisitors),
             totalPosts = totalPosts,
         )
+    }
+
+    private fun calculateGrowthRate(current: Long, previous: Long): Double? {
+        if (previous == 0L) {
+            return null
+        }
+        return ((current - previous).toDouble() / previous) * 100
     }
 
     fun getPopularPosts(ownerId: UUID, blogSlug: String): List<PopularPostInfo> {

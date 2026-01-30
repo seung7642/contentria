@@ -16,4 +16,6 @@ interface DailyStatisticsRepository {
     fun findTrafficData(blogId: UUID, startDate: LocalDate, endDate: LocalDate): List<DailyStatistics>
 
     fun findPopularPosts(blogId: UUID, startDate: LocalDate, endDate: LocalDate, pageable: Pageable): List<PopularPostStatProjection>
+
+    fun findByBlogIdAndStatDateAndPostIdIsNull(blogId: UUID, statDate: LocalDate): DailyStatistics?
 }

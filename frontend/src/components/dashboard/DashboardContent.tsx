@@ -14,6 +14,7 @@ import StatCard from './StatCard';
 import { TimeRange } from '@/types/api/dashboard';
 import { User } from '@/types/api/user';
 import { BlogInfo } from '@/types/api/blogs';
+import { formatTrend } from '@/lib/utils';
 
 interface DashboardContentProps {
   user: User | null;
@@ -26,10 +27,14 @@ export default function DashboardContent({ user, blogInfos }: DashboardContentPr
 
   const { data: stats } = useDashboadStatsQuery(slug!);
   const { data: popularPosts } = usePopularPostsQuery(slug!);
-  const { data: trafficData, isFetching: isTrafficFetching } = useTrafficChartQuery(
+  const { data: trafficChart, isFetching: isTrafficFetching } = useTrafficChartQuery(
     slug!,
     timeRange
   );
+
+  const todayTrend = formatTrend(stats?.todayGrowthRate);
+  const todayViewsTrend = formatTrend(stats?.todayViewsGrowthRate);
+  const weekTrend = formatTrend(stats?.weekGrowthRate);
 
   return (
     <div className="space-y-6">
@@ -54,31 +59,31 @@ export default function DashboardContent({ user, blogInfos }: DashboardContentPr
         <>
           <StatCard
             icon={<FileText size={24} />}
-            title="오늘 방문자 수"
+            title="오늘 방문자"
             value={stats?.todayVisitors ?? 0}
-            trend="+3 지난 주"
-            trendUp={true}
+            trend={todayTrend.text}
+            trendUp={todayTrend.isUp}
+          />
+          <StatCard
+            icon={<FileText size={24} />}
+            title="오늘 조회수"
+            value={stats?.todayViews ?? 0}
+            trend={todayViewsTrend.text}
+            trendUp={todayViewsTrend.isUp}
           />
           <StatCard
             icon={<Eye size={24} />}
-            title="최근 7일간 방문자 수"
+            title="최근 7일간 방문자"
             value={stats?.weekVisitors ?? 0}
-            trend="+12% 지난 달"
-            trendUp={true}
+            trend={weekTrend.text}
+            trendUp={weekTrend.isUp}
           />
           <StatCard
             icon={<MessageSquare size={24} />}
-            title="최근 7일간 새 댓글 수"
-            value={stats?.weekNewComments ?? 0}
-            trend="+8% 지난 달"
+            title="전체 게시글 수"
+            value={stats?.totalPosts ?? 0}
+            trend=""
             trendUp={true}
-          />
-          <StatCard
-            icon={<ThumbsUp size={24} />}
-            title="전체 구독자 수"
-            value={stats?.totalSubscribers ?? 0}
-            trend="-3% 지난 달"
-            trendUp={false}
           />
         </>
       </div>
@@ -104,7 +109,7 @@ export default function DashboardContent({ user, blogInfos }: DashboardContentPr
               <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
             </div>
           ) : (
-            <TrafficChart data={trafficData || []} />
+            <TrafficChart data={trafficChart || []} />
           )}
         </div>
 

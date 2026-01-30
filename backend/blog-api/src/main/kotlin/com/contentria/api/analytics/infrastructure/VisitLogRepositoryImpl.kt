@@ -28,6 +28,10 @@ class VisitLogRepositoryImpl(
     }
 
     override fun countTodayVisitors(blogId: UUID, startOfToday: ZonedDateTime): Long {
-        return jpaRepository.countByBlogIdAndVisitedAtAfter(blogId, startOfToday)
+        return jpaRepository.countTodayVisitors(blogId, startOfToday)
+    }
+
+    override fun countTodayViews(blogId: UUID, startOfDay: ZonedDateTime): Long {
+        return jpaRepository.countTodayViews(blogId, startOfDay)
     }
 }

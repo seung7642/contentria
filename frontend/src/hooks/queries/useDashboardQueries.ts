@@ -8,24 +8,29 @@ import {
   getPopularPostsAction,
   getTrafficDataAction,
 } from '@/actions/dashboard';
-import { ChartData, PopularPost, Stats, TimeRange } from '@/types/api/dashboard';
+import {
+  TrafficChartResponse,
+  PopularPostResponse,
+  StatsResponse,
+  TimeRange,
+} from '@/types/api/dashboard';
 
 export const useDashboadStatsQuery = (slug: string) => {
-  return useQuery<Stats, ApiError | AxiosError>({
+  return useQuery<StatsResponse, ApiError | AxiosError>({
     queryKey: ['dashboard', 'stats', slug],
     queryFn: () => getDashboardStatsAction(slug),
   });
 };
 
 export const usePopularPostsQuery = (slug: string) => {
-  return useQuery<PopularPost[], ApiError | AxiosError>({
+  return useQuery<PopularPostResponse[], ApiError | AxiosError>({
     queryKey: ['dashboard', 'popular-posts', slug],
     queryFn: () => getPopularPostsAction(slug),
   });
 };
 
 export const useTrafficChartQuery = (slug: string, timeRange: TimeRange) => {
-  return useQuery<ChartData[], ApiError | AxiosError>({
+  return useQuery<TrafficChartResponse[], ApiError | AxiosError>({
     queryKey: ['dashboard', 'traffic', slug, timeRange],
     queryFn: () => getTrafficDataAction(slug, timeRange),
     staleTime: 5 * 60 * 1000, // 5 minutes

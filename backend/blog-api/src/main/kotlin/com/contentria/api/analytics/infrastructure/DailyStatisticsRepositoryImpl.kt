@@ -53,4 +53,11 @@ class DailyStatisticsRepositoryImpl(
     ): List<PopularPostStatProjection> {
         return dailyStatisticsJpaRepository.findPopularPosts(blogId, startDate, endDate, pageable)
     }
+
+    override fun findByBlogIdAndStatDateAndPostIdIsNull(
+        blogId: UUID,
+        statDate: LocalDate
+    ): DailyStatistics? {
+        return dailyStatisticsJpaRepository.findByBlogIdAndStatDateAndPostIdIsNull(blogId, statDate)
+    }
 }

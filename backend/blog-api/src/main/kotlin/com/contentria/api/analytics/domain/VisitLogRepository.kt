@@ -11,4 +11,6 @@ interface VisitLogRepository {
     fun deleteAll(visitLogs: List<VisitLog>)
 
     fun countTodayVisitors(blogId: UUID, startOfToday: ZonedDateTime): Long
+
+    fun countTodayViews(blogId: UUID, startOfDay: ZonedDateTime): Long
 }

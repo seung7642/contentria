@@ -1,11 +1,14 @@
-export interface Stats {
+export interface StatsResponse {
+  todayViews: number;
+  todayViewsGrowthRate: number | null;
   todayVisitors: number;
+  todayGrowthRate: number | null;
   weekVisitors: number;
-  weekNewComments: number;
-  totalSubscribers: number;
+  weekGrowthRate: number | null;
+  totalPosts: number;
 }
 
-export interface PopularPost {
+export interface PopularPostResponse {
   id: string;
   title: string;
   views: number;
@@ -13,7 +16,7 @@ export interface PopularPost {
 
 export type TimeRange = '2weeks' | '30days' | '90days';
 
-export interface ChartData {
+export interface TrafficChartResponse {
   date: string;
   visitors: number;
 }

@@ -51,4 +51,6 @@ interface DailyStatisticsJpaRepository : JpaRepository<DailyStatistics, UUID> {
         endDate: LocalDate,
         pageable: Pageable
     ): List<PopularPostStatProjection>
+
+    fun findByBlogIdAndStatDateAndPostIdIsNull(blogId: UUID, statDate: LocalDate): DailyStatistics?
 }

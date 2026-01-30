@@ -21,16 +21,30 @@ class AnalyticsService(
         val today = LocalDate.now()
         val startOfToday = today.atStartOfDay(ZoneId.of("Asia/Seoul"))
 
+        // 1. [오늘] 실시간 데이터 (VisitLogs)
         val todayVisitors = visitLogRepository.countTodayVisitors(blogId, startOfToday)
+        val todayViews = visitLogRepository.countTodayViews(blogId, startOfToday)
 
         val startOfWeek = today.minusDays(6)
         val yesterday = today.minusDays(1)
-
         val pastWeekVisitors = dailyStatisticsRepository.sumVisitorBetween(blogId, startOfWeek, yesterday) ?: 0L
-        
+        val weekVisitors = pastWeekVisitors + todayVisitors
+
+        val yesterdayStats = dailyStatisticsRepository.findByBlogIdAndStatDateAndPostIdIsNull(blogId, yesterday)
+        val yesterdayVisitors = yesterdayStats?.visitCount ?: 0L
+        val yesterdayViews = yesterdayStats?.viewCount ?: 0L
+
+        val startOfPrevWeek = today.minusDays(13)
+        val endOfPrevWeek = today.minusDays(7)
+        val prevWeekVisitors = dailyStatisticsRepository.sumVisitorBetween(blogId, startOfPrevWeek, endOfPrevWeek) ?: 0L
+
         return VisitStatsInfo(
+            todayViews = todayViews,
+            yesterdayViews = yesterdayViews,
             todayVisitors = todayVisitors,
-            weekVisitors = pastWeekVisitors + todayVisitors
+            yesterdayVisitors = yesterdayVisitors,
+            weekVisitors = weekVisitors,
+            prevWeekVisitors = prevWeekVisitors
         )
     }
 
