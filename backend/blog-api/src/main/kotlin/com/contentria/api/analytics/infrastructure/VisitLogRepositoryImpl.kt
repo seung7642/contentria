@@ -3,6 +3,7 @@ package com.contentria.api.analytics.infrastructure
 import com.contentria.api.analytics.domain.VisitLog
 import com.contentria.api.analytics.domain.VisitLogRepository
 import org.springframework.stereotype.Repository
+import java.time.ZonedDateTime
 import java.util.UUID
 
 @Repository
@@ -24,5 +25,9 @@ class VisitLogRepositoryImpl(
 
     override fun deleteAll(visitLogs: List<VisitLog>) {
         jpaRepository.deleteAll(visitLogs)
+    }
+
+    override fun countTodayVisitors(blogId: UUID, startOfToday: ZonedDateTime): Long {
+        return jpaRepository.countByBlogIdAndVisitedAtAfter(blogId, startOfToday)
     }
 }

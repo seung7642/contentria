@@ -1,6 +1,7 @@
 package com.contentria.api.post.infrastructure
 
 import com.contentria.api.post.domain.Post
+import com.contentria.api.post.domain.PostStatus
 import com.contentria.api.post.domain.query.CategoryPostCount
 import com.contentria.api.post.domain.query.PostSummary
 import org.springframework.data.domain.Page
@@ -75,4 +76,6 @@ interface PostJpaRepository : JpaRepository<Post, UUID> {
     fun findSlugsByPrefix(blogId: UUID, targetSlug: String): List<String>
 
     fun existsByCategoryIdIn(categoryIds: List<UUID>): Boolean
+
+    fun countByBlogIdAndStatus(blogId: UUID, published: PostStatus): Long
 }

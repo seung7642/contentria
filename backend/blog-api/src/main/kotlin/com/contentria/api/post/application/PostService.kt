@@ -23,6 +23,29 @@ class PostService(
     private val postRepository: PostRepository,
     private val postSlugGenerator: PostSlugGenerator
 ) {
+    @Transactional(readOnly = true)
+    fun getPosts(blogSlug: String, pageable: Pageable): Page<PostSummaryInfo> {
+        val postSummaries = postRepository.findPostSummariesByBlogSlug(blogSlug, pageable)
+        return postSummaries.map { PostSummaryInfo.from(it) }
+    }
+
+    @Transactional(readOnly = true)
+    fun getPublishedPost(blogSlug: String, postSlug: String): PostContentInfo {
+        val post = postRepository.findPublishedPost(blogSlug, postSlug)
+            ?: throw ContentriaException(ErrorCode.NOT_FOUND_POST)
+
+        return PostContentInfo.from(post)
+    }
+
+    @Transactional(readOnly = true)
+    fun existsByCategoryIds(categoryIds: List<UUID>): Boolean {
+        return postRepository.existsByCategoryIdIn(categoryIds)
+    }
+
+    fun countPublishedPosts(blogId: UUID): Long {
+        return postRepository.countByBlogIdAndStatus(blogId, PostStatus.PUBLISHED)
+    }
+
     @Transactional
     fun createSamplePosts(blogId: UUID, categoryIds: Map<String, UUID>, contents: Map<String, String>) {
         val posts = listOf(
@@ -46,25 +69,6 @@ class PostService(
             )
         )
         postRepository.saveAll(posts)
-    }
-
-    @Transactional(readOnly = true)
-    fun getPosts(blogSlug: String, pageable: Pageable): Page<PostSummaryInfo> {
-        val postSummaries = postRepository.findPostSummariesByBlogSlug(blogSlug, pageable)
-        return postSummaries.map { PostSummaryInfo.from(it) }
-    }
-
-    @Transactional(readOnly = true)
-    fun getPublishedPost(blogSlug: String, postSlug: String): PostContentInfo {
-        val post = postRepository.findPublishedPost(blogSlug, postSlug)
-            ?: throw ContentriaException(ErrorCode.NOT_FOUND_POST)
-
-        return PostContentInfo.from(post)
-    }
-
-    @Transactional(readOnly = true)
-    fun existsByCategoryIds(categoryIds: List<UUID>): Boolean {
-        return postRepository.existsByCategoryIdIn(categoryIds)
     }
 
     @Transactional

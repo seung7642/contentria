@@ -12,10 +12,10 @@ import java.util.UUID
 
 @Entity
 @Table(
-    name = "visit_logs",
-    indexes = [
-        Index(name = "idx_visit_logs_blot_date", columnList = "blog_id, visited_at")
-    ]
+    name = "visit_logs"
+//    indexes = [
+//        Index(name = "idx_visit_logs_blot_date", columnList = "blog_id, visited_at")
+//    ]
 )
 class VisitLog(
     @Id

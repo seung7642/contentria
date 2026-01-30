@@ -1,12 +1,14 @@
 package com.contentria.api.dashboard.controller
 
+import com.contentria.api.auth.infrastructure.security.AuthUserDetails
+import com.contentria.api.dashboard.application.DashboardFacade
 import com.contentria.api.dashboard.controller.dto.DashboardStatsResponse
 import com.contentria.api.dashboard.controller.dto.PopularPostResponse
+import com.contentria.api.dashboard.controller.dto.TrafficChartResponse
 import com.contentria.api.dashboard.dto.TimeRange
-import com.contentria.api.dashboard.controller.dto.TrafficChartDataResponse
-import com.contentria.api.dashboard.application.DashboardService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
@@ -15,29 +17,36 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 //@RequestMapping("/blogs/{slug}/dashboard")
 class DashboardController(
-    private val dashboardService: DashboardService
+    private val dashboardFacade: DashboardFacade
 ) {
-    @GetMapping("/blogs/{slug}/dashboard/stats")
+    @GetMapping("/blogs/{blogSlug}/dashboard/stats")
     @PreAuthorize("isAuthenticated()") // 추후에 isOwner(#slug) 권한 검증 추가
-    fun getStats(@PathVariable slug: String): ResponseEntity<DashboardStatsResponse> {
-        val stats = dashboardService.getStats(slug)
-        return ResponseEntity.ok(stats)
+    fun getStats(
+        @AuthenticationPrincipal userDetails: AuthUserDetails,
+        @PathVariable blogSlug: String
+    ): ResponseEntity<DashboardStatsResponse> {
+        val stats = dashboardFacade.getStats(userDetails.userId, blogSlug)
+        return ResponseEntity.ok(DashboardStatsResponse.from(stats))
     }
 
-    @GetMapping("/blogs/{slug}/dashboard/popular-posts")
+    @GetMapping("/blogs/{blogSlug}/dashboard/popular-posts")
     @PreAuthorize("isAuthenticated()") // 추후에 isOwner(#slug) 권한 검증 추가
-    fun getPopularPosts(@PathVariable slug: String): ResponseEntity<List<PopularPostResponse>> {
-        val popularPosts = dashboardService.getPopularPosts(slug)
-        return ResponseEntity.ok(popularPosts)
+    fun getPopularPosts(
+        @AuthenticationPrincipal userDetails: AuthUserDetails,
+        @PathVariable blogSlug: String
+    ): ResponseEntity<List<PopularPostResponse>> {
+        val popularPosts = dashboardFacade.getPopularPosts(userDetails.userId, blogSlug)
+        return ResponseEntity.ok(popularPosts.map { PopularPostResponse.from(it) })
     }
 
-    @GetMapping("/blogs/{slug}/dashboard/traffic")
+    @GetMapping("/blogs/{blogSlug}/dashboard/traffic")
     @PreAuthorize("isAuthenticated()") // 추후에 isOwner(#slug) 권한 검증 추가
     fun getTrafficData(
-        @PathVariable slug: String,
+        @AuthenticationPrincipal userDetails: AuthUserDetails,
+        @PathVariable blogSlug: String,
         @RequestParam timeRange: TimeRange
-    ): ResponseEntity<List<TrafficChartDataResponse>> {
-        val trafficData = dashboardService.getTrafficData(slug, timeRange)
-        return ResponseEntity.ok(trafficData)
+    ): ResponseEntity<List<TrafficChartResponse>> {
+        val trafficData = dashboardFacade.getTrafficData(userDetails.userId, blogSlug, timeRange)
+        return ResponseEntity.ok(trafficData.map { TrafficChartResponse.from(it) })
     }
 }

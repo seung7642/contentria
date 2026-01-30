@@ -2,6 +2,7 @@ package com.contentria.api.post.infrastructure
 
 import com.contentria.api.post.domain.Post
 import com.contentria.api.post.domain.PostRepository
+import com.contentria.api.post.domain.PostStatus
 import com.contentria.api.post.domain.query.CategoryPostCount
 import com.contentria.api.post.domain.query.PostSummary
 import org.springframework.data.domain.Page
@@ -62,5 +63,12 @@ class PostRepositoryImpl(
 
     override fun existsByCategoryIdIn(categoryIds: List<UUID>): Boolean {
         return postJpaRepository.existsByCategoryIdIn(categoryIds)
+    }
+
+    override fun countByBlogIdAndStatus(
+        blogId: UUID,
+        published: PostStatus
+    ): Long {
+        return postJpaRepository.countByBlogIdAndStatus(blogId, published)
     }
 }
