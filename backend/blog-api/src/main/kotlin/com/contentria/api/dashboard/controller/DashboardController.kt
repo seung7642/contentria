@@ -11,16 +11,17 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-//@RequestMapping("/blogs/{slug}/dashboard")
+@RequestMapping("/blogs/{blogSlug}/dashboard")
 class DashboardController(
     private val dashboardFacade: DashboardFacade
 ) {
-    @GetMapping("/blogs/{blogSlug}/dashboard/stats")
-    @PreAuthorize("isAuthenticated()") // 추후에 isOwner(#slug) 권한 검증 추가
+    @GetMapping("/stats")
+    @PreAuthorize("isAuthenticated()")
     fun getStats(
         @AuthenticationPrincipal userDetails: AuthUserDetails,
         @PathVariable blogSlug: String
@@ -29,24 +30,25 @@ class DashboardController(
         return ResponseEntity.ok(DashboardStatsResponse.from(stats))
     }
 
-    @GetMapping("/blogs/{blogSlug}/dashboard/popular-posts")
-    @PreAuthorize("isAuthenticated()") // 추후에 isOwner(#slug) 권한 검증 추가
+    @GetMapping("/popular-posts")
+    @PreAuthorize("isAuthenticated()")
     fun getPopularPosts(
         @AuthenticationPrincipal userDetails: AuthUserDetails,
-        @PathVariable blogSlug: String
+        @PathVariable blogSlug: String,
+        @RequestParam(defaultValue = "5") size: Int
     ): ResponseEntity<List<PopularPostResponse>> {
-        val popularPosts = dashboardFacade.getPopularPosts(userDetails.userId, blogSlug)
+        val popularPosts = dashboardFacade.getPopularPosts(userDetails.userId, blogSlug, size)
         return ResponseEntity.ok(popularPosts.map { PopularPostResponse.from(it) })
     }
 
-    @GetMapping("/blogs/{blogSlug}/dashboard/traffic")
-    @PreAuthorize("isAuthenticated()") // 추후에 isOwner(#slug) 권한 검증 추가
+    @GetMapping("/traffic")
+    @PreAuthorize("isAuthenticated()")
     fun getTrafficData(
         @AuthenticationPrincipal userDetails: AuthUserDetails,
         @PathVariable blogSlug: String,
         @RequestParam timeRange: TimeRange
     ): ResponseEntity<List<TrafficChartResponse>> {
-        val trafficData = dashboardFacade.getTrafficData(userDetails.userId, blogSlug, timeRange)
+        val trafficData = dashboardFacade.getVisitorTrend(userDetails.userId, blogSlug, timeRange)
         return ResponseEntity.ok(trafficData.map { TrafficChartResponse.from(it) })
     }
 }

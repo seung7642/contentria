@@ -1,11 +1,10 @@
 package com.contentria.api.dashboard.application.dto
 
 data class DashboardStatsInfo(
+    val todayVisitors: Long,
+    val todayVisitorsGrowthRate: Double?,
     val todayViews: Long,
     val todayViewsGrowthRate: Double?,
-    val todayVisitors: Long,
-    val todayGrowthRate: Double?,
-    val weekVisitors: Long,
-    val weekGrowthRate: Double?,
+    val totalViews: Long,
     val totalPosts: Long
 )

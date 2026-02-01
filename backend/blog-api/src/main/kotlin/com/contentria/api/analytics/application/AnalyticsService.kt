@@ -1,10 +1,12 @@
 package com.contentria.api.analytics.application
 
 import com.contentria.api.analytics.application.dto.PopularPostStatInfo
-import com.contentria.api.analytics.application.dto.TrafficDataInfo
+import com.contentria.api.analytics.application.dto.VisitorTrendInfo
 import com.contentria.api.analytics.application.dto.VisitStatsInfo
 import com.contentria.api.analytics.domain.DailyStatisticsRepository
+import com.contentria.api.analytics.domain.StatisticsCalculator
 import com.contentria.api.analytics.domain.VisitLogRepository
+import com.contentria.api.analytics.domain.VisitorTrendProcessor
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -15,66 +17,44 @@ import java.util.*
 @Service
 class AnalyticsService(
     private val visitLogRepository: VisitLogRepository,
-    private val dailyStatisticsRepository: DailyStatisticsRepository
+    private val dailyStatisticsRepository: DailyStatisticsRepository,
+    private val calculator: StatisticsCalculator,
+    private val visitorTrendProcessor: VisitorTrendProcessor
 ) {
     fun getVisitStats(blogId: UUID): VisitStatsInfo {
-        val today = LocalDate.now()
-        val startOfToday = today.atStartOfDay(ZoneId.of("Asia/Seoul"))
+        val (todayVisitors, todayViews) = fetchTodayMetrics(blogId)
+        val (yesterdayVisitors, yesterdayViews) = fetchYesterdayMetrics(blogId)
+        val historyTotalViews = dailyStatisticsRepository.sumTotalViews(blogId)
+        val totalViews = calculator.calculateTotalViews(historyTotalViews, todayViews)
 
-        // 1. [오늘] 실시간 데이터 (VisitLogs)
-        val todayVisitors = visitLogRepository.countTodayVisitors(blogId, startOfToday)
-        val todayViews = visitLogRepository.countTodayViews(blogId, startOfToday)
-
-        val startOfWeek = today.minusDays(6)
-        val yesterday = today.minusDays(1)
-        val pastWeekVisitors = dailyStatisticsRepository.sumVisitorBetween(blogId, startOfWeek, yesterday) ?: 0L
-        val weekVisitors = pastWeekVisitors + todayVisitors
-
-        val yesterdayStats = dailyStatisticsRepository.findByBlogIdAndStatDateAndPostIdIsNull(blogId, yesterday)
-        val yesterdayVisitors = yesterdayStats?.visitCount ?: 0L
-        val yesterdayViews = yesterdayStats?.viewCount ?: 0L
-
-        val startOfPrevWeek = today.minusDays(13)
-        val endOfPrevWeek = today.minusDays(7)
-        val prevWeekVisitors = dailyStatisticsRepository.sumVisitorBetween(blogId, startOfPrevWeek, endOfPrevWeek) ?: 0L
+        val todayVisitorsGrowthRate = calculator.calculateGrowthRate(todayVisitors, yesterdayVisitors)
+        val todayViewsGrowthRate = calculator.calculateGrowthRate(todayViews, yesterdayViews)
 
         return VisitStatsInfo(
-            todayViews = todayViews,
-            yesterdayViews = yesterdayViews,
             todayVisitors = todayVisitors,
+            todayViews = todayViews,
+            todayVisitorsGrowthRate = todayVisitorsGrowthRate,
+            todayViewsGrowthRate = todayViewsGrowthRate,
             yesterdayVisitors = yesterdayVisitors,
-            weekVisitors = weekVisitors,
-            prevWeekVisitors = prevWeekVisitors
+            yesterdayViews = yesterdayViews,
+            totalViews = totalViews
         )
     }
 
-    fun getTrafficData(
-        blogId: UUID,
-        startDate: LocalDate,
-        endDate: LocalDate,
-        formatter: DateTimeFormatter
-    ): List<TrafficDataInfo> {
-        val dbData = dailyStatisticsRepository.findTrafficData(blogId, startDate, endDate)
-        val statsMap = dbData.associateBy { it.statDate }
+    private fun fetchTodayMetrics(blogId: UUID): Pair<Long, Long> {
+        val startOfToday = LocalDate.now().atStartOfDay(ZoneId.of("Asia/Seoul"))
+        val visitors = visitLogRepository.countTodayVisitors(blogId, startOfToday)
+        val views = visitLogRepository.countTodayViews(blogId, startOfToday)
+        return Pair(visitors, views)
+    }
 
-        val today = LocalDate.now()
-        val result = mutableListOf<TrafficDataInfo>()
-
-        var currentDate = startDate
-        while (!currentDate.isAfter(endDate)) {
-            val dateStr = currentDate.format(formatter)
-
-            val visitors = if (currentDate.isEqual(today)) {
-                visitLogRepository.countTodayVisitors(blogId, today.atStartOfDay(ZoneId.of("Asia/Seoul")))
-            } else {
-                statsMap[currentDate]?.visitCount ?: 0L
-            }
-
-            result.add(TrafficDataInfo(date = dateStr, visitors = visitors))
-            currentDate = currentDate.plusDays(1)
-        }
-
-        return result
+    private fun fetchYesterdayMetrics(blogId: UUID): Pair<Long, Long> {
+        val yesterday = LocalDate.now().minusDays(1)
+        val stats = dailyStatisticsRepository.findByBlogIdAndStatDateAndPostIdIsNull(blogId, yesterday)
+        return Pair(
+            stats?.visitCount ?: 0L,
+            stats?.viewCount ?: 0L
+        )
     }
 
     fun getPopularPosts(
@@ -93,5 +73,39 @@ class AnalyticsService(
                     viewCount = it.getViewCount()
                 )
             }
+    }
+
+    fun getVisitorTrend(
+        blogId: UUID,
+        startDate: LocalDate,
+        endDate: LocalDate,
+        formatter: DateTimeFormatter
+    ): List<VisitorTrendInfo> {
+        val historicalDailyStats = dailyStatisticsRepository.findTrafficData(blogId, startDate, endDate)
+        val historyStatsMap = historicalDailyStats.associateBy { it.statDate }
+
+        val zoneId = ZoneId.of("Asia/Seoul")
+        val today = LocalDate.now(zoneId)
+        val isTodayIncluded = !today.isBefore(startDate) && !today.isAfter(endDate)
+
+        val todayVisitors = if (isTodayIncluded) {
+            visitLogRepository.countTodayVisitors(blogId, today.atStartOfDay(zoneId))
+        } else {
+            0L
+        }
+
+        val trendSeriesMap = visitorTrendProcessor.generateTrendSeries(
+            startDate = startDate,
+            endDate = endDate,
+            historyStatsMap = historyStatsMap,
+            todayVisitors = todayVisitors,
+        )
+
+        return trendSeriesMap.map { (date, count) ->
+            VisitorTrendInfo(
+                date = date.format(formatter),
+                count = count
+            )
+        }
     }
 }

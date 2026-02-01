@@ -37,6 +37,10 @@ class DailyStatisticsRepositoryImpl(
         return dailyStatisticsJpaRepository.sumVisitorsBetween(blogId, startDate, endDate)
     }
 
+    override fun sumTotalViews(blogId: UUID): Long? {
+        return dailyStatisticsJpaRepository.sumTotalViews(blogId)
+    }
+
     override fun findTrafficData(
         blogId: UUID,
         startDate: LocalDate,

@@ -20,6 +20,14 @@ interface DailyStatisticsJpaRepository : JpaRepository<DailyStatistics, UUID> {
     fun sumVisitorsBetween(blogId: UUID, startDate: LocalDate, endDate: LocalDate): Long?
 
     @Query("""
+        SELECT SUM(d.viewCount)
+        FROM DailyStatistics d
+        WHERE d.blogId = :blogId
+            AND d.postId IS NULL
+    """)
+    fun sumTotalViews(blogId: UUID): Long?
+
+    @Query("""
         SELECT d
         FROM DailyStatistics d
         WHERE d.blogId = :blogId

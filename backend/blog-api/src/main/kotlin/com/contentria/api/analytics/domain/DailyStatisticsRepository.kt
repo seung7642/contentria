@@ -13,6 +13,8 @@ interface DailyStatisticsRepository {
 
     fun sumVisitorBetween(blogId: UUID, startDate: LocalDate, endDate: LocalDate): Long?
 
+    fun sumTotalViews(blogId: UUID): Long?
+
     fun findTrafficData(blogId: UUID, startDate: LocalDate, endDate: LocalDate): List<DailyStatistics>
 
     fun findPopularPosts(blogId: UUID, startDate: LocalDate, endDate: LocalDate, pageable: Pageable): List<PopularPostStatProjection>
