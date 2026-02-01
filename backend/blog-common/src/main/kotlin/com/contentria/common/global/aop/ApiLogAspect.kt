@@ -1,4 +1,4 @@
-package com.contentria.common.aop
+package com.contentria.common.global.aop
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -16,7 +16,7 @@ private val log = KotlinLogging.logger {}
 class ApiLogAspect(
     private val objectMapper: ObjectMapper
 ) {
-    @Around("@annotation(com.contentria.common.aop.ApiLog)")
+    @Around("@annotation(com.contentria.common.global.aop.ApiLog)")
     @Throws(Throwable::class)
     fun logApi(joinPoint: ProceedingJoinPoint): Any? {
         val signature = joinPoint.signature as MethodSignature

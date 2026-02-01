@@ -1,7 +1,7 @@
 package com.contentria.api.category.domain
 
 import com.contentria.api.user.domain.BaseEntity
-import com.contentria.common.config.jpa.GeneratedUuidV7
+import com.contentria.common.global.config.jpa.GeneratedUuidV7
 import jakarta.persistence.*
 import org.hibernate.annotations.BatchSize
 import java.util.*

@@ -32,9 +32,8 @@ export default function DashboardContent({ user, blogInfos }: DashboardContentPr
     timeRange
   );
 
-  const todayTrend = formatTrend(stats?.todayGrowthRate);
+  const todayTrend = formatTrend(stats?.todayVisitorsGrowthRate);
   const todayViewsTrend = formatTrend(stats?.todayViewsGrowthRate);
-  const weekTrend = formatTrend(stats?.weekGrowthRate);
 
   return (
     <div className="space-y-6">
@@ -73,10 +72,10 @@ export default function DashboardContent({ user, blogInfos }: DashboardContentPr
           />
           <StatCard
             icon={<Eye size={24} />}
-            title="최근 7일간 방문자"
-            value={stats?.weekVisitors ?? 0}
-            trend={weekTrend.text}
-            trendUp={weekTrend.isUp}
+            title="전체 조회수"
+            value={stats?.totalViews ?? 0}
+            trend=""
+            trendUp={true}
           />
           <StatCard
             icon={<MessageSquare size={24} />}

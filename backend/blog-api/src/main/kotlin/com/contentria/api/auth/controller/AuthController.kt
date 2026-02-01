@@ -6,7 +6,7 @@ import com.contentria.api.global.error.ContentriaException
 import com.contentria.api.global.error.ErrorCode
 import com.contentria.api.global.util.CookieUtil
 import com.contentria.api.global.util.IpResolver
-import com.contentria.common.aop.ApiLog
+import com.contentria.common.global.aop.ApiLog
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse

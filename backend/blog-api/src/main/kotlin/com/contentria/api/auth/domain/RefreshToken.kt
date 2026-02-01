@@ -1,8 +1,7 @@
 package com.contentria.api.auth.domain
 
 import com.contentria.api.user.domain.BaseEntity
-import com.contentria.api.user.domain.User
-import com.contentria.common.config.jpa.GeneratedUuidV7
+import com.contentria.common.global.config.jpa.GeneratedUuidV7
 import jakarta.persistence.*
 import java.time.Instant
 import java.util.*

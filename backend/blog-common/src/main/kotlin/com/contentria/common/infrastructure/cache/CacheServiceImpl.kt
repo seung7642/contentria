@@ -1,4 +1,4 @@
-package com.contentria.common.cache
+package com.contentria.common.infrastructure.cache
 
 import org.springframework.stereotype.Service
 

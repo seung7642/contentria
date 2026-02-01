@@ -7,7 +7,7 @@ import com.contentria.api.post.controller.dto.CreateNewPostRequest
 import com.contentria.api.post.controller.dto.CreateNewPostResponse
 import com.contentria.api.post.controller.dto.PostDetailResponse
 import com.contentria.api.post.controller.dto.PostSummaryResponse
-import com.contentria.common.aop.ApiLog
+import com.contentria.common.global.aop.ApiLog
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.validation.Valid
 import org.springframework.data.domain.Page

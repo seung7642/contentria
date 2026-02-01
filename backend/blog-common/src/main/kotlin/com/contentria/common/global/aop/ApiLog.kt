@@ -1,4 +1,4 @@
-package com.contentria.common.aop
+package com.contentria.common.global.aop
 
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)

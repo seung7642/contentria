@@ -4,7 +4,7 @@ import com.contentria.api.auth.application.VerificationCodeProvider
 import com.contentria.api.auth.application.dto.VerificationCodeCacheDto
 import com.contentria.api.global.error.ContentriaException
 import com.contentria.api.global.error.ErrorCode
-import com.contentria.common.mail.MailService
+import com.contentria.common.infrastructure.mail.MailService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.cache.Cache
 import org.springframework.cache.CacheManager

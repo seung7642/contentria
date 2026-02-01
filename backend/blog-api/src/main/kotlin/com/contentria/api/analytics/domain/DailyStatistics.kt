@@ -1,7 +1,7 @@
 package com.contentria.api.analytics.domain
 
 import com.contentria.api.user.domain.BaseEntity
-import com.contentria.common.config.jpa.GeneratedUuidV7
+import com.contentria.common.global.config.jpa.GeneratedUuidV7
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue

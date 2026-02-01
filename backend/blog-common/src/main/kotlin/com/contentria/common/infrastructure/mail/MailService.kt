@@ -1,6 +1,6 @@
-package com.contentria.common.mail
+package com.contentria.common.infrastructure.mail
 
-import com.contentria.common.properties.CommonProperties
+import com.contentria.common.global.config.CommonProperties
 import com.mailgun.api.v3.MailgunMessagesApi
 import com.mailgun.model.message.Message
 import feign.FeignException

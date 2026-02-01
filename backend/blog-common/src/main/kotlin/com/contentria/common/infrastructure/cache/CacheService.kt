@@ -1,4 +1,4 @@
-package com.contentria.common.cache
+package com.contentria.common.infrastructure.cache
 
 interface CacheService {
 

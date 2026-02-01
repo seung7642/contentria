@@ -1,6 +1,6 @@
 package com.contentria.api.user.domain
 
-import com.contentria.common.config.jpa.GeneratedUuidV7
+import com.contentria.common.global.config.jpa.GeneratedUuidV7
 import jakarta.persistence.*
 import java.util.*
 
