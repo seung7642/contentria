@@ -1,10 +1,10 @@
-package com.contentria.api.analytics.infrastructure
+package com.contentria.common.domain.analytics.repository
 
-import com.contentria.api.analytics.domain.VisitLog
+import com.contentria.common.domain.analytics.VisitLog
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import java.time.ZonedDateTime
-import java.util.UUID
+import java.util.*
 
 interface VisitLogJpaRepository : JpaRepository<VisitLog, UUID> {
 

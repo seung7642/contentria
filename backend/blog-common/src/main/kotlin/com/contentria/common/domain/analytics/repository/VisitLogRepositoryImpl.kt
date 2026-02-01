@@ -1,10 +1,9 @@
-package com.contentria.api.analytics.infrastructure
+package com.contentria.common.domain.analytics.repository
 
-import com.contentria.api.analytics.domain.VisitLog
-import com.contentria.api.analytics.domain.VisitLogRepository
+import com.contentria.common.domain.analytics.VisitLog
 import org.springframework.stereotype.Repository
 import java.time.ZonedDateTime
-import java.util.UUID
+import java.util.*
 
 @Repository
 class VisitLogRepositoryImpl(

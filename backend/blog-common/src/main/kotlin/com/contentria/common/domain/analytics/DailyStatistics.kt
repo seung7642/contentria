@@ -1,16 +1,10 @@
-package com.contentria.api.analytics.domain
+package com.contentria.common.domain.analytics
 
-import com.contentria.api.user.domain.BaseEntity
+import com.contentria.common.domain.model.BaseEntity
 import com.contentria.common.global.config.jpa.GeneratedUuidV7
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.Id
-import jakarta.persistence.Index
-import jakarta.persistence.Table
-import jakarta.persistence.UniqueConstraint
+import jakarta.persistence.*
 import java.time.LocalDate
-import java.util.UUID
+import java.util.*
 
 @Entity
 @Table(

@@ -3,10 +3,10 @@ package com.contentria.api.analytics.application
 import com.contentria.api.analytics.application.dto.PopularPostStatInfo
 import com.contentria.api.analytics.application.dto.VisitorTrendInfo
 import com.contentria.api.analytics.application.dto.VisitStatsInfo
-import com.contentria.api.analytics.domain.DailyStatisticsRepository
-import com.contentria.api.analytics.domain.StatisticsCalculator
-import com.contentria.api.analytics.domain.VisitLogRepository
-import com.contentria.api.analytics.domain.VisitorTrendProcessor
+import com.contentria.common.domain.analytics.StatisticsCalculator
+import com.contentria.common.domain.analytics.VisitorTrendProcessor
+import com.contentria.common.domain.analytics.repository.DailyStatisticsRepository
+import com.contentria.common.domain.analytics.repository.VisitLogRepository
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import java.time.LocalDate

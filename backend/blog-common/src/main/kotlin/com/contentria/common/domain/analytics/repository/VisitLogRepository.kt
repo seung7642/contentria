@@ -1,5 +1,6 @@
-package com.contentria.api.analytics.domain
+package com.contentria.common.domain.analytics.repository
 
+import com.contentria.common.domain.analytics.VisitLog
 import java.time.ZonedDateTime
 import java.util.*
 

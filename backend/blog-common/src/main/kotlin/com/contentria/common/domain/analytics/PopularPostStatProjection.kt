@@ -1,4 +1,4 @@
-package com.contentria.api.analytics.domain
+package com.contentria.common.domain.analytics
 
 interface PopularPostStatProjection {
 

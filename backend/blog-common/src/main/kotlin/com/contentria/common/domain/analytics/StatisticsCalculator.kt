@@ -1,4 +1,4 @@
-package com.contentria.api.analytics.domain
+package com.contentria.common.domain.analytics
 
 import org.springframework.stereotype.Component
 import kotlin.math.round

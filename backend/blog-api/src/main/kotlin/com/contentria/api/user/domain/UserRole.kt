@@ -1,5 +1,6 @@
 package com.contentria.api.user.domain
 
+import com.contentria.common.domain.model.BaseEntity
 import jakarta.persistence.*
 
 @Entity

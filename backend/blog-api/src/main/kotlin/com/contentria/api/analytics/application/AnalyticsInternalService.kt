@@ -1,8 +1,8 @@
 package com.contentria.api.analytics.application
 
 import com.contentria.api.analytics.application.dto.LogVisitCommand
-import com.contentria.api.analytics.domain.VisitLog
-import com.contentria.api.analytics.domain.VisitLogRepository
+import com.contentria.common.domain.analytics.VisitLog
+import com.contentria.common.domain.analytics.repository.VisitLogRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
