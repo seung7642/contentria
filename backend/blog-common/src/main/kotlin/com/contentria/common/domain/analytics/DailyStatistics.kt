@@ -17,7 +17,8 @@ import java.util.*
     ],
     indexes = [
         Index(name = "idx_daily_stats_date", columnList = "blog_id, stat_date")
-    ]
+    ],
+    schema = "contentria"
 )
 class DailyStatistics(
     @Id

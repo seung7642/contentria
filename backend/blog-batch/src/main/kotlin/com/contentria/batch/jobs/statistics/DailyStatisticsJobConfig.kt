@@ -38,8 +38,22 @@ class DailyStatisticsJobConfig(
             .build()
     }
 
-    @Bean
+    /**
+     * Configures the Step for calculating daily statistics.
+     *
+     * **Key Implementation Details:**
+     * - **[JobScope]**: Ensures a new instance of this Step is created for every
+     *   Job execution. This allows the Step to access run-specific context (like JobParameters).
+     * - **Why pass `null`?**:
+     *   The reader and processor are **[StepScope]** beans that utilize Late Binding.
+     *   At startup, Spring creates **proxies** for them, ignoring the arguments passed here.
+     *   The actual values (e.g., via SpEL `@Value`) are injected dynamically by the framework
+     *   at runtime, making the `null` values mere placeholders to satisfy the compiler.
+     *
+     *   @return The configured Step instance.
+     */
     @JobScope
+    @Bean
     fun dailyStatisticsStep(
         jobRepository: JobRepository,
         transactionManager: PlatformTransactionManager
@@ -52,8 +66,20 @@ class DailyStatisticsJobConfig(
             .build()
     }
 
-    @Bean
+    /**
+     * Reads aggregated visit statistics (PV & UV) from the database using raw SQL.
+     *
+     * **Why [JdbcCursorItemReader]?**
+     * - **Performance**: It streams data directly via a database cursor, avoiding the overhead of JPA (Hibernate)
+     *   entity mapping and dirty checking. This is ideal for reading large datasets.
+     * - **Flexibility**: Easier to execute complex aggregation queries (like `GROUPING SETS`) which are difficult to express in JPQL/QueryDSL.
+     *
+     * **[StepScope] Explained:**
+     * - Marks this bean to be initialized **only when the step actually starts**, not at application startup.
+     * - This "Late Binding" is necessary to inject runtime parameters (like `targetDate` from jobParameters) via SpEL.
+     */
     @StepScope
+    @Bean
     fun dailyStatisticsReader(
         @Value("#{jobParameters[targetDate]}") targetDateStr: String?
     ): JdbcCursorItemReader<DailyStatisticsDto> {
@@ -85,8 +111,19 @@ class DailyStatisticsJobConfig(
             .build()
     }
 
-    @Bean
+    /**
+     * Transforms raw aggregated data ([DailyStatisticsDto]) into the domain entity ([DailyStatistics])
+     *
+     * **Responsibility:**
+     * - Maps the DTO read from the database to the JPA entity to be saved.
+     * - Applies business logic, such as setting the statistical reference date (`statDate`).
+     *
+     * **[StepScope] Usage:**
+     * - Required here because the logic depends on `targetDateStr`, which is provided dynamically
+     *   via [JobParameters] at runtime (`${jobParameters[...]}`).
+     */
     @StepScope
+    @Bean
     fun dailyStatisticsProcessor(
         @Value("#{jobParameters[targetDate]}") targetDateStr: String?
     ): ItemProcessor<DailyStatisticsDto, DailyStatistics> {

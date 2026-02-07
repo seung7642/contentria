@@ -12,6 +12,10 @@ class DailyStatisticsRepositoryImpl(
     private val dailyStatisticsJpaRepository: DailyStatisticsJpaRepository
 ) : DailyStatisticsRepository {
 
+    override fun findAll(): List<DailyStatistics> {
+        return dailyStatisticsJpaRepository.findAll()
+    }
+
     override fun findById(id: UUID): DailyStatistics? {
         return dailyStatisticsJpaRepository.findById(id).orElse(null)
     }
@@ -26,6 +30,10 @@ class DailyStatisticsRepositoryImpl(
 
     override fun deleteAll(dailyStatistics: List<DailyStatistics>) {
         dailyStatisticsJpaRepository.deleteAll(dailyStatistics)
+    }
+
+    override fun deleteAll() {
+        dailyStatisticsJpaRepository.deleteAll()
     }
 
     override fun sumVisitorBetween(

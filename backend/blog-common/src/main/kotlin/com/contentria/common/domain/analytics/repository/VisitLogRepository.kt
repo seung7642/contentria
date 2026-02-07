@@ -10,6 +10,7 @@ interface VisitLogRepository {
     fun save(visitLog: VisitLog): VisitLog
     fun delete(visitLog: VisitLog)
     fun deleteAll(visitLogs: List<VisitLog>)
+    fun deleteAll()
 
     fun countTodayVisitors(blogId: UUID, startOfToday: ZonedDateTime): Long
 

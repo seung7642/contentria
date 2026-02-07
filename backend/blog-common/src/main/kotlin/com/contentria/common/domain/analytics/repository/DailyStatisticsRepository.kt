@@ -8,10 +8,12 @@ import java.util.UUID
 
 interface DailyStatisticsRepository {
 
+    fun findAll(): List<DailyStatistics>
     fun findById(id: UUID): DailyStatistics?
     fun save(dailyStatistics: DailyStatistics): DailyStatistics
     fun delete(dailyStatistics: DailyStatistics)
     fun deleteAll(dailyStatistics: List<DailyStatistics>)
+    fun deleteAll()
 
     fun sumVisitorBetween(blogId: UUID, startDate: LocalDate, endDate: LocalDate): Long?
 

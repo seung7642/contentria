@@ -26,6 +26,10 @@ class VisitLogRepositoryImpl(
         jpaRepository.deleteAll(visitLogs)
     }
 
+    override fun deleteAll() {
+        jpaRepository.deleteAll()
+    }
+
     override fun countTodayVisitors(blogId: UUID, startOfToday: ZonedDateTime): Long {
         return jpaRepository.countTodayVisitors(blogId, startOfToday)
     }

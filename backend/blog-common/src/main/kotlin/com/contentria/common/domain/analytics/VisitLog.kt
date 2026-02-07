@@ -7,7 +7,8 @@ import java.util.*
 
 @Entity
 @Table(
-    name = "visit_logs"
+    name = "visit_logs",
+    schema = "contentria"
 //    indexes = [
 //        Index(name = "idx_visit_logs_blot_date", columnList = "blog_id, visited_at")
 //    ]

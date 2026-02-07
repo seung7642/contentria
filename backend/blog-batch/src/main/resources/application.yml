@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: blog-batch
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    driver-class-name: org.postgresql.Driver
+    username: contentria_user
+    password: contentria
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  batch:
+    jdbc:
+      initialize-schema: always
+
+common:
+  mail:
+    mailgun:
+      api-key: ${MAILGUN_API_KEY}
+      domain: ${MAILGUN_DOMAIN}
+      from-address: "Contentria <no-reply@${MAILGUN_DOMAIN}>"

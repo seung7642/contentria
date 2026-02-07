@@ -1,14 +1,15 @@
 package com.contentria.api.global.config
 
-import jakarta.validation.constraints.NotBlank
-import org.springframework.boot.context.properties.ConfigurationProperties
+import com.contentria.api.global.properties.AppProperties
+import com.contentria.api.global.properties.GoogleProperties
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.web.config.EnableSpringDataWebSupport
 import org.springframework.data.web.config.EnableSpringDataWebSupport.PageSerializationMode
-import org.springframework.validation.annotation.Validated
 
-@Configuration
-@ConfigurationPropertiesScan
+@EnableConfigurationProperties(GoogleProperties::class, AppProperties::class)
 @EnableSpringDataWebSupport(pageSerializationMode = PageSerializationMode.VIA_DTO)
+@ConfigurationPropertiesScan
+@Configuration
 class AppConfig
