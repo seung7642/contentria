@@ -8,7 +8,7 @@ spring:
     password: contentria
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: validate
     show-sql: true
     open-in-view: false
     properties:
@@ -17,6 +17,12 @@ spring:
   batch:
     jdbc:
       initialize-schema: always
+    job:
+      enabled: false
+
+app:
+  batch:
+    job-name: dailyStatisticsJob
 
 common:
   mail:

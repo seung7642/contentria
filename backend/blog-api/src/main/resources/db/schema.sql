@@ -48,8 +48,8 @@ CREATE TABLE refresh_tokens (
     CONSTRAINT fk_refresh_token_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE INDEX idx_refresh_token_user_id ON refresh_token(user_id);
-CREATE INDEX idx_refresh_token_expiry_date ON refresh_token(expiry_date);
+CREATE INDEX idx_refresh_token_user_id ON refresh_tokens(user_id);
+CREATE INDEX idx_refresh_token_expiry_date ON refresh_tokens(expiry_date);
 
 CREATE TABLE credentials (
     id UUID PRIMARY KEY,
@@ -158,83 +158,11 @@ CREATE TABLE daily_statistics (
     blog_id UUID NOT NULL,
     post_id UUID, -- 특정 게시글 통계라면 ID, 블로그 전체 통계라면 NULL
     stat_date DATE NOT NULL, -- 통계 날짜 (예: 2026-01-01)
-    visit_count INT DEFAULT 0, -- 방문자 수 (UV (Unique View): IP 기준 중복 제거)
-    view_count INT DEFAULT 0, -- 조회수 (PV (Page View): 단순 클릭 수)
+    visit_count BIGINT DEFAULT 0, -- 방문자 수 (UV (Unique View): IP 기준 중복 제거)
+    view_count BIGINT DEFAULT 0, -- 조회수 (PV (Page View): 단순 클릭 수)
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT uq_daily_stats UNIQUE (blog_id, post_id, stat_date),
     CONSTRAINT fk_stats_blog FOREIGN KEY (blog_id) REFERENCES blogs(id) ON DELETE CASCADE
 );
-
-CREATE TABLE media (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID NOT NULL, -- 미디어를 업로드한 사용자 ID
-    post_id UUID, -- 이 미디어가 사용된 게시글 ID (Nullable)
-    file_name VARCHAR(255), -- 원본 파일명
-    file_path TEXT NOT NULL, -- 스토리지 내 경로 또는 파일 시스템 경로
-    file_url TEXT NOT NULL UNIQUE, -- 웹에서 접근 가능한 고유 URL (마크다운에 삽입될 값)
-    mime_type VARCHAR(100), -- 파일 MIME 타입 (예: 'image/jpeg', 'image/png')
-    file_size_bytes BIGINT,
-    storage_type VARCHAR(50) DEFAULT 'LOCAL', -- 'LOCAL', 'S3', 'GCS'
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT fk_media_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    CONSTRAINT fk_media_post FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE SET NULL -- 게시글 삭제 시 미디어는 남기고 연결만 끊음
-);
-
-CREATE INDEX idx_media_user_id ON media(user_id);
-CREATE INDEX idx_media_post_id ON media(post_id);
-CREATE INDEX idx_media_file_url ON media(file_url);
-
-CREATE TABLE subscriptions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID NOT NULL,
-    blog_id UUID NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT uq_subscriptions_user_blog UNIQUE (user_id, blog_id),
-    CONSTRAINT fk_subscriptions_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    CONSTRAINT fk_subscriptions_blog FOREIGN KEY (blog_id) REFERENCES blogs(id) ON DELETE CASCADE
-);
-
-CREATE INDEX idx_subscriptions_user_id ON subscriptions(user_id);
-CREATE INDEX idx_subscriptions_blog_id ON subscriptions(blog_id);
-
-CREATE TABLE comments (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    post_id UUID NOT NULL,
-    user_id UUID, -- Nullable for deleted users
-    parent_comment_id UUID, -- Nullable for top-level comments
-    content TEXT NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP WITH TIME ZONE,
-
-    CONSTRAINT fk_comments_post FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
-    CONSTRAINT fk_comments_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
-    CONSTRAINT fk_comments_parent FOREIGN KEY (parent_comment_id) REFERENCES comments(id) ON DELETE SET NULL -- 부모 삭제 시 연결만 끊음
-);
-
-CREATE INDEX idx_comments_post_id_created_at ON comments(post_id, created_at ASC);
-CREATE INDEX idx_comments_parent_comment_id ON comments(parent_comment_id);
-CREATE INDEX idx_comments_user_id ON comments(user_id);
-
-CREATE TABLE notifications (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    recipient_user_id UUID NOT NULL,
-    type VARCHAR(50) NOT NULL, -- 어떤 종류의 이벤트로 인해 알림이 발생했는지 구분하기 위함. 'new_post', 'new_comment', 'new_reply', 'new_subscriber'
-    related_entity_id UUID, -- 해당 알림과 가장 직접적으로 관련된 데이터의 고유 ID를 명시한다.
-    related_entity_type VARCHAR(50), -- 해당 알림과 가장 직접적으로 관련된 데이터가 어떤 테이블의 것인지를 명시한다. 예) type이 'new_post'이면 'post'
-    message TEXT,
-    is_read BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT fk_notifications_recipient FOREIGN KEY (recipient_user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
-CREATE INDEX idx_notifications_recipient_user_id_created_at ON notifications(recipient_user_id, created_at DESC);
-CREATE INDEX idx_notifications_recipient_user_id_is_read ON notifications(recipient_user_id, is_read);
