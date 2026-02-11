@@ -7,8 +7,11 @@ export interface PostSummary {
   summary: string;
   metaTitle: string | null;
   metaDescription: string | null;
+  status: PostStatus;
   featuredImageUrl: string | null;
   publishedAt: string;
+  createdAt: string;
+  updatedAt: string;
   likeCount: number;
   viewCount: number;
   categoryId: string | null;

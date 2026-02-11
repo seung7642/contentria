@@ -1,5 +1,6 @@
 package com.contentria.api.post.application.dto
 
+import com.contentria.api.post.domain.PostStatus
 import com.contentria.api.post.domain.query.PostSummary
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -11,8 +12,11 @@ data class PostSummaryInfo(
     val summary: String,
     val metaTitle: String?,
     val metaDescription: String?,
+    val status: PostStatus,
     val featuredImageUrl: String?,
     val publishedAt: ZonedDateTime,
+    val createdAt: ZonedDateTime,
+    val updatedAt: ZonedDateTime,
     val likeCount: Int,
     val viewCount: Int,
     val categoryName: String?
@@ -26,8 +30,11 @@ data class PostSummaryInfo(
                 summary = projection.summary,
                 metaTitle = projection.metaTitle,
                 metaDescription = projection.metaDescription,
+                status = projection.status,
                 featuredImageUrl = projection.featuredImageUrl,
                 publishedAt = projection.publishedAt,
+                createdAt = projection.createdAt,
+                updatedAt = projection.updatedAt,
                 likeCount = projection.likeCount,
                 viewCount = projection.viewCount,
                 categoryName = projection.categoryName
