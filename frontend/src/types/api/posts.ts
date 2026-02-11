@@ -9,9 +9,10 @@ export interface PostSummary {
   metaDescription: string | null;
   featuredImageUrl: string | null;
   publishedAt: string;
-  categoryName: string | null;
   likeCount: number;
   viewCount: number;
+  categoryId: string | null;
+  categoryName: string | null;
 }
 
 export interface PostDetail {

@@ -28,8 +28,7 @@ interface PostJpaRepository : JpaRepository<Post, UUID> {
     )
     fun findPostCountsByBlogId(@Param("blogId") blogId: UUID): List<CategoryPostCount>
 
-    @Query(
-        """
+    @Query("""
         SELECT new com.contentria.api.post.domain.query.PostSummary(
             p.id,
             p.slug,
@@ -42,18 +41,23 @@ interface PostJpaRepository : JpaRepository<Post, UUID> {
             p.metaDescription,
             p.featuredImageUrl,
             p.publishedAt,
-            c.name,
             p.likeCount,
-            p.viewCount
+            p.viewCount,
+            c.id,
+            c.name
         )
         FROM Post p
         JOIN Blog b ON p.blogId = b.id
         LEFT JOIN Category c ON p.categoryId = c.id
-        WHERE b.slug = :blogSlug AND p.status = com.contentria.api.post.domain.PostStatus.PUBLISHED
-        ORDER BY p.publishedAt DESC
+        WHERE b.slug = :blogSlug AND p.status IN :statuses AND (:categorySlug IS NULL OR c.slug = :categorySlug)
     """
     )
-    fun findPostSummariesByBlogSlug(blogSlug: String, pageable: Pageable): Page<PostSummary>
+    fun findPostSummariesByBlogSlug(
+        blogSlug: String,
+        categorySlug: String?,
+        statuses: Set<PostStatus>,
+        pageable: Pageable
+    ): Page<PostSummary>
 
     @Query("""
         SELECT p

@@ -1,6 +1,5 @@
 import { getBlogLayoutAction } from '@/actions/blog';
 import { getBlogPostsAction } from '@/actions/post';
-import BlogPagination from '@/components/blog/BlogPagination';
 import CustomPagination from '@/components/common/CustomPagination';
 import PostCard from '@/components/blog/PostCard';
 import { Metadata } from 'next';
@@ -13,6 +12,7 @@ interface UserBlogPageProps {
   }>;
   searchParams: Promise<{
     page?: string;
+    category?: string;
   }>;
 }
 
@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: UserBlogPageProps): Promise<M
 
 export default async function BlogPage({ params, searchParams }: UserBlogPageProps) {
   const { blogSlug } = await params;
-  const { page } = await searchParams;
+  const { page, category } = await searchParams;
 
   const currentPage = page ? Math.max(0, parseInt(page, 10) - 1) : 0;
   if (page && (isNaN(currentPage) || parseInt(page, 10) < 1)) {
@@ -44,7 +44,7 @@ export default async function BlogPage({ params, searchParams }: UserBlogPagePro
 
   const [layoutData, postsPage] = await Promise.all([
     getBlogLayoutAction(blogSlug),
-    getBlogPostsAction(blogSlug, currentPage, 5),
+    getBlogPostsAction(blogSlug, { page: currentPage, size: 5, categorySlug: category }),
   ]);
 
   if (!layoutData) {

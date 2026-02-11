@@ -24,8 +24,13 @@ class PostService(
     private val postSlugGenerator: PostSlugGenerator
 ) {
     @Transactional(readOnly = true)
-    fun getPosts(blogSlug: String, pageable: Pageable): Page<PostSummaryInfo> {
-        val postSummaries = postRepository.findPostSummariesByBlogSlug(blogSlug, pageable)
+    fun getPosts(
+        blogSlug: String,
+        categorySlug: String?,
+        statuses: Set<PostStatus>,
+        pageable: Pageable
+    ): Page<PostSummaryInfo> {
+        val postSummaries = postRepository.findPostSummariesByBlogSlug(blogSlug, categorySlug, statuses, pageable)
         return postSummaries.map { PostSummaryInfo.from(it) }
     }
 

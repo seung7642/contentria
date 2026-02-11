@@ -6,7 +6,10 @@ import com.contentria.api.post.domain.PostStatus
 import com.contentria.api.post.domain.query.CategoryPostCount
 import com.contentria.api.post.domain.query.PostSummary
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
+import org.springframework.data.jpa.domain.JpaSort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Repository
 import java.util.*
@@ -42,9 +45,13 @@ class PostRepositoryImpl(
 
     override fun findPostSummariesByBlogSlug(
         blogSlug: String,
+        categorySlug: String?,
+        statuses: Set<PostStatus>,
         pageable: Pageable
     ): Page<PostSummary> {
-        return postJpaRepository.findPostSummariesByBlogSlug(blogSlug, pageable)
+        val mixedSort = JpaSort.unsafe(Sort.Direction.DESC, "COALESCE(p.publishedAt, p.createdAt)")
+        val customPageable = PageRequest.of(pageable.pageNumber, pageable.pageSize, mixedSort)
+        return postJpaRepository.findPostSummariesByBlogSlug(blogSlug, categorySlug, statuses, customPageable)
     }
 
     override fun findPublishedPost(

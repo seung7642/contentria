@@ -12,7 +12,8 @@ data class PostSummary(
     val metaDescription: String?,
     val featuredImageUrl: String?,
     val publishedAt: ZonedDateTime,
-    val categoryName: String?,
     val likeCount: Int,
-    val viewCount: Int
+    val viewCount: Int,
+    val categoryId: UUID?,
+    val categoryName: String?
 )

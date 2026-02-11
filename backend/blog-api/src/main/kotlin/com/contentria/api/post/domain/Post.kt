@@ -50,16 +50,8 @@ class Post(
 
     var publishedAt: ZonedDateTime? = null,
 
-//    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-//    @JoinColumn(name = "blog_id", nullable = false)
-//    var blog: Blog
-
     @Column(name = "blog_id", nullable = false, columnDefinition = "uuid")
     var blogId: UUID,
-
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "category_id")
-//    var category: Category
 
     @Column(name = "category_id", columnDefinition = "uuid")
     var categoryId: UUID? = null,

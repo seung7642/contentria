@@ -33,15 +33,38 @@ class CategoryInternalService(
         val categoriesWithCount = categoryRepository.findAllWithPostCount(blogId)
 
         val groupedByParent = categoriesWithCount.groupBy { it.parentId }
+        val categoryMap = categoriesWithCount.associateBy { it.id }
+
+        val totalCountMap = mutableMapOf<UUID, Long>()
+
+        fun calculateTotalCount(categoryId: UUID): Long {
+            if (totalCountMap.containsKey(categoryId)) {
+                return totalCountMap[categoryId]!!
+            }
+
+            val currentCategory = categoryMap[categoryId] ?: return 0
+            val currentCount = currentCategory.postCount
+
+            val children = groupedByParent[categoryId] ?: emptyList()
+            val childrenTotalCount = children.sumOf { calculateTotalCount(it.id) }
+
+            val total = currentCount + childrenTotalCount
+            totalCountMap[categoryId] = total
+
+            return total
+        }
+
+        categoriesWithCount.forEach { calculateTotalCount(it.id) }
 
         val result = mutableListOf<CategoryInfo>()
-        flattenRecursively(groupedByParent, null, 0, result)
+        flattenRecursively(groupedByParent, totalCountMap, null, 0, result)
 
         return result
     }
 
     private fun flattenRecursively(
         groupedCategories: Map<UUID?, List<CategoryWithCountView>>,
+        totalCountMap: Map<UUID, Long>,
         parentId: UUID?,
         level: Int,
         result: MutableList<CategoryInfo>
@@ -49,17 +72,19 @@ class CategoryInternalService(
         val children = groupedCategories[parentId] ?: return
 
         for (category in children) {
+            val totalCount = totalCountMap[category.id] ?: category.postCount
+
             result.add(
                 CategoryInfo(
-                    id = category.id!!,
+                    id = category.id,
                     name = category.name,
                     slug = category.slug,
                     parentId = parentId,
                     level = level,
-                    postCount = category.postCount
+                    postCount = totalCount
                 )
             )
-            flattenRecursively(groupedCategories, category.id, level + 1, result)
+            flattenRecursively(groupedCategories, totalCountMap, category.id, level + 1, result)
         }
     }
 

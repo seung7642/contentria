@@ -4,7 +4,12 @@ export function buildCategoryTree(
   categories: CategoryResponse[],
   blogSlug: string
 ): CategoryTreeNode[] {
-  const totalPostCount = categories.reduce((sum, category) => sum + category.postCount, 0);
+  const totalPostCount = categories.reduce((sum, category) => {
+    if (!category.parentId) {
+      return sum + category.postCount;
+    }
+    return sum;
+  }, 0);
 
   const allPostsNode: CategoryTreeNode = {
     id: 'all',

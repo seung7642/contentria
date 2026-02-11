@@ -3,63 +3,59 @@ server:
   servlet:
     context-path: /api
 
-logging.level:
-  root: INFO
-  com.giffing.bucket4j: INFO
-  org.springframework.security.web: INFO
-  org.hibernate.sql: DEBUG
-  com.contentria.api.config.security.JwtAuthenticationFilter: DEBUG
+logging:
+  level:
+    root: INFO
+    org.springframework.security.web: INFO
+    org.hibernate.sql: DEBUG
+    com.giffing.bucket4j: INFO
+    com.contentria.api.config.security.JwtAuthenticationFilter: DEBUG
 
 spring:
   application:
     name: backend
-  config:
-    import: optional:file:.env[.properties]
   datasource:
-#    url: ${DATABASE_URL}
-#    driver-class-name: org.postgresql.Driver
-#    username: ${DATABASE_USER}
-#    password: ${DATABASE_PASSWORD}
-    url: jdbc:postgresql://localhost:5432/postgres
+    url: ${DATABASE_URL}
     driver-class-name: org.postgresql.Driver
-    username: contentria_user
-    password: contentria
-
-spring.jpa:
-  show-sql: false
-  hibernate:
-    ddl-auto: validate # 운영 환경에서는 validate 설정 필요. (Flyway 또는 Liquibase 같은 데이터베이스 마이그레이션 도구도 고려)
-  open-in-view: false
-
-# -------------------------------------
-# Hibernate native properties
-#   - https://docs.spring.io/spring-boot/reference/data/sql.html#data.sql.jpa-and-spring-data.creating-and-dropping
-# -------------------------------------
-spring.jpa.properties.hibernate:
-  format_sql: true
-  jdbc:
-    batch_size: 100
-  default_batch_fetch_size: 100
-  order_inserts: true
-  order_updates: true
-
-spring.security.oauth2.client.registration.google:
-  client-id: ${SPRING_OAUTH_GOOGLE_CLIENT_ID}
-  client-secret: ${SPRING_OAUTH_GOOGLE_CLIENT_SECRET}
-  scope:
-    - openid
-    - email
-    - profile
-  redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-
-spring.cache:
-  jcache:
-    provider: com.github.benmanes.caffeine.jcache.spi.CaffeineCachingProvider # Cache Provider가 하나일 경우 생략 가능하지만, 명시성을 위해 기입
-  cache-names:
-    - rateLimiting
-    - verificationCode
-  caffeine:
-    spec: maximumSize=1000,expireAfterAccess=300s
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: validate # Validates the schema matches the entities. No changes are made
+    # -------------------------------------
+    # Disables OSIV to release the database connection early after the transaction ends.
+    # Note: Lazy loading will fail outside the transaction scope.
+    # -------------------------------------
+    open-in-view: false
+    # -------------------------------------
+    # Hibernate native properties
+    #   - https://docs.spring.io/spring-boot/reference/data/sql.html#data.sql.jpa-and-spring-data.creating-and-dropping
+    # -------------------------------------
+    properties.hibernate:
+      format_sql: true
+      jdbc:
+        batch_size: 100
+      default_batch_fetch_size: 100
+      order_inserts: true
+      order_updates: true
+  security:
+    oauth2.client.registration.google:
+      client-id: ${SPRING_OAUTH_GOOGLE_CLIENT_ID}
+      client-secret: ${SPRING_OAUTH_GOOGLE_CLIENT_SECRET}
+      scope:
+        - openid
+        - email
+        - profile
+      redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+  cache:
+    jcache:
+      provider: com.github.benmanes.caffeine.jcache.spi.CaffeineCachingProvider # Cache Provider가 하나일 경우 생략 가능하지만, 명시성을 위해 기입
+    cache-names:
+      - rateLimiting
+      - verificationCode
+    caffeine:
+      spec: maximumSize=1000,expireAfterAccess=300s
 
 bucket4j:
   enabled: true
@@ -77,13 +73,13 @@ bucket4j:
               time: 1
               unit: minutes
               refill-speed: interval
+
 app:
   auth:
     jwt:
       secret: ${JWT_SECRET}
-      access-token-expiration: 1m   # access token 만료 시간: 15분
-#      access-token-expiration: 15m   # access token 만료 시간: 15분
-      refresh-token-expiration: 7d   # refresh token 만료 시간: 7일
+      access-token-expiration: 15m   # 15 minutes
+      refresh-token-expiration: 7d   # 7 days
     cookie:
       access-token-name: "accessToken"
       refresh-token-name: "refreshToken"
@@ -98,7 +94,7 @@ app:
     recaptcha:
       v2-secret-key: ${GOOGLE_RECAPTCHA_V2_SECRET_KEY}
       v3-secret-key: ${GOOGLE_RECAPTCHA_V3_SECRET_KEY}
-      score-threshold: 1.0 # 이 점수 이상이어야 통과로 간주
+      score-threshold: 1.0 # Pass only if score is equal to this value or higher
       site-verify-url: "https://www.google.com/recaptcha/api/siteverify"
       expected-hostname: "localhost"
       expected-actions:
