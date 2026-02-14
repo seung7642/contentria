@@ -2,20 +2,40 @@ import Link from 'next/link';
 import { Plus, Edit, Eye, Trash } from 'lucide-react';
 import { getMyBlogAction } from '@/actions/blog';
 import { PATHS } from '@/constants/paths';
-import { redirect } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { getBlogPostsAction } from '@/actions/post';
+import CustomPagination from '@/components/common/CustomPagination';
 
-export default async function PostsPage() {
+interface PostPageProps {
+  searchParams: Promise<{
+    page?: string;
+  }>;
+}
+
+export default async function PostsPage({ searchParams }: PostPageProps) {
+  const { page } = await searchParams;
+  const currentPage = page ? Math.max(0, parseInt(page, 10) - 1) : 0;
+
+  if (page && (isNaN(currentPage) || parseInt(page, 10) < 1)) {
+    notFound();
+  }
+
   const blogInfos = await getMyBlogAction();
   if (!blogInfos || blogInfos.length === 0) {
     redirect(PATHS.DASHBOARD);
   }
 
-  const posts = await getBlogPostsAction(blogInfos[0].slug, {
+  const postsPage = await getBlogPostsAction(blogInfos[0].slug, {
     statuses: ['PUBLISHED', 'DRAFT'],
-    page: 0,
+    page: currentPage,
     size: 10,
   });
+
+  if (postsPage && currentPage >= postsPage.page.totalPages && postsPage.page.totalPages > 0) {
+    notFound();
+  }
+  const initialPosts = postsPage?.content ?? [];
+  const totalPages = postsPage?.page.totalPages ?? 0;
 
   return (
     <div className="space-y-6">
@@ -23,7 +43,7 @@ export default async function PostsPage() {
       <div className="flex flex-col justify-between space-y-4 sm:flex-row sm:items-center sm:space-y-0">
         <h1 className="text-2xl font-bold text-gray-800">글 관리</h1>
         <Link
-          href="/dashboard/posts/create"
+          href="/dashboard/posts/new"
           className="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-white transition hover:bg-indigo-700"
         >
           <Plus size={18} className="mr-2" />새 글 작성
@@ -75,8 +95,8 @@ export default async function PostsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 bg-white">
-              {posts && posts.page.totalElements > 0 ? (
-                posts.content.map((post) => (
+              {initialPosts.length > 0 ? (
+                initialPosts.map((post) => (
                   <tr key={post.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
                       <div className="font-medium text-gray-900">{post.title}</div>
@@ -97,9 +117,6 @@ export default async function PostsPage() {
                     <td className="px-6 py-4 text-sm text-gray-500">0</td>
                     <td className="px-6 py-4 text-center text-sm font-medium">
                       <div className="flex items-center justify-center space-x-2">
-                        <button className="rounded p-1 text-blue-600 hover:bg-blue-100">
-                          <Eye size={18} />
-                        </button>
                         <Link
                           href={`/dashboard/posts/${post.id}`}
                           className="rounded p-1 text-indigo-600 hover:bg-indigo-100"
@@ -114,7 +131,11 @@ export default async function PostsPage() {
                   </tr>
                 ))
               ) : (
-                <p>게시물이 없습니다.</p>
+                <tr>
+                  <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
+                    게시물이 없습니다.
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>
@@ -122,22 +143,7 @@ export default async function PostsPage() {
 
         {/* 페이지네이션 */}
         <div className="border-t border-gray-200 px-4 py-3 sm:px-6">
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-700">
-              총 <span className="font-medium">{posts?.page.totalElements}</span>개의 글
-            </div>
-            <div className="flex items-center space-x-2">
-              <button className="rounded-md border border-gray-300 bg-white px-3 py-1 text-sm hover:bg-gray-50">
-                이전
-              </button>
-              <button className="rounded-md bg-indigo-600 px-3 py-1 text-sm text-white hover:bg-indigo-700">
-                1
-              </button>
-              <button className="rounded-md border border-gray-300 bg-white px-3 py-1 text-sm hover:bg-gray-50">
-                다음
-              </button>
-            </div>
-          </div>
+          <CustomPagination totalPages={totalPages} />
         </div>
       </div>
     </div>
