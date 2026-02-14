@@ -36,6 +36,7 @@ class CategoryInternalService(
         val categoryMap = categoriesWithCount.associateBy { it.id }
 
         val totalCountMap = mutableMapOf<UUID, Long>()
+        val result = mutableListOf<CategoryInfo>()
 
         fun calculateTotalCount(categoryId: UUID): Long {
             if (totalCountMap.containsKey(categoryId)) {
@@ -54,38 +55,30 @@ class CategoryInternalService(
             return total
         }
 
-        categoriesWithCount.forEach { calculateTotalCount(it.id) }
+        fun flattenRecursively(parentId: UUID?, level: Int) {
+            val children = groupedByParent[parentId] ?: return
 
-        val result = mutableListOf<CategoryInfo>()
-        flattenRecursively(groupedByParent, totalCountMap, null, 0, result)
+            for (category in children) {
+                val totalCount = totalCountMap[category.id] ?: category.postCount
+
+                result.add(
+                    CategoryInfo(
+                        id = category.id,
+                        name = category.name,
+                        slug = category.slug,
+                        parentId = parentId,
+                        level = level,
+                        postCount = totalCount
+                    )
+                )
+                flattenRecursively(category.id, level + 1)
+            }
+        }
+
+        categoriesWithCount.forEach { calculateTotalCount(it.id) }
+        flattenRecursively(null, 0)
 
         return result
-    }
-
-    private fun flattenRecursively(
-        groupedCategories: Map<UUID?, List<CategoryWithCountView>>,
-        totalCountMap: Map<UUID, Long>,
-        parentId: UUID?,
-        level: Int,
-        result: MutableList<CategoryInfo>
-    ) {
-        val children = groupedCategories[parentId] ?: return
-
-        for (category in children) {
-            val totalCount = totalCountMap[category.id] ?: category.postCount
-
-            result.add(
-                CategoryInfo(
-                    id = category.id,
-                    name = category.name,
-                    slug = category.slug,
-                    parentId = parentId,
-                    level = level,
-                    postCount = totalCount
-                )
-            )
-            flattenRecursively(groupedCategories, totalCountMap, category.id, level + 1, result)
-        }
     }
 
     @Transactional

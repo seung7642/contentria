@@ -59,4 +59,9 @@ class CategoryService(
             throw ContentriaException(ErrorCode.INVALID_INPUT_VALUE)
         }
     }
+
+    @Transactional(readOnly = true)
+    fun getCategoryIdsWithChildren(blogSlug: String, categorySlug: String): List<UUID> {
+        return categoryRepository.findAllCategoryIdsWithChildrenBySlug(blogSlug, categorySlug)
+    }
 }

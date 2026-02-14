@@ -31,4 +31,21 @@ interface CategoryJpaRepository : JpaRepository<Category, UUID> {
         GROUP by c.id, c.name, c.slug, c.parent.id
     """)
     fun findAllWithPostCount(@Param("blogId") blogId: UUID): List<CategoryWithCountView>
+
+    @Query(value = """
+        WITH RECURSIVE category_tree AS (
+            SELECT c.id
+            FROM categories c
+            INNER JOIN blogs b ON c.blog_id = b.id
+            WHERE b.slug = :blogSlug AND c.slug = :categorySlug
+            
+            UNION ALL
+            
+            SELECT c.id
+            FROM categories c
+            INNER JOIN category_tree ct ON c.parent_id = ct.id
+        )
+        SELECT id FROM category_tree
+    """, nativeQuery = true)
+    fun findAllCategoryIdsWithChildrenBySlug(blogSlug: String, categorySlug: String): List<UUID>
 }

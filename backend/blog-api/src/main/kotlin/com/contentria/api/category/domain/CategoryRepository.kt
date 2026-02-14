@@ -15,4 +15,6 @@ interface CategoryRepository {
     fun findSimilarSlugs(blogId: UUID, targetSlug: String): List<String>
 
     fun findAllWithPostCount(blogId: UUID): List<CategoryWithCountView>
+
+    fun findAllCategoryIdsWithChildrenBySlug(blogSlug: String, categorySlug: String): List<UUID>
 }

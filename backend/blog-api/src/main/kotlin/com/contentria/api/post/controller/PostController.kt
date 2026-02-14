@@ -37,7 +37,7 @@ class PostController(
         @RequestParam(required = false) statuses: Set<PostStatus> = setOf(PostStatus.PUBLISHED),
         @PageableDefault(size = 10) pageable: Pageable
     ): ResponseEntity<Page<PostSummaryResponse>> {
-        val postsPage = postService.getPosts(blogSlug, categorySlug, statuses, pageable)
+        val postsPage = postFacade.getPostsByBlog(blogSlug, categorySlug, statuses, pageable)
         return ResponseEntity.ok(postsPage.map { PostSummaryResponse.from(it) })
     }
 

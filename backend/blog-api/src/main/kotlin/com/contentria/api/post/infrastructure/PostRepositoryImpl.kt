@@ -16,7 +16,7 @@ import java.util.*
 
 @Repository
 class PostRepositoryImpl(
-    private val postJpaRepository: PostJpaRepository
+    private val postJpaRepository: PostJpaRepository,
 ) : PostRepository {
 
     override fun findById(id: UUID): Post? {
@@ -43,15 +43,15 @@ class PostRepositoryImpl(
         return postJpaRepository.findPostCountsByBlogId(blogId)
     }
 
-    override fun findPostSummariesByBlogSlug(
+    override fun findPostSummaries(
         blogSlug: String,
-        categorySlug: String?,
+        categoryIds: List<UUID>?,
         statuses: Set<PostStatus>,
         pageable: Pageable
     ): Page<PostSummary> {
         val mixedSort = JpaSort.unsafe(Sort.Direction.DESC, "COALESCE(p.publishedAt, p.createdAt)")
         val customPageable = PageRequest.of(pageable.pageNumber, pageable.pageSize, mixedSort)
-        return postJpaRepository.findPostSummariesByBlogSlug(blogSlug, categorySlug, statuses, customPageable)
+        return postJpaRepository.findPostSummaries(blogSlug, categoryIds, statuses, customPageable)
     }
 
     override fun findPublishedPost(

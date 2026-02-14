@@ -41,4 +41,8 @@ class CategoryRepositoryImpl(
     override fun findAllWithPostCount(blogId: UUID): List<CategoryWithCountView> {
         return jpaRepository.findAllWithPostCount(blogId)
     }
+
+    override fun findAllCategoryIdsWithChildrenBySlug(blogSlug: String, categorySlug: String): List<UUID> {
+        return jpaRepository.findAllCategoryIdsWithChildrenBySlug(blogSlug, categorySlug)
+    }
 }

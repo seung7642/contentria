@@ -16,7 +16,7 @@ interface PostRepository {
 
     fun findPostCountsByBlog(blogId: UUID): List<CategoryPostCount>
 
-    fun findPostSummariesByBlogSlug(blogSlug: String, categorySlug: String?, statuses: Set<PostStatus>, pageable: Pageable): Page<PostSummary>
+    fun findPostSummaries(blogSlug: String, categoryIds: List<UUID>?, statuses: Set<PostStatus>, pageable: Pageable): Page<PostSummary>
 
     fun findPublishedPost(blogSlug: String, postSlug: String): Post?
 

@@ -5,8 +5,12 @@ import com.contentria.api.category.application.CategoryService
 import com.contentria.api.post.application.dto.CreateNewPostCommand
 import com.contentria.api.post.application.dto.CreateNewPostInfo
 import com.contentria.api.post.application.dto.PostDetailInfo
+import com.contentria.api.post.application.dto.PostSummaryInfo
+import com.contentria.api.post.domain.PostStatus
 import com.contentria.api.user.application.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
@@ -59,5 +63,23 @@ class PostFacade(
             blogSlug = blogInfo.slug,
             categoryName = categoryInfo?.name
         )
+    }
+
+    @Transactional(readOnly = true)
+    fun getPostsByBlog(
+        blogSlug: String,
+        categorySlug: String?,
+        statuses: Set<PostStatus>,
+        pageable: Pageable
+    ): Page<PostSummaryInfo> {
+        val targetCategoryIds: List<UUID>? = categorySlug?.let {
+            val ids = categoryService.getCategoryIdsWithChildren(blogSlug, it)
+            if (ids.isEmpty()) {
+                return Page.empty(pageable)
+            }
+            ids
+        }
+
+        return postService.getPosts(blogSlug, targetCategoryIds, statuses, pageable)
     }
 }

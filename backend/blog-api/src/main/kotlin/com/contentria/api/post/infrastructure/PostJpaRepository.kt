@@ -52,12 +52,14 @@ interface PostJpaRepository : JpaRepository<Post, UUID> {
         FROM Post p
         JOIN Blog b ON p.blogId = b.id
         LEFT JOIN Category c ON p.categoryId = c.id
-        WHERE b.slug = :blogSlug AND p.status IN :statuses AND (:categorySlug IS NULL OR c.slug = :categorySlug)
+        WHERE b.slug = :blogSlug 
+            AND p.status IN :statuses 
+            AND (:categoryIds IS NULL OR p.categoryId IN :categoryIds)
     """
     )
-    fun findPostSummariesByBlogSlug(
+    fun findPostSummaries(
         blogSlug: String,
-        categorySlug: String?,
+        categoryIds: List<UUID>?,
         statuses: Set<PostStatus>,
         pageable: Pageable
     ): Page<PostSummary>
