@@ -8,6 +8,8 @@ import {
   PostDetailResponse,
   PostStatus,
   PostSummary,
+  UpdatePostRequest,
+  UpdatePostResponse,
 } from '@/types/api/posts';
 
 interface GetBlogPostsOptions {
@@ -57,10 +59,22 @@ export async function getPostDetailAction(
   });
 }
 
+export async function getPostDetailByIdAction(postId: string): Promise<PostDetailResponse | null> {
+  return await apiServer.get<PostDetailResponse>(`/api/posts/${postId}`, {
+    requireAuth: false,
+  });
+}
+
 export async function createNewPostAction(
   payload: CreateNewPostRequest
 ): Promise<CreateNewPostResponse> {
   return await apiServer.post<CreateNewPostResponse>('/api/posts', payload, {
+    requireAuth: true,
+  });
+}
+
+export async function updatePostAction(payload: UpdatePostRequest): Promise<UpdatePostResponse> {
+  return await apiServer.post<UpdatePostResponse>(`/api/posts/${payload.postId}`, payload, {
     requireAuth: true,
   });
 }

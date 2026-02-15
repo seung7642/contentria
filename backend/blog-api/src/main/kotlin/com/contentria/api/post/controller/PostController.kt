@@ -2,30 +2,24 @@ package com.contentria.api.post.controller
 
 import com.contentria.api.auth.infrastructure.security.AuthUserDetails
 import com.contentria.api.post.application.PostFacade
-import com.contentria.api.post.application.PostService
-import com.contentria.api.post.controller.dto.CreateNewPostRequest
-import com.contentria.api.post.controller.dto.CreateNewPostResponse
-import com.contentria.api.post.controller.dto.PostDetailResponse
-import com.contentria.api.post.controller.dto.PostSummaryResponse
+import com.contentria.api.post.controller.dto.*
 import com.contentria.api.post.domain.PostStatus
 import com.contentria.common.global.aop.ApiLog
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
-import java.util.UUID
+import java.util.*
 
 private val log = KotlinLogging.logger {}
 
 @RestController
 @RequestMapping
 class PostController(
-    private val postService: PostService,
     private val postFacade: PostFacade
 ) {
 
@@ -51,13 +45,33 @@ class PostController(
         return ResponseEntity.ok(PostDetailResponse.from(postDetailAndOwnerInfo))
     }
 
+    @ApiLog
+    @GetMapping("/posts/{postId}")
+    fun getPostDetail(
+        @PathVariable postId: UUID
+    ): ResponseEntity<PostDetailResponse> {
+        val postDetailAndOwnerInfo = postFacade.getPostDetail(postId)
+        return ResponseEntity.ok(PostDetailResponse.from(postDetailAndOwnerInfo))
+    }
+
     @PostMapping("/posts")
     fun createNewPost(
         @AuthenticationPrincipal userDetails: AuthUserDetails,
         @Valid @RequestBody request: CreateNewPostRequest
     ): ResponseEntity<CreateNewPostResponse> {
         log.info { "Creating new post for userId=${userDetails.userId}, request=$request" }
-        val createNewPostInfo = postFacade.createNewPost(userDetails.userId!!, request.toCommand())
+        val createNewPostInfo = postFacade.createNewPost(userDetails.userId, request.toCommand())
         return ResponseEntity.ok(CreateNewPostResponse.from(createNewPostInfo))
+    }
+
+    @PostMapping("/posts/{postId}")
+    fun updatePost(
+        @AuthenticationPrincipal userDetails: AuthUserDetails,
+        @PathVariable postId: UUID,
+        @Valid @RequestBody request: UpdatePostRequest
+    ): ResponseEntity<UpdatePostResponse> {
+        log.info { "Updating post with postId=$postId for userId=${userDetails.userId}, request=$request" }
+        val updatePostInfo = postFacade.updatePost(userDetails.userId, request.toCommand())
+        return ResponseEntity.ok(UpdatePostResponse.from(updatePostInfo))
     }
 }

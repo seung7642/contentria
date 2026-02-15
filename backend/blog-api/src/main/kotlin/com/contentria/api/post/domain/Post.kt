@@ -57,6 +57,15 @@ class Post(
     var categoryId: UUID? = null,
 ) : BaseEntity() {
 
+    fun update(title: String, slug: String, content: String, summary: String, status: PostStatus, categoryId: UUID) {
+        this.title = title
+        this.slug = slug
+        this.contentMarkdown = content
+        this.summary = summary
+        this.status = status
+        this.categoryId = categoryId
+    }
+
     companion object {
         fun create(
             slug: String,

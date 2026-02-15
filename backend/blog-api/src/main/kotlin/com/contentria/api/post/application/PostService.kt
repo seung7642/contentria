@@ -43,10 +43,19 @@ class PostService(
     }
 
     @Transactional(readOnly = true)
+    fun getPublishedPost(postId: UUID): PostContentInfo {
+        val post = postRepository.findPublishedPost(postId)
+            ?: throw ContentriaException(ErrorCode.NOT_FOUND_POST)
+
+        return PostContentInfo.from(post)
+    }
+
+    @Transactional(readOnly = true)
     fun existsByCategoryIds(categoryIds: List<UUID>): Boolean {
         return postRepository.existsByCategoryIdIn(categoryIds)
     }
 
+    @Transactional(readOnly = true)
     fun countPublishedPosts(blogId: UUID): Long {
         return postRepository.countByBlogIdAndStatus(blogId, PostStatus.PUBLISHED)
     }
@@ -74,32 +83,5 @@ class PostService(
             )
         )
         postRepository.saveAll(posts)
-    }
-
-    @Transactional
-    fun createPost(
-        blogId: UUID,
-        categoryId: UUID,
-        title: String,
-        content: String,
-        summary: String,
-        status: PostStatus
-    ) : Post {
-        val uniqueSlug = postSlugGenerator.generate(blogId, title)
-
-        val newPost = Post.create(
-            blogId = blogId,
-            categoryId = categoryId,
-            slug = uniqueSlug,
-            title = title,
-            content = content,
-            summary = summary,
-            metaTitle = title,
-            metaDescription = summary,
-            status = status,
-            publishedAt = if (status.isPublished()) ZonedDateTime.now() else null
-        )
-
-        return postRepository.save(newPost)
     }
 }

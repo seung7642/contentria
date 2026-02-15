@@ -6,6 +6,8 @@ import com.contentria.api.post.application.dto.CreateNewPostCommand
 import com.contentria.api.post.application.dto.CreateNewPostInfo
 import com.contentria.api.post.application.dto.PostDetailInfo
 import com.contentria.api.post.application.dto.PostSummaryInfo
+import com.contentria.api.post.application.dto.UpdatePostCommand
+import com.contentria.api.post.application.dto.UpdatePostInfo
 import com.contentria.api.post.domain.PostStatus
 import com.contentria.api.user.application.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -19,33 +21,13 @@ private val log = KotlinLogging.logger {  }
 
 @Component
 class PostFacade(
+    private val postInternalService: PostInternalService,
     private val postService: PostService,
     private val blogService: BlogService,
     private val categoryService: CategoryService,
     private val userService: UserService,
     private val markdownService: MarkdownService
 ) {
-    @Transactional
-    fun createNewPost(userId: UUID, command: CreateNewPostCommand): CreateNewPostInfo {
-        blogService.validateBlogOwner(command.blogId, userId)
-
-        categoryService.validateCategoryBelongsToBlog(command.categoryId, command.blogId)
-
-        val summary = markdownService.extractSummary(command.contentMarkdown)
-
-        val savedPost = postService.createPost(
-            blogId = command.blogId,
-            categoryId = command.categoryId,
-            title = command.title,
-            content = command.contentMarkdown,
-            summary = summary,
-            status = command.status
-        )
-
-        log.info { "Created new post: ${savedPost.id}" }
-        return CreateNewPostInfo.from(savedPost)
-    }
-
     @Transactional(readOnly = true)
     fun getPostDetail(blogSlug: String, postSlug: String): PostDetailInfo {
         val post = postService.getPublishedPost(blogSlug, postSlug)
@@ -61,6 +43,27 @@ class PostFacade(
             userInfo = authorInfo,
             blogId = blogInfo.blogId,
             blogSlug = blogInfo.slug,
+            categoryId = categoryInfo?.id,
+            categoryName = categoryInfo?.name
+        )
+    }
+
+    @Transactional(readOnly = true)
+    fun getPostDetail(postId: UUID): PostDetailInfo {
+        val post = postService.getPublishedPost(postId)
+
+        val blogInfo = blogService.getBlogInfo(post.blogId)
+
+        val categoryInfo = post.categoryId?.let { categoryService.getCategoryInfo(it) }
+
+        val authorInfo = userService.getActiveUserInfo(blogInfo.userId)
+
+        return PostDetailInfo.from(
+            postContentInfo = post,
+            userInfo = authorInfo,
+            blogId = blogInfo.blogId,
+            blogSlug = blogInfo.slug,
+            categoryId = categoryInfo?.id,
             categoryName = categoryInfo?.name
         )
     }
@@ -81,5 +84,48 @@ class PostFacade(
         }
 
         return postService.getPosts(blogSlug, targetCategoryIds, statuses, pageable)
+    }
+
+    @Transactional
+    fun createNewPost(userId: UUID, command: CreateNewPostCommand): CreateNewPostInfo {
+        blogService.validateBlogOwner(command.blogId, userId)
+
+        categoryService.validateCategoryBelongsToBlog(command.categoryId, command.blogId)
+
+        val summary = markdownService.extractSummary(command.contentMarkdown)
+
+        val savedPost = postInternalService.createPost(
+            blogId = command.blogId,
+            categoryId = command.categoryId,
+            title = command.title,
+            content = command.contentMarkdown,
+            summary = summary,
+            status = command.status
+        )
+
+        log.info { "Created new post: ${savedPost.id}" }
+        return CreateNewPostInfo.from(savedPost)
+    }
+
+    @Transactional
+    fun updatePost(userId: UUID, command: UpdatePostCommand): UpdatePostInfo {
+        blogService.validateBlogOwner(command.blogId, userId)
+
+        categoryService.validateCategoryBelongsToBlog(command.categoryId, command.blogId)
+
+        val summary = markdownService.extractSummary(command.contentMarkdown)
+
+        val updatedPost = postInternalService.updatePost(
+            postId = command.postId,
+            blogId = command.blogId,
+            categoryId = command.categoryId,
+            title = command.title,
+            content = command.contentMarkdown,
+            summary = summary,
+            status = command.status
+        )
+
+        log.info { "Updated post: ${updatedPost.id}" }
+        return UpdatePostInfo.from(updatedPost)
     }
 }

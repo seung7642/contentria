@@ -61,6 +61,10 @@ class PostRepositoryImpl(
         return postJpaRepository.findPublishedPost(blogSlug, postSlug)
     }
 
+    override fun findPublishedPost(postId: UUID): Post? {
+        return postJpaRepository.findByIdAndStatus(postId, PostStatus.PUBLISHED)
+    }
+
     override fun findSlugsByPrefix(
         blogId: UUID,
         targetSlug: String

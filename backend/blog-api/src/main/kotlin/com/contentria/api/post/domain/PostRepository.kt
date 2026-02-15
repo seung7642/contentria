@@ -20,6 +20,8 @@ interface PostRepository {
 
     fun findPublishedPost(blogSlug: String, postSlug: String): Post?
 
+    fun findPublishedPost(postId: UUID): Post?
+
     fun findSlugsByPrefix(blogId: UUID, targetSlug: String): List<String>
 
     fun existsByCategoryIdIn(categoryIds: List<UUID>): Boolean

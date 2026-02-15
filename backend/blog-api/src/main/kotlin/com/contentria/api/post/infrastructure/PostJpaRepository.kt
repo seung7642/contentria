@@ -76,6 +76,8 @@ interface PostJpaRepository : JpaRepository<Post, UUID> {
     """)
     fun findPublishedPost(blogSlug: String, postSlug: String): Post?
 
+    fun findByIdAndStatus(postId: UUID, status: PostStatus): Post?
+
     @Query("""
         SELECT p.slug 
         FROM Post p

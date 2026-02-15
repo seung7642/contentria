@@ -11,6 +11,7 @@ data class PostDetailResponse(
     val author: AuthorResponse,
     val blogId: UUID,
     val blogSlug: String,
+    val categoryId: UUID?,
     val categoryName: String?
 ) {
     data class PostResponse(
@@ -62,6 +63,7 @@ data class PostDetailResponse(
                 author = AuthorResponse.from(postDetailInfo.author),
                 blogId = postDetailInfo.blogId,
                 blogSlug = postDetailInfo.blogSlug,
+                categoryId = postDetailInfo.categoryId,
                 categoryName = postDetailInfo.categoryName
             )
         }

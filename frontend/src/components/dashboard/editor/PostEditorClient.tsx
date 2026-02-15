@@ -42,8 +42,8 @@ import {
   UndoRedo,
 } from '@mdxeditor/editor';
 import { ForwardRefEditor } from '@/components/dashboard/ForwardRefEditor';
-import { createNewPostAction } from '@/actions/post';
-import { PostStatus } from '@/types/api/posts';
+import { createNewPostAction, updatePostAction } from '@/actions/post';
+import { PostDetail, PostDetailResponse, PostStatus } from '@/types/api/posts';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { PATHS } from '@/constants/paths';
@@ -65,17 +65,23 @@ function whenInAdmonition(editorInFocus: EditorInFocus | null) {
 interface PostEditorClientProps {
   blogId: string;
   categories: CategoryResponse[];
+  initialData?: PostDetailResponse;
 }
 
-export function PostEditorClient({ blogId, categories }: PostEditorClientProps) {
+export function PostEditorClient({ blogId, categories, initialData }: PostEditorClientProps) {
   const router = useRouter();
   const editorRef = useRef<MDXEditorMethods>(null); // MDXEditor의 인스턴스에 접근하기 위한 ref 생성
 
-  const [title, setTitle] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | ''>('');
+  const [title, setTitle] = useState(initialData?.post.title || '');
+  const [selectedCategory, setSelectedCategory] = useState<string | ''>(
+    initialData?.categoryId || ''
+  );
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
-  const initialMarkdown = `
+  console.log('initialData', initialData);
+  const markdown =
+    initialData?.post.contentMarkdown ||
+    `
 여기에 **마크다운** 문법을 사용하여 글을 작성할 수 있습니다.
 
 - 리스트 아이템 1
@@ -168,13 +174,19 @@ function helloWorld() {
       }
 
       try {
-        await createNewPostAction({
+        const postData = {
           blogId,
           title,
           categoryId: selectedCategory,
           contentMarkdown: markdownContent,
           status: postStatus,
-        });
+        };
+
+        if (initialData) {
+          await updatePostAction({ ...postData, postId: initialData.post.id });
+        } else {
+          await createNewPostAction(postData);
+        }
 
         setSaveStatus('saved');
 
@@ -197,7 +209,7 @@ function helloWorld() {
       // editorRef.current?.setMarkdown('새로운 마크다운 내용');
       // console.log(editorRef.current?.getMarkdown());
     },
-    [title, selectedCategory, blogId, router]
+    [title, selectedCategory, blogId, router, initialData]
   );
 
   const handleExit = () => {
@@ -244,7 +256,7 @@ function helloWorld() {
       >
         <ForwardRefEditor
           ref={editorRef}
-          markdown={initialMarkdown}
+          markdown={markdown}
           onChange={console.log}
           spellCheck={false}
           className="prose max-w-none flex-1"

@@ -34,6 +34,7 @@ export interface PostDetailResponse {
   author: AuthorResponse;
   blogId: string;
   blogSlug: string;
+  categoryId: string | null;
   categoryName: string | null;
 }
 
@@ -48,6 +49,26 @@ export interface CreateNewPostRequest {
 }
 
 export interface CreateNewPostResponse {
+  postId: string;
+  slug: string;
+  title: string;
+  metaTitle: string | null;
+  metaDescription: string | null;
+  publishedAt: string | null;
+  status: PostStatus;
+  categoryName: string | null;
+}
+
+export interface UpdatePostRequest {
+  postId: string;
+  blogId: string;
+  title: string;
+  contentMarkdown: string;
+  status: PostStatus;
+  categoryId: string;
+}
+
+export interface UpdatePostResponse {
   postId: string;
   slug: string;
   title: string;

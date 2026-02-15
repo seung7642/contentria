@@ -8,6 +8,7 @@ data class PostDetailInfo(
     val author: UserInfo,
     val blogId: UUID,
     val blogSlug: String,
+    val categoryId: UUID?,
     val categoryName: String?
 ) {
     companion object {
@@ -16,6 +17,7 @@ data class PostDetailInfo(
             userInfo: UserInfo,
             blogId: UUID,
             blogSlug: String,
+            categoryId: UUID?,
             categoryName: String?
         ): PostDetailInfo {
             return PostDetailInfo(
@@ -23,6 +25,7 @@ data class PostDetailInfo(
                 author = userInfo,
                 blogId = blogId,
                 blogSlug = blogSlug,
+                categoryId = categoryId,
                 categoryName = categoryName
             )
         }
