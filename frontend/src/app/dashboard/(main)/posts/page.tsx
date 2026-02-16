@@ -1,10 +1,12 @@
 import Link from 'next/link';
-import { Plus, Edit, Eye, Trash } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { getMyBlogAction } from '@/actions/blog';
 import { PATHS } from '@/constants/paths';
 import { notFound, redirect } from 'next/navigation';
 import { getBlogPostsAction } from '@/actions/post';
 import CustomPagination from '@/components/common/CustomPagination';
+import { DataTable } from '@/components/common/DataTable';
+import { columns } from '@/components/dashboard/posts/columns';
 
 interface PostPageProps {
   searchParams: Promise<{
@@ -50,101 +52,9 @@ export default async function PostsPage({ searchParams }: PostPageProps) {
         </Link>
       </div>
 
-      {/* 게시글 테이블 */}
-      <div className="rounded-lg border bg-white shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500"
-                >
-                  제목
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500"
-                >
-                  상태
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500"
-                >
-                  작성일
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500"
-                >
-                  조회수
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500"
-                >
-                  댓글
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-center text-xs font-medium uppercase text-gray-500"
-                >
-                  작업
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 bg-white">
-              {initialPosts.length > 0 ? (
-                initialPosts.map((post) => (
-                  <tr key={post.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
-                      <div className="font-medium text-gray-900">{post.title}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
-                          post.status === 'PUBLISHED'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-yellow-100 text-yellow-800'
-                        }`}
-                      >
-                        {post.status === 'PUBLISHED' ? '발행됨' : '임시저장'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">{post.createdAt}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500">0</td>
-                    <td className="px-6 py-4 text-sm text-gray-500">0</td>
-                    <td className="px-6 py-4 text-center text-sm font-medium">
-                      <div className="flex items-center justify-center space-x-2">
-                        <Link
-                          href={`/dashboard/posts/${post.id}`}
-                          className="rounded p-1 text-indigo-600 hover:bg-indigo-100"
-                        >
-                          <Edit size={18} />
-                        </Link>
-                        <button className="rounded p-1 text-red-600 hover:bg-red-100">
-                          <Trash size={18} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
-                    게시물이 없습니다.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* 페이지네이션 */}
-        <div className="border-t border-gray-200 px-4 py-3 sm:px-6">
-          <CustomPagination totalPages={totalPages} />
-        </div>
+      <DataTable columns={columns} data={initialPosts} />
+      <div className="border-t border-gray-200 px-4 py-3 sm:px-6">
+        <CustomPagination totalPages={totalPages} />
       </div>
     </div>
   );
