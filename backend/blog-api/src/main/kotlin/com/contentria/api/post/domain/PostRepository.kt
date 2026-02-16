@@ -13,6 +13,7 @@ interface PostRepository {
     fun saveAll(posts: List<Post>): List<Post>
     fun delete(post: Post)
     fun deleteAll(posts: List<Post>)
+    fun deleteById(id: UUID)
 
     fun findPostCountsByBlog(blogId: UUID): List<CategoryPostCount>
 

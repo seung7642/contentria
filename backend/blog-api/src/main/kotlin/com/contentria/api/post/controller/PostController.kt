@@ -74,4 +74,14 @@ class PostController(
         val updatePostInfo = postFacade.updatePost(userDetails.userId, request.toCommand())
         return ResponseEntity.ok(UpdatePostResponse.from(updatePostInfo))
     }
+
+    @DeleteMapping("/posts/{postId}")
+    fun deletePost(
+        @AuthenticationPrincipal userDetails: AuthUserDetails,
+        @PathVariable postId: UUID
+    ): ResponseEntity<Void> {
+        log.info { "Deleting post with postId=$postId for userId=${userDetails.userId}" }
+        postFacade.deletePost(userDetails.userId, postId)
+        return ResponseEntity.noContent().build()
+    }
 }

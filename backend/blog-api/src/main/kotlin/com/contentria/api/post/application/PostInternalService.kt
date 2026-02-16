@@ -18,6 +18,7 @@ class PostInternalService(
 ) {
     @Transactional
     fun createPost(
+        userId: UUID,
         blogId: UUID,
         categoryId: UUID,
         title: String,
@@ -28,6 +29,7 @@ class PostInternalService(
         val uniqueSlug = postSlugGenerator.generate(blogId, title)
 
         val newPost = Post.create(
+            userId = userId,
             blogId = blogId,
             categoryId = categoryId,
             slug = uniqueSlug,

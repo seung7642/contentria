@@ -125,6 +125,8 @@ CREATE TABLE posts (
     published_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    author_id UUID,
     blog_id UUID NOT NULL,
     category_id UUID,
 
@@ -132,12 +134,15 @@ CREATE TABLE posts (
     -- 블로그 삭제 시 글도 삭제된다. (CASCADE)
     CONSTRAINT fk_posts_blog FOREIGN KEY (blog_id) REFERENCES blogs(id) ON DELETE CASCADE,
     -- 카테고리 삭제 시 해당 카테고리에 속한 글이 있으면 삭제 방지 (RESTRICT)
-    CONSTRAINT fk_posts_category FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE RESTRICT
+    CONSTRAINT fk_posts_category FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE RESTRICT,
+    -- 유저 탈퇴 시 작성자 정보를 NULL로 변경 (글은 보존)
+    CONSTRAINT fk_posts_author FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
 CREATE INDEX idx_posts_blog_id_status_published_at ON posts(blog_id, status, published_at DESC);
 CREATE INDEX idx_posts_category_id ON posts(category_id);
 CREATE INDEX idx_posts_status ON posts(status);
+CREATE INDEX idx_posts_author_id ON posts(author_id);
 
 CREATE TABLE visit_logs (
     id UUID PRIMARY KEY,

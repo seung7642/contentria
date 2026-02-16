@@ -53,7 +53,7 @@ class BlogFacade(
             "dailyPost" to readMarkdownContent("classpath:samples/daily-post.md")
         )
 
-        postService.createSamplePosts(savedBlogInfo.blogId, createdCategoryIds, sampleContents)
+        postService.createSamplePosts(userId, savedBlogInfo.blogId, createdCategoryIds, sampleContents)
 
         log.info { "Created blog with samples. email:${user.email}, slug:${savedBlogInfo.slug}" }
 

@@ -78,3 +78,9 @@ export async function updatePostAction(payload: UpdatePostRequest): Promise<Upda
     requireAuth: true,
   });
 }
+
+export async function deletePostAction(postId: string): Promise<void> {
+  await apiServer.delete(`/api/posts/${postId}`, {
+    requireAuth: true,
+  });
+}

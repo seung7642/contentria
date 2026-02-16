@@ -6,7 +6,6 @@ import com.contentria.api.post.application.dto.PostContentInfo
 import com.contentria.api.post.application.dto.PostSummaryInfo
 import com.contentria.api.post.domain.Post
 import com.contentria.api.post.domain.PostRepository
-import com.contentria.api.post.domain.PostSlugGenerator
 import com.contentria.api.post.domain.PostStatus
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.data.domain.Page
@@ -20,8 +19,7 @@ private val log = KotlinLogging.logger {}
 
 @Service
 class PostService(
-    private val postRepository: PostRepository,
-    private val postSlugGenerator: PostSlugGenerator
+    private val postRepository: PostRepository
 ) {
     @Transactional(readOnly = true)
     fun getPosts(
@@ -61,9 +59,10 @@ class PostService(
     }
 
     @Transactional
-    fun createSamplePosts(blogId: UUID, categoryIds: Map<String, UUID>, contents: Map<String, String>) {
+    fun createSamplePosts(userId: UUID, blogId: UUID, categoryIds: Map<String, UUID>, contents: Map<String, String>) {
         val posts = listOf(
             Post.create(
+                userId = userId,
                 blogId = blogId,
                 categoryId = categoryIds["backend"],
                 title = "코틀린(Kotlin)으로 시작하는 나의 첫 백엔드 개발",
@@ -73,6 +72,7 @@ class PostService(
                 publishedAt = ZonedDateTime.now().minusDays(1)
             ),
             Post.create(
+                userId = userId,
                 blogId = blogId,
                 categoryId = categoryIds["daily"],
                 title = "새로운 시작, 나의 공간에 오신 것을 환영합니다",
@@ -83,5 +83,18 @@ class PostService(
             )
         )
         postRepository.saveAll(posts)
+    }
+
+    fun validatePostOwner(userId: UUID, postId: UUID) {
+        val post = postRepository.findById(postId)
+            ?: throw ContentriaException(ErrorCode.NOT_FOUND_POST)
+
+        if (!post.isAuthor(userId)) {
+            throw ContentriaException(ErrorCode.INVALID_INPUT_VALUE)
+        }
+    }
+
+    fun deletePost(postId: UUID) {
+        postRepository.deleteById(postId)
     }
 }

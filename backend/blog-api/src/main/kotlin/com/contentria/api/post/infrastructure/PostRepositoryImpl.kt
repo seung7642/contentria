@@ -39,6 +39,10 @@ class PostRepositoryImpl(
         postJpaRepository.deleteAll(posts)
     }
 
+    override fun deleteById(id: UUID) {
+        postJpaRepository.deleteById(id)
+    }
+
     override fun findPostCountsByBlog(blogId: UUID): List<CategoryPostCount> {
         return postJpaRepository.findPostCountsByBlogId(blogId)
     }

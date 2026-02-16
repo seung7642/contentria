@@ -95,6 +95,7 @@ class PostFacade(
         val summary = markdownService.extractSummary(command.contentMarkdown)
 
         val savedPost = postInternalService.createPost(
+            userId = userId,
             blogId = command.blogId,
             categoryId = command.categoryId,
             title = command.title,
@@ -127,5 +128,10 @@ class PostFacade(
 
         log.info { "Updated post: ${updatedPost.id}" }
         return UpdatePostInfo.from(updatedPost)
+    }
+
+    fun deletePost(userId: UUID, postId: UUID) {
+        postService.validatePostOwner(userId, postId)
+        postService.deletePost(postId)
     }
 }

@@ -50,6 +50,9 @@ class Post(
 
     var publishedAt: ZonedDateTime? = null,
 
+    @Column(name = "author_id", nullable = false, columnDefinition = "uuid")
+    var authorId: UUID,
+
     @Column(name = "blog_id", nullable = false, columnDefinition = "uuid")
     var blogId: UUID,
 
@@ -66,6 +69,10 @@ class Post(
         this.categoryId = categoryId
     }
 
+    fun isAuthor(userId: UUID): Boolean {
+        return this.authorId == userId
+    }
+
     companion object {
         fun create(
             slug: String,
@@ -79,6 +86,7 @@ class Post(
             likeCount: Int = 0,
             viewCount: Int = 0,
             publishedAt: ZonedDateTime? = null,
+            userId: UUID,
             blogId: UUID,
             categoryId: UUID? = null
         ) : Post {
@@ -94,6 +102,7 @@ class Post(
                 likeCount = likeCount,
                 viewCount = viewCount,
                 publishedAt = publishedAt,
+                authorId = userId,
                 blogId = blogId,
                 categoryId = categoryId,
             )
