@@ -1,7 +1,9 @@
 'use server';
 
 import apiServer from '@/lib/apiServer';
-import { UpdateProfilePayload, User } from '@/types/api/user';
+import { ProfileFormValues } from '@/lib/schemas/userSchemas';
+import { User } from '@/types/api/user';
+import { revalidatePath } from 'next/cache';
 
 export async function getUserProfileAction(
   shouldRedirectOn401: boolean = true
@@ -16,6 +18,16 @@ export async function getUserProfileAction(
   }
 }
 
-export async function updateUserProfileAction(payload: UpdateProfilePayload): Promise<User> {
-  return await apiServer.put<User>('/api/users/profile', payload, { requireAuth: true });
+export async function updateUserProfileAction(data: ProfileFormValues) {
+  try {
+    await apiServer.put('/api/users/me', {
+      body: JSON.stringify(data),
+      requireAuth: true,
+    });
+
+    revalidatePath('/dashboard/settings');
+  } catch (error) {
+    console.error('Update profile error:', error);
+    throw error;
+  }
 }
