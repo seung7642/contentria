@@ -94,7 +94,7 @@ class AuthFacade(
 
         val user = userService.getActiveUserInfo(command.email)
 
-        verificationCodeProvider.sendVerificationCode(command.email, user.name)
+        verificationCodeProvider.sendVerificationCode(command.email, user.username)
     }
 
     @Transactional

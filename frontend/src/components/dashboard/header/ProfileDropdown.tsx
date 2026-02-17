@@ -19,7 +19,9 @@ const ProfileDropdown = ({ user, onClose, onLogout }: ProfileDropdownProps) => {
             <UserAvatar user={user} size={40} />
           </div>
           <div className="ml-3 min-w-0 text-left">
-            <p className="truncate text-sm font-medium text-gray-800">{user?.name || '사용자'}</p>
+            <p className="truncate text-sm font-medium text-gray-800">
+              {user?.username || '사용자'}
+            </p>
             <p className="truncate text-xs text-gray-500">{user?.email || ''}</p>
           </div>
         </div>

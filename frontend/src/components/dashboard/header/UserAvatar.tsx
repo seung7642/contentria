@@ -15,7 +15,7 @@ const UserAvatar = ({ user, size = 24 }: UserAvatarProps) => {
       {user?.profileImage ? (
         <Image
           src={user.profileImage}
-          alt={user.name || 'User Avatar'}
+          alt={user.username || 'User Avatar'}
           fill
           sizes={`${size}px`}
           className="rounded-full object-cover"

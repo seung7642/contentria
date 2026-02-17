@@ -349,9 +349,10 @@ export default function CategoryManager({ initialCategories, blogInfo }: Categor
         <Button
           onClick={handleAddCategory}
           variant="outline"
-          className="bg-indigo-50 text-indigo-200 hover:bg-indigo-100"
+          className="bg-indigo-600 text-white hover:bg-indigo-700 hover:text-white"
         >
-          <Plus size={16} className="mr-2" />
+          <Plus size={16} />
+          카테고리 추가
         </Button>
         <div className="flex gap-2">
           <Button variant="ghost" onClick={() => window.location.reload()}>

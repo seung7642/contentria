@@ -6,7 +6,8 @@ import java.util.UUID
 data class UserInfo(
     val userId: UUID,
     val email: String,
-    val name: String,
+    val username: String,
+    val nickname: String,
     val pictureUrl: String?,
     val roles: List<String>
 ) {
@@ -15,7 +16,8 @@ data class UserInfo(
             return UserInfo(
                 userId = user.id!!,
                 email = user.email,
-                name = user.username!!,
+                username = user.username!!,
+                nickname = user.nickname,
                 pictureUrl = user.pictureUrl,
                 roles = user.userRoles.map { it.role.name }
             )

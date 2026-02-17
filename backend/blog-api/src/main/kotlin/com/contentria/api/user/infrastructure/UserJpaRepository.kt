@@ -16,5 +16,9 @@ interface UserJpaRepository : JpaRepository<User, UUID> {
     @Query("SELECT u FROM User u WHERE u.id = :id AND u.status = com.contentria.api.user.domain.UserStatus.ACTIVE")
     fun findActiveById(@Param("id") id: UUID): User?
 
+    fun findByNickname(nickname: String): User?
+
+    fun existsByNickname(nickname: String): Boolean
+
     fun existsByEmail(email: String): Boolean
 }

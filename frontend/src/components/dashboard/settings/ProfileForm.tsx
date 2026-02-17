@@ -36,13 +36,23 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
   } = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: initialUser.name,
+      username: initialUser.username,
+      nickname: initialUser.nickname,
     },
   });
 
   const onSubmit = (data: ProfileFormValues) => {
     startTransition(async () => {
-      const result = await updateUserProfileAction(data);
+      try {
+        await updateUserProfileAction(data);
+
+        alert('프로필이 성공적으로 업데이트되었습니다.');
+        reset(data); // 폼 상태 초기화
+        router.refresh(); // 페이지 새로고침
+      } catch (error) {
+        console.error('Failed to update profile:', error);
+        alert('프로필 업데이트에 실패했습니다. 다시 시도해주세요.');
+      }
     });
   };
 
@@ -55,17 +65,16 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
 
       <form onSubmit={handleSubmit(onSubmit)}>
         <CardContent className="space-y-4">
-          {/* 이름 입력 필드 */}
           <div className="space-y-2">
-            <Label htmlFor="name">이름</Label>
+            <Label htmlFor="nickname">닉네임</Label>
             <Input
-              id="name"
-              placeholder="이름을 입력하세요"
+              id="nickname"
+              placeholder="닉네임을 입력하세요"
               disabled={isPending}
-              {...register('name')}
+              {...register('nickname')}
             />
-            {errors.name && (
-              <p className="text-sm font-medium text-red-500">{errors.name.message}</p>
+            {errors.nickname && (
+              <p className="text-sm font-medium text-red-500">{errors.nickname.message}</p>
             )}
           </div>
 
@@ -83,7 +92,11 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
         </CardContent>
 
         <CardFooter className="flex justify-end border-t bg-gray-50/50 px-6 py-4">
-          <Button type="submit" disabled={!isDirty || isPending} className="min-w-[100px]">
+          <Button
+            type="submit"
+            disabled={!isDirty || isPending}
+            className="min-w-[100px] bg-indigo-600 text-white hover:bg-indigo-700 disabled:bg-gray-400 disabled:text-gray-700"
+          >
             {isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

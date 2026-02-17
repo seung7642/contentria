@@ -20,7 +20,7 @@ const UserAvatar = ({ user, size = 'md' }: UserAvatarProps) => {
       {user?.profileImage ? (
         <Image
           src={user.profileImage}
-          alt={user.name}
+          alt={user.username}
           fill // 부모 요소에 맞춰 채우기
           sizes="(max-width: 768px) 10vw, (max-width: 1200px) 5vw, 44px" // 뷰포트에 따른 이미지 크기 힌트
           className="h-full w-full object-cover"

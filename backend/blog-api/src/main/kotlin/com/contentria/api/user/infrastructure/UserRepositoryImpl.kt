@@ -43,6 +43,14 @@ class UserRepositoryImpl(
         return userJpaRepository.findActiveById(id)
     }
 
+    override fun findByNickname(nickname: String): User? {
+        return userJpaRepository.findByNickname(nickname)
+    }
+
+    override fun existsByNickname(nickname: String): Boolean {
+        return userJpaRepository.existsByNickname(nickname)
+    }
+
     override fun existsByEmail(email: String): Boolean {
         return userJpaRepository.existsByEmail(email)
     }

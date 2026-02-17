@@ -14,56 +14,9 @@ private val log = KotlinLogging.logger {}
 @Service
 class UserService(
     private val userRepository: UserRepository,
-    private val roleRepository: RoleRepository
+    private val roleRepository: RoleRepository,
+    private val nicknameGenerator: NicknameGenerator
 ) {
-
-//    @Transactional
-//    fun upsertGoogleUser(googleUserInfo: GoogleUserInfo): User {
-//        return userRepository.findByEmail(googleUserInfo.email)?.let { existingUser ->
-//            var updated = false
-//            if (existingUser.realUsername != googleUserInfo.name) {
-//                existingUser.realUsername = googleUserInfo.name
-//                updated = true
-//            }
-//            if (existingUser.pictureUrl != googleUserInfo.picture) {
-//                existingUser.pictureUrl = googleUserInfo.picture
-//                updated = true
-//            }
-//            if (updated) {
-//                log.info { "Updating existing user info for email [${existingUser.email}]" }
-//            } else{
-//                log.debug { "Existing user found for email [${existingUser.email}]. No updates needed." }
-//            }
-//            existingUser
-//        } ?: run {
-//            log.info { "Creating a new user for Google account email [${googleUserInfo.email}]" }
-//            val userRole = roleRepository.findByName("ROLE_USER")
-//                ?: throw ContentriaException(ErrorCode.REQUIRED_ROLE_NOT_FOUND)
-//
-//            val newUser = User.createGoogleUser(
-//                email = googleUserInfo.email,
-//                realUsername = googleUserInfo.name,
-//                username = googleUserInfo.name,
-//                pictureUrl = googleUserInfo.picture,
-//                providerId = googleUserInfo.id
-//            )
-//
-//            newUser.userRoles.clear()
-//            newUser.addRole(userRole)
-//
-//            try {
-//                val savedUser = userRepository.save(newUser)
-//                log.info { "Successfully saved new user with email [${newUser.email}]" }
-//                savedUser
-//            } catch (e: Exception) {
-//                log.error(e) { "Failed to save new Google user with email [${googleUserInfo.email}]: ${e.message}" }
-//                throw ContentriaException(
-//                    ErrorCode.INTERNAL_SERVER_ERROR
-//                )
-//            }
-//        }
-//    }
-
     @Transactional
     fun upsertSocialUser(email: String, name: String, pictureUrl: String?): UserInfo {
         return userRepository.findByEmail(email)?.let { existingUser ->
@@ -88,10 +41,17 @@ class UserService(
             UserInfo.from(existingUser)
         } ?: run {
             log.info { "Creating new social user: $email" }
-            val newUser = User.createSocialUser(email, name, name, pictureUrl)
+            val newUser = User.createSocialUser(
+                email = email,
+                realUsername = name,
+                username = name,
+                nickname = generateUniqueNickname(),
+                pictureUrl = pictureUrl
+            )
 
             val userRole = roleRepository.findByName(Role.USER)
                 ?: throw ContentriaException(ErrorCode.REQUIRED_ROLE_NOT_FOUND)
+
             newUser.addRole(userRole)
 
             UserInfo.from(userRepository.save(newUser))
@@ -112,6 +72,7 @@ class UserService(
         val newUser = User.createEmailUser(
             email = email,
             username = name,
+            nickname = generateUniqueNickname()
         )
 
         val defaultRole = roleRepository.findByName(Role.USER)
@@ -155,5 +116,21 @@ class UserService(
         }
 
         return UserInfo.from(user)
+    }
+
+    private fun generateUniqueNickname(): String {
+        var nickname: String
+        var attempts = 0
+        val MAX_ATTEMPTS = 5
+
+        do {
+            if (attempts >= MAX_ATTEMPTS) {
+                throw ContentriaException(ErrorCode.INTERNAL_SERVER_ERROR)
+            }
+            nickname = nicknameGenerator.generate()
+            attempts++
+        } while (userRepository.existsByNickname(nickname))
+
+        return nickname
     }
 }

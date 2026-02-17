@@ -42,7 +42,7 @@ export default function DashboardContent({ user, blogInfos }: DashboardContentPr
         <div>
           <h1 className="text-2xl font-bold text-gray-800">대시보드</h1>
           <p className="mt-1 text-sm text-gray-500">
-            안녕하세요, {user?.name || '관리자'}님! 오늘의 블로그 현황입니다.
+            안녕하세요, {user?.username || '관리자'}님! 오늘의 블로그 현황입니다.
           </p>
         </div>
         <Link

@@ -6,7 +6,8 @@ import java.util.*
 data class UserPrivateResponse(
     val userId: UUID?,
     val email: String,
-    val name: String?,
+    val username: String?,
+    val nickname: String,
     val profileImage: String?
 ) {
     companion object {
@@ -14,7 +15,8 @@ data class UserPrivateResponse(
             return UserPrivateResponse(
                 userId = userInfo.userId,
                 email = userInfo.email,
-                name = userInfo.name,
+                username = userInfo.username,
+                nickname = userInfo.nickname,
                 profileImage = userInfo.pictureUrl
             )
         }

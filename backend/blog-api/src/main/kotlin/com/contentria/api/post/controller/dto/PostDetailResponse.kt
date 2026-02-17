@@ -49,7 +49,7 @@ data class PostDetailResponse(
             fun from(info: UserInfo): AuthorResponse {
                 return AuthorResponse(
                     userId = info.userId,
-                    username = info.name,
+                    username = info.username,
                     profileImageUrl = info.pictureUrl
                 )
             }

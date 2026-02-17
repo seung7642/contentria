@@ -1,15 +1,10 @@
-import { BlogInfo } from './blogs';
-
 export interface User {
   id: string;
-  name: string;
   email: string;
+  username: string;
+  nickname: string;
   profileImage: string | null;
   // blogs: BlogSummary[];
-}
-
-export interface UpdateProfilePayload {
-  name: string;
 }
 
 export interface UserSummaryResponse {

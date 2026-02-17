@@ -3,11 +3,9 @@ CREATE TABLE users (
     email VARCHAR(255) NOT NULL UNIQUE,
     real_username VARCHAR(100),
     username VARCHAR(100),
---     password VARCHAR(255),
+    nickname VARCHAR(50) NOT NULL UNIQUE,
     picture_url TEXT,
     status VARCHAR(50) NOT NULL DEFAULT 'UNVERIFIED', -- 'ACTIVE', 'UNVERIFIED', 'SUSPENDED', 'DELETED'
---     provider VARCHAR(50) NOT NULL, -- 'EMAIL', 'GOOGLE'
---     provider_id TEXT, -- 해당 Provider(구글 로그인)에서의 사용자 ID
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

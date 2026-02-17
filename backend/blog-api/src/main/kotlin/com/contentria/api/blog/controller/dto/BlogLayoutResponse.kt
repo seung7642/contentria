@@ -19,7 +19,7 @@ data class BlogLayoutResponse(
             fun from(info: UserInfo): OwnerResponse {
                 return OwnerResponse(
                     userId = info.userId,
-                    name = info.name,
+                    name = info.username,
                     profileImageUrl = info.pictureUrl
                 )
             }

@@ -21,19 +21,14 @@ class User(
 
     var username: String? = null,
 
-//    var password: String? = null,
+    @Column(nullable = false, unique = true, length = 50)
+    var nickname: String,
 
     var pictureUrl: String? = null,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     var status: UserStatus = UserStatus.UNVERIFIED,
-
-//    @Enumerated(EnumType.STRING)
-//    @Column(nullable = false)
-//    var provider: AuthProvider = AuthProvider.EMAIL,
-
-//    var providerId: String? = null,
 
     @OneToMany(mappedBy = "user", cascade = [(CascadeType.ALL)], orphanRemoval = true)
     var userRoles: MutableSet<UserRole> = mutableSetOf(),
@@ -47,19 +42,21 @@ class User(
     }
 
     companion object {
-        fun createEmailUser(email: String, username: String): User {
+        fun createEmailUser(email: String, username: String, nickname: String): User {
             return User(
                 email = email,
                 username = username,
+                nickname = nickname,
                 status = UserStatus.UNVERIFIED,
             )
         }
 
-        fun createSocialUser(email: String, realUsername: String, username: String, pictureUrl: String?): User {
+        fun createSocialUser(email: String, realUsername: String, username: String, nickname: String, pictureUrl: String?): User {
             return User(
                 email = email,
                 realUsername = realUsername,
                 username = username,
+                nickname = nickname,
                 pictureUrl = pictureUrl,
                 status = UserStatus.ACTIVE,
             )
