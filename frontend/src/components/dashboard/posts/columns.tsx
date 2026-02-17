@@ -1,6 +1,7 @@
 'use client';
 
 import { deletePostAction } from '@/actions/post';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -12,15 +13,33 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { PostSummary } from '@/types/api/posts';
 import { ColumnDef } from '@tanstack/react-table';
+import { format, formatDistanceToNow, isToday } from 'date-fns';
+import { ko } from 'date-fns/locale';
 import { Edit, MoreHorizontal, Trash } from 'lucide-react';
 import Link from 'next/link';
+
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+
+  if (isToday(date)) {
+    return formatDistanceToNow(date, { addSuffix: true, locale: ko });
+  }
+
+  return format(date, 'yyyy-MM-dd');
+};
 
 export const columns: ColumnDef<PostSummary>[] = [
   {
     accessorKey: 'title',
     header: '제목',
     cell: ({ row }) => {
-      return <div className="font-medium text-gray-900">{row.getValue('title')}</div>;
+      return (
+        <div className="flex flex-col">
+          <span className="max-w-[500px] truncate font-medium text-gray-900">
+            {row.getValue('title')}
+          </span>
+        </div>
+      );
     },
   },
   {
@@ -28,7 +47,20 @@ export const columns: ColumnDef<PostSummary>[] = [
     header: '상태',
     cell: ({ row }) => {
       const status = row.getValue('status') as string;
-      return <p>{status === 'PUBLISHED' ? '게시됨' : '비공개'}</p>;
+      const isPublished = status === 'PUBLISHED';
+
+      return (
+        <Badge
+          variant={isPublished ? 'default' : 'secondary'}
+          className={
+            isPublished
+              ? 'border-green-200 bg-green-100 text-green-700 hover:bg-green-100'
+              : 'border-gray-200 bg-gray-100 text-gray-700 hover:bg-gray-100'
+          }
+        >
+          {isPublished ? '발행됨' : '임시저장'}
+        </Badge>
+      );
     },
   },
   {
@@ -36,8 +68,7 @@ export const columns: ColumnDef<PostSummary>[] = [
     header: '생성일',
     cell: ({ row }) => {
       const dateStr = row.getValue('createdAt') as string;
-      const date = new Date(dateStr);
-      return <div>{date.toLocaleDateString()}</div>;
+      return <div className="text-sm">{formatDate(dateStr)}</div>;
     },
   },
   {

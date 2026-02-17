@@ -11,7 +11,6 @@ import {
   VisibilityState,
 } from '@tanstack/react-table';
 import { useState } from 'react';
-import { Input } from '../ui/input';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -28,43 +27,31 @@ interface DataTableProps<TData, TValue> {
 
 export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = useState({});
 
   const table = useReactTable({
     data,
     columns,
     state: {
       sorting,
-      columnFilters,
       columnVisibility,
-      rowSelection,
     },
     onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   });
 
   return (
-    <div>
-      <div className="flex items-center py-4">
-        <Input
-          placeholder="Filter emails..."
-          value={(table.getColumn('email')?.getFilterValue() as string) ?? ''}
-          onChange={(event) => table.getColumn('email')?.setFilterValue(event.target.value)}
-          className="max-w-sm"
-        />
+    <div className="space-y-4">
+      <div className="flex items-center justify-end">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              Columns
+            <Button variant="outline" className="ml-auto h-8 lg:flex">
+              뷰 설정
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="end" className="w-[150px]">
             {table
               .getAllColumns()
               .filter((column) => column.getCanHide())
@@ -83,14 +70,18 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <div className="overflow-hidden rounded-md border">
+
+      <div className="rounded-md border bg-white shadow-sm">
         <Table>
-          <TableHeader>
+          <TableHeader className="bg-gray-50">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead
+                      key={header.id}
+                      className="text-xs font-semibold uppercase tracking-wider text-gray-500"
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(header.column.columnDef.header, header.getContext())}
@@ -113,31 +104,13 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell colSpan={columns.length} className="h-24 text-center text-gray-500">
                   No results.
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
-      </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
-        >
-          Previous
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
-        >
-          Next
-        </Button>
       </div>
     </div>
   );
