@@ -39,7 +39,7 @@ class CategoryService(
 
     @Transactional
     fun createSampleCategories(blogId: UUID): Map<String, UUID> {
-        val tech = categoryRepository.save(Category.create(name = "기술", slug = "tech", blogId = blogId, order = 0))
+        val tech = categoryRepository.saveAndFlush(Category.create(name = "기술", slug = "tech", blogId = blogId, order = 0))
         val backend = categoryRepository.save(Category.create(name = "백엔드", slug = "backend", blogId = blogId, order = 0, parent = tech))
         val daily = categoryRepository.save(Category.create(name = "일상", slug = "daily", blogId = blogId, order = 1))
         return mapOf(

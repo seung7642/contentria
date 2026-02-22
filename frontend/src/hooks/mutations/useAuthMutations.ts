@@ -93,6 +93,7 @@ export const useVerifyOtpMutation = () => {
       return result.data;
     },
     onSuccess: (data) => {
+      console.log('OTP verification successful, logging in user:', data.user);
       login(data.user);
       queryClient.invalidateQueries({ queryKey: ['user', 'me'] });
       router.replace(PATHS.DASHBOARD);

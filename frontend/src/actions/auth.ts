@@ -48,6 +48,7 @@ export async function initiateSignUpAction(
   payload: InitiateSignUpPayload
 ): Promise<ActionResult<InitiateSignUpResponse>> {
   try {
+    console.log('[initiateSignUpAction] Payload:', payload);
     const data = await apiServer.post<InitiateSignUpResponse>(
       '/api/auth/signup/initiate',
       payload,
@@ -92,6 +93,25 @@ export async function verifyOtpCodeAction(
     const data = await apiServer.post<VerifyOtpCodeResponse>('/api/auth/verify-code', payload, {
       requireAuth: false,
     });
+
+    if (data.accessToken && data.refreshToken) {
+      const cookieStore = await cookies();
+
+      cookieStore.set('accessToken', data.accessToken, {
+        httpOnly: true,
+        path: '/',
+        maxAge: 15 * 60, // 15 minutes
+      });
+
+      cookieStore.set('refreshToken', data.refreshToken, {
+        httpOnly: true,
+        path: '/',
+        maxAge: 7 * 24 * 60 * 60, // 7 days
+      });
+    } else {
+      throw new Error('Login response is missing accessToken or refreshToken');
+    }
+
     return { success: true, data };
   } catch (error) {
     console.error('[verifyOtpCodeAction] Error in verifyOtpCodeAction:', error);
@@ -129,6 +149,25 @@ export async function loginWithPasswordAction(
     const data = await apiServer.post<LoginResponse>('/api/auth/login', payload, {
       requireAuth: false,
     });
+
+    if (data.accessToken && data.refreshToken) {
+      const cookieStore = await cookies();
+
+      cookieStore.set('accessToken', data.accessToken, {
+        httpOnly: true,
+        path: '/',
+        maxAge: 15 * 60, // 15 minutes
+      });
+
+      cookieStore.set('refreshToken', data.refreshToken, {
+        httpOnly: true,
+        path: '/',
+        maxAge: 7 * 24 * 60 * 60, // 7 days
+      });
+    } else {
+      throw new Error('Login response is missing accessToken or refreshToken');
+    }
+
     return { success: true, data };
   } catch (error) {
     console.error('[loginWithPasswordAction] Error in loginWithPasswordAction:', error);

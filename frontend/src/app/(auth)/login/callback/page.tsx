@@ -6,8 +6,6 @@ export const metadata: Metadata = {
   robots: 'noindex, nofollow', // Prevent indexing by search engines
 };
 
-const GoogleLoginCallbackPage = () => {
+export default function GoogleLoginCallbackPage() {
   return <CallbackClient />;
-};
-
-export default GoogleLoginCallbackPage;
+}

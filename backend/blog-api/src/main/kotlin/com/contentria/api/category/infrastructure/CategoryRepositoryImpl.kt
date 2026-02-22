@@ -15,6 +15,10 @@ class CategoryRepositoryImpl(
         return jpaRepository.save(category)
     }
 
+    override fun saveAndFlush(category: Category): Category {
+        return jpaRepository.saveAndFlush(category)
+    }
+
     override fun delete(category: Category) {
         jpaRepository.delete(category)
     }

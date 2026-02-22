@@ -12,6 +12,8 @@ export interface LoginPayload {
 
 export interface LoginResponse {
   user: User;
+  accessToken: string;
+  refreshToken: string;
 }
 
 export interface SendOtpPayload {
@@ -46,4 +48,6 @@ export interface VerifyOtpCodePayload {
 
 export interface VerifyOtpCodeResponse {
   user: User;
+  accessToken: string;
+  refreshToken: string;
 }

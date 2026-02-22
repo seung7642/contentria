@@ -49,8 +49,8 @@ class BlogFacade(
 
         val createdCategoryIds = categoryService.createSampleCategories(savedBlogInfo.blogId)
         val sampleContents = mapOf(
-            "backendPost" to readMarkdownContent("classpath:samples/backend-post.md"),
-            "dailyPost" to readMarkdownContent("classpath:samples/daily-post.md")
+            "backend" to readMarkdownContent("classpath:samples/backend-post.md"),
+            "daily" to readMarkdownContent("classpath:samples/daily-post.md")
         )
 
         postService.createSamplePosts(userId, savedBlogInfo.blogId, createdCategoryIds, sampleContents)

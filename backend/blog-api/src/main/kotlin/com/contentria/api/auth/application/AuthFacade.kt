@@ -92,7 +92,7 @@ class AuthFacade(
     fun sendOtp(command: SendOtpCommand) {
         captchaProvider.verify(command.captcha)
 
-        val user = userService.getActiveUserInfo(command.email)
+        val user = userService.getUserInfo(command.email)
 
         verificationCodeProvider.sendVerificationCode(command.email, user.username)
     }

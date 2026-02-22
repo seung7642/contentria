@@ -67,7 +67,7 @@ class PostService(
                 categoryId = categoryIds["backend"],
                 title = "코틀린(Kotlin)으로 시작하는 나의 첫 백엔드 개발",
                 slug = "my-first-backend-with-kotlin",
-                content = contents["backendPost"]!!,
+                content = contents["backend"]!!,
                 status = PostStatus.PUBLISHED,
                 publishedAt = ZonedDateTime.now().minusDays(1)
             ),
@@ -77,7 +77,7 @@ class PostService(
                 categoryId = categoryIds["daily"],
                 title = "새로운 시작, 나의 공간에 오신 것을 환영합니다",
                 slug = "welcome-to-my-new-space",
-                content = contents["dailyPost"]!!,
+                content = contents["daily"]!!,
                 status = PostStatus.PUBLISHED,
                 publishedAt = ZonedDateTime.now()
             )

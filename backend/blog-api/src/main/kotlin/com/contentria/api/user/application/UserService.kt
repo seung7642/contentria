@@ -118,6 +118,14 @@ class UserService(
         return UserInfo.from(user)
     }
 
+    @Transactional(readOnly = true)
+    fun getUserInfo(email: String): UserInfo {
+        val user = userRepository.findByEmail(email)
+            ?: throw ContentriaException(ErrorCode.USER_NOT_FOUND)
+
+        return UserInfo.from(user)
+    }
+
     private fun generateUniqueNickname(): String {
         var nickname: String
         var attempts = 0

@@ -6,6 +6,7 @@ import java.util.*
 interface CategoryRepository {
 
     fun save(category: Category): Category
+    fun saveAndFlush(category: Category): Category
     fun delete(category: Category)
     fun deleteAll(categories: List<Category>)
     fun findById(id: UUID): Category?

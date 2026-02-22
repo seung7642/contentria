@@ -16,7 +16,7 @@ type LoginFlowContextType = ReturnType<typeof useLoginFlowLogic>;
 
 const LoginFlowContext = createContext<LoginFlowContextType | undefined>(undefined);
 
-const useLoginFlowLogic = () => {
+function useLoginFlowLogic() {
   const [step, setStep] = useState<LoginStep>('email');
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
@@ -51,25 +51,25 @@ const useLoginFlowLogic = () => {
     }
   }, [combinedError, resetLoginWithPassword, resetSendOtp]);
 
-  const updateFormData = (field: keyof LoginFormData, value: string) => {
+  function updateFormData(field: keyof LoginFormData, value: string) {
     setFormData((prev) => ({ ...prev, [field]: value }));
-  };
+  }
 
-  const goToPreviousStep = () => {
+  function goToPreviousStep() {
     if (step === 'password' || step === 'recaptcha_v2_challenge') {
       setStep('email');
     } else if (step === 'verify_otp_code') {
       setStep('password');
     }
-  };
+  }
 
-  const submitEmailStep = (data: LoginEmailStepFormData) => {
+  function submitEmailStep(data: LoginEmailStepFormData) {
     console.log('Email submitted:', data.email);
     updateFormData('email', data.email);
     setStep('password');
-  };
+  }
 
-  const submitPasswordLogin = async (data: PasswordStepFormData) => {
+  async function submitPasswordLogin(data: PasswordStepFormData) {
     setLoginAttemptType('password');
     if (!executeRecaptcha) {
       return;
@@ -85,9 +85,9 @@ const useLoginFlowLogic = () => {
     } catch (e) {
       console.error('reCAPTCHA execution error:', e);
     }
-  };
+  }
 
-  const requestOtpLogin = async () => {
+  async function requestOtpLogin() {
     setLoginAttemptType('otp');
     if (!executeRecaptcha) {
       return;
@@ -102,9 +102,9 @@ const useLoginFlowLogic = () => {
     } catch (e) {
       console.error('reCAPTCHA execution error:', e);
     }
-  };
+  }
 
-  const verifyRecaptchaAndProceed = async (recaptchaV2Token: string) => {
+  async function verifyRecaptchaAndProceed(recaptchaV2Token: string) {
     if (loginAttemptType === 'password') {
       loginWithPassword({
         email: formData.email,
@@ -117,25 +117,27 @@ const useLoginFlowLogic = () => {
         recaptchaV2Token,
       });
     }
-  };
+  }
 
-  const updateFormDataAndVerify = (field: keyof LoginFormData, value: string) => {
+  function updateFormDataAndVerify(field: keyof LoginFormData, value: string) {
     updateFormData(field, value);
     if (field === 'verificationCode' && value.length === 6) {
       verifyOtp({ email: formData.email, verificationCode: value });
     }
-  };
+  }
 
-  const resendLoginOtpCode = async () => sendOtp({ email: formData.email });
+  async function resendLoginOtpCode() {
+    sendOtp({ email: formData.email });
+  }
 
-  const startGoogleLogin = () => {
+  function startGoogleLogin() {
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
     if (baseUrl) {
       window.location.href = `${baseUrl}/api/oauth2/authorization/google`;
     } else {
       console.error('API base URL is not configured.');
     }
-  };
+  }
 
   return {
     step,
@@ -152,7 +154,7 @@ const useLoginFlowLogic = () => {
     resendLoginOtpCode,
     startGoogleLogin,
   };
-};
+}
 
 export const LoginFlowProvider = ({ children }: { children: React.ReactNode }) => {
   const flow = useLoginFlowLogic();
