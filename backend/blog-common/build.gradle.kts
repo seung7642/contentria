@@ -8,6 +8,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-aop")
+    implementation("org.springframework.boot:spring-boot-starter-mail")
+    implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
+
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
     // Kotlin 관련
@@ -33,5 +36,17 @@ dependencies {
 kotlin {
     compilerOptions {
         freeCompilerArgs.addAll("-Xjsr305=strict")
+    }
+}
+
+tasks.test {
+    if (project.hasProperty("runRealMailTests") && project.property("runRealMailTests") == "true") {
+        useJUnitPlatform {
+            includeTags("real-mail-test")
+        }
+    } else {
+        useJUnitPlatform {
+            excludeTags("real-mail-test")
+        }
     }
 }

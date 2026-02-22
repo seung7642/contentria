@@ -1,4 +1,4 @@
-package com.contentria.api.global.error
+package com.contentria.common.global.error
 
 class ContentriaException(
     val errorCode: ErrorCode,

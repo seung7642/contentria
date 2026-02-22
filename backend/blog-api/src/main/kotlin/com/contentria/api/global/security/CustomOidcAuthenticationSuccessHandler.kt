@@ -2,8 +2,8 @@ package com.contentria.api.global.security
 
 import com.contentria.api.auth.application.AuthFacade
 import com.contentria.api.auth.application.dto.SocialLoginCommand
-import com.contentria.api.global.error.ContentriaException
-import com.contentria.api.global.error.ErrorCode
+import com.contentria.common.global.error.ContentriaException
+import com.contentria.common.global.error.ErrorCode
 import com.contentria.api.global.properties.AppProperties
 import com.contentria.api.global.util.CookieUtil
 import com.contentria.api.user.domain.AuthProvider

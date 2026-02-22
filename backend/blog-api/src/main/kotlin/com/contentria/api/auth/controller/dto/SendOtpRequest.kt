@@ -4,8 +4,8 @@ import com.contentria.api.auth.application.dto.CaptchaCommand
 import com.contentria.api.auth.application.dto.CaptchaVersion
 import com.contentria.api.auth.application.dto.RecaptchaAction
 import com.contentria.api.auth.application.dto.SendOtpCommand
-import com.contentria.api.global.error.ContentriaException
-import com.contentria.api.global.error.ErrorCode
+import com.contentria.common.global.error.ContentriaException
+import com.contentria.common.global.error.ErrorCode
 import jakarta.validation.constraints.Email
 
 data class SendOtpRequest(

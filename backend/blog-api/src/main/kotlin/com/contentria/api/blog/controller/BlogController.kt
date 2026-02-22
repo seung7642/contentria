@@ -6,8 +6,6 @@ import com.contentria.api.blog.controller.dto.BlogLayoutResponse
 import com.contentria.api.blog.controller.dto.BlogResponse
 import com.contentria.api.blog.controller.dto.CreateBlogRequest
 import com.contentria.api.blog.controller.dto.CreateBlogResponse
-import com.contentria.api.global.error.ContentriaException
-import com.contentria.api.global.error.ErrorCode
 import jakarta.validation.Valid
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort

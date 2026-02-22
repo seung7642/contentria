@@ -2,8 +2,8 @@ package com.contentria.api.global.security
 
 import com.contentria.api.auth.security.CustomUserDetails
 import com.contentria.api.global.annotation.CurrentUserId
-import com.contentria.api.global.error.ContentriaException
-import com.contentria.api.global.error.ErrorCode
+import com.contentria.common.global.error.ContentriaException
+import com.contentria.common.global.error.ErrorCode
 import org.springframework.core.MethodParameter
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component

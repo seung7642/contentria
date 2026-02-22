@@ -2,8 +2,8 @@ package com.contentria.api.auth.controller
 
 import com.contentria.api.auth.application.AuthFacade
 import com.contentria.api.auth.controller.dto.*
-import com.contentria.api.global.error.ContentriaException
-import com.contentria.api.global.error.ErrorCode
+import com.contentria.common.global.error.ContentriaException
+import com.contentria.common.global.error.ErrorCode
 import com.contentria.api.global.util.CookieUtil
 import com.contentria.api.global.util.IpResolver
 import com.contentria.common.global.aop.ApiLog

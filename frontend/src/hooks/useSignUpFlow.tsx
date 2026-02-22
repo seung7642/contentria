@@ -1,6 +1,5 @@
 import { SignUpStep } from '@/components/auth/types';
 import { RECAPTCHA_SIGN_UP_ACTION } from '@/constants/auth';
-import { ApiError } from '@/types/api/errors';
 import { SignUpEmailStepFormData } from '@/lib/schemas/authSchemas';
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
@@ -16,7 +15,7 @@ type SignUpFlowContextType = ReturnType<typeof useSignUpFlowLogic>;
 // React Context를 생성한다.
 const SignUpFlowContext = createContext<SignUpFlowContextType | undefined>(undefined);
 
-const useSignUpFlowLogic = () => {
+function useSignUpFlowLogic() {
   const [step, setStep] = useState<SignUpStep>('email');
   const [formData, setFormData] = useState({
     name: '',
@@ -36,10 +35,14 @@ const useSignUpFlowLogic = () => {
   const { mutate: verifyOtp, isPending: isVerifying, error: verifyError } = useVerifyOtpMutation();
 
   const isLoading = isInitiating || isVerifying || isResending;
-  const combinedError = (initiateError || verifyError || resendError) as ApiError | null;
+  const combinedError = initiateError || verifyError || resendError;
 
   useEffect(() => {
-    if (combinedError && combinedError.status === 403 && combinedError.code === 'C0005') {
+    if (!combinedError) {
+      return;
+    }
+
+    if (combinedError.status === 403 && combinedError.code === 'C0005') {
       setStep('recaptcha_v2_challenge');
       resetInitiateSignUp();
     }
@@ -49,15 +52,15 @@ const useSignUpFlowLogic = () => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const goToNextStep = () => {
+  function goToNextStep() {
     const steps: SignUpStep[] = ['email', 'password', 'recaptcha_v2_challenge', 'verify_otp_code'];
     const currentIndex = steps.indexOf(step);
     if (currentIndex < steps.length - 1) {
       setStep(steps[currentIndex + 1]);
     }
-  };
+  }
 
-  const goToPreviousStep = () => {
+  function goToPreviousStep() {
     const steps: SignUpStep[] = ['email', 'password', 'recaptcha_v2_challenge', 'verify_otp_code'];
     const currentIndex = steps.indexOf(step);
     if (currentIndex > 0) {
@@ -70,19 +73,21 @@ const useSignUpFlowLogic = () => {
         setFormData((prev) => ({ ...prev, verificationCode: '' }));
       }
     }
-  };
+  }
 
-  const submitEmailStep = (data: SignUpEmailStepFormData) => {
+  function submitEmailStep(data: SignUpEmailStepFormData) {
     updateFormData('name', data.name);
     updateFormData('email', data.email);
     goToNextStep();
-  };
+  }
 
-  const submitPasswordStep = async (password: string | null) => {
+  async function submitPasswordStep(password: string | null) {
     if (!executeRecaptcha) {
       return;
     }
+
     updateFormData('password', password || '');
+
     try {
       const recaptchaV3Token = await executeRecaptcha(RECAPTCHA_SIGN_UP_ACTION);
       initiateSignUp({
@@ -91,37 +96,40 @@ const useSignUpFlowLogic = () => {
         password,
         recaptchaV3Token,
       });
-    } catch (err) {
-      console.error('reCAPTCHA execution error:', err);
+    } catch (error) {
+      console.error('[useSignUpFlowLogic/submitPasswordStep] reCAPTCHA execution error:', error);
+      console.dir(error);
     }
-  };
+  }
 
-  const submitRecaptchaV2 = (recaptchaV2Token: string) => {
+  function submitRecaptchaV2(recaptchaV2Token: string) {
     initiateSignUp({
       name: formData.name,
       email: formData.email,
       password: formData.password,
       recaptchaV2Token,
     });
-  };
+  }
 
-  const resendSignUpOtpCode = () => resendOtp({ email: formData.email });
+  function resendSignUpOtpCode() {
+    return resendOtp({ email: formData.email });
+  }
 
-  const updateFormDataAndVerify = (field: string, value: string) => {
+  function updateFormDataAndVerify(field: string, value: string) {
     updateFormData(field, value);
     if (field === 'verificationCode' && value.length === 6) {
       verifyOtp({ email: formData.email, verificationCode: value });
     }
-  };
+  }
 
-  const startGoogleLogin = () => {
+  function startGoogleLogin() {
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
     if (baseUrl) {
       window.location.href = `${baseUrl}/api/oauth2/authorization/google`;
     } else {
       console.error('API base URL is not configured.');
     }
-  };
+  }
 
   return {
     step,
@@ -141,17 +149,19 @@ const useSignUpFlowLogic = () => {
     updateFormDataAndVerify,
     startGoogleLogin,
   };
-};
+}
 
-export const SignUpFlowProvider = ({ children }: { children: ReactNode }) => {
+export function SignUpFlowProvider({ children }: { children: ReactNode }) {
   const flow = useSignUpFlowLogic();
   return <SignUpFlowContext.Provider value={flow}>{children}</SignUpFlowContext.Provider>;
-};
+}
 
-export const useSignUpFlow = (): SignUpFlowContextType => {
+export function useSignUpFlow(): SignUpFlowContextType {
   const context = useContext(SignUpFlowContext);
+
   if (context === undefined) {
     throw new Error('useSignUpFlow must be used within a SignUpFlowProvider');
   }
+
   return context;
-};
+}

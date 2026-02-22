@@ -12,14 +12,14 @@ data class BlogLayoutResponse(
 ) {
     data class OwnerResponse(
         val userId: UUID,
-        val name: String,
+        val nickname: String,
         val profileImageUrl: String?
     ) {
         companion object {
             fun from(info: UserInfo): OwnerResponse {
                 return OwnerResponse(
                     userId = info.userId,
-                    name = info.username,
+                    nickname = info.nickname,
                     profileImageUrl = info.pictureUrl
                 )
             }

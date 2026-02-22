@@ -15,7 +15,7 @@ interface PolicyItem {
   isValid: (password: string) => boolean;
 }
 
-export const PasswordStep = () => {
+export default function PasswordStep() {
   const { formData, goToPreviousStep, error, isLoading, submitPasswordStep } = useSignUpFlow();
   const {
     register,
@@ -133,4 +133,4 @@ export const PasswordStep = () => {
       </div>
     </>
   );
-};
+}

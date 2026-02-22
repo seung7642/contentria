@@ -1,7 +1,7 @@
 package com.contentria.api.user.application
 
-import com.contentria.api.global.error.ContentriaException
-import com.contentria.api.global.error.ErrorCode
+import com.contentria.common.global.error.ContentriaException
+import com.contentria.common.global.error.ErrorCode
 import com.contentria.api.user.application.dto.UserInfo
 import com.contentria.api.user.domain.*
 import io.github.oshai.kotlinlogging.KotlinLogging

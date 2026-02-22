@@ -7,8 +7,8 @@ import com.contentria.api.dashboard.application.dto.DashboardStatsInfo
 import com.contentria.api.dashboard.application.dto.PopularPostInfo
 import com.contentria.api.dashboard.application.dto.VisitorTrendChartInfo
 import com.contentria.api.dashboard.dto.TimeRange
-import com.contentria.api.global.error.ContentriaException
-import com.contentria.api.global.error.ErrorCode
+import com.contentria.common.global.error.ContentriaException
+import com.contentria.common.global.error.ErrorCode
 import com.contentria.api.post.application.PostService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service

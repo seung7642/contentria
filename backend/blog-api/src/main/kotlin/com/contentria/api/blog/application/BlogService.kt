@@ -3,8 +3,8 @@ package com.contentria.api.blog.application
 import com.contentria.api.blog.application.dto.BlogInfo
 import com.contentria.api.blog.domain.Blog
 import com.contentria.api.blog.domain.BlogRepository
-import com.contentria.api.global.error.ContentriaException
-import com.contentria.api.global.error.ErrorCode
+import com.contentria.common.global.error.ContentriaException
+import com.contentria.common.global.error.ErrorCode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional

@@ -4,8 +4,8 @@ import com.contentria.api.auth.application.CaptchaProvider
 import com.contentria.api.auth.application.dto.CaptchaCommand
 import com.contentria.api.auth.application.dto.CaptchaVersion
 import com.contentria.api.auth.infrastructure.dto.GoogleRecaptchaResponse
-import com.contentria.api.global.error.ContentriaException
-import com.contentria.api.global.error.ErrorCode
+import com.contentria.common.global.error.ContentriaException
+import com.contentria.common.global.error.ErrorCode
 import com.contentria.api.global.properties.AppProperties
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component

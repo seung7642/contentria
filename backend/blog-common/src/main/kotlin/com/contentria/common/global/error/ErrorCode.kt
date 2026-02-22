@@ -1,4 +1,4 @@
-package com.contentria.api.global.error
+package com.contentria.common.global.error
 
 import jakarta.validation.Payload
 import org.springframework.http.HttpStatus
@@ -57,6 +57,9 @@ enum class ErrorCode(
     MARKDOWN_CONTENT_TOO_LARGE(HttpStatus.BAD_REQUEST, "MD0002", "Markdown content exceeds the maximum allowed length."),
 
     // Cache
-    NOT_FOUND_CACHE(HttpStatus.NOT_FOUND, "CA0000", "Not found cache. Please contact support.")
+    NOT_FOUND_CACHE(HttpStatus.NOT_FOUND, "CA0000", "Not found cache. Please contact support."),
+
+    // Mail
+    MAIL_SENDING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MA0000", "Failed to send email. Please try again later.")
     ;
 }

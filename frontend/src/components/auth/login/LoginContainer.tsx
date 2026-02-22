@@ -2,7 +2,7 @@
 
 import { LoginFlowProvider, useLoginFlow } from '@/hooks/useLoginFlow';
 import AuthFormCard from '../AuthFormCard';
-import { VerificationStep } from '../VerificationStep';
+import VerificationStep from '../VerificationStep';
 import RecaptchaV2Step from '../RecaptchaV2Step';
 import PasswordStep from './PasswordStep';
 import EmailStep from './EmailStep';

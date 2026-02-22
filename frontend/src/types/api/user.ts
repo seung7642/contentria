@@ -20,6 +20,6 @@ export interface AuthorResponse {
 
 export interface OwnerResponse {
   userId: string;
-  username: string;
+  nickname: string;
   profileImageUrl: string | null;
 }

@@ -4,8 +4,8 @@ import com.contentria.api.auth.application.dto.CaptchaCommand
 import com.contentria.api.auth.application.dto.CaptchaVersion
 import com.contentria.api.auth.application.dto.RecaptchaAction
 import com.contentria.api.auth.application.dto.SignUpInitiateCommand
-import com.contentria.api.global.error.ContentriaException
-import com.contentria.api.global.error.ErrorCode
+import com.contentria.common.global.error.ContentriaException
+import com.contentria.common.global.error.ErrorCode
 import com.contentria.api.user.validation.UniqueEmail
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank

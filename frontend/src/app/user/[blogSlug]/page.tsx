@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: UserBlogPageProps): Promise<M
 
   return {
     title: `@${blogData.blog.slug} | Contentria`,
-    description: `${blogData.owner.username}님의 블로그입니다. 다양한 글들을 만나보세요.`,
+    description: `${blogData.owner.nickname}님의 블로그입니다. 다양한 글들을 만나보세요.`,
   };
 }
 

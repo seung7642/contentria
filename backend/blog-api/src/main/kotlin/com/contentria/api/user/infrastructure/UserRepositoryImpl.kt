@@ -2,6 +2,7 @@ package com.contentria.api.user.infrastructure
 
 import com.contentria.api.user.domain.User
 import com.contentria.api.user.domain.UserRepository
+import com.contentria.api.user.domain.UserStatus
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Repository
 import java.util.*
@@ -40,7 +41,7 @@ class UserRepositoryImpl(
     }
 
     override fun findActiveById(id: UUID): User? {
-        return userJpaRepository.findActiveById(id)
+        return userJpaRepository.findByIdAndStatus(id, UserStatus.ACTIVE)
     }
 
     override fun findByNickname(nickname: String): User? {

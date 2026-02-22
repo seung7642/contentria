@@ -3,8 +3,8 @@ package com.contentria.api.category.application
 import com.contentria.api.blog.application.BlogService
 import com.contentria.api.category.application.dto.CategoryInfo
 import com.contentria.api.category.application.dto.SyncCategoryCommand
-import com.contentria.api.global.error.ContentriaException
-import com.contentria.api.global.error.ErrorCode
+import com.contentria.common.global.error.ContentriaException
+import com.contentria.common.global.error.ErrorCode
 import com.contentria.api.post.application.PostService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component

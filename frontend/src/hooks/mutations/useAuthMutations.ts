@@ -1,7 +1,6 @@
 'use client';
 
 import { PATHS } from '@/constants/paths';
-import { ApiError } from '@/types/api/errors';
 import { useAuthStore } from '@/store/authStore';
 import { LoginPayload, LoginResponse, SendOtpPayload, SendOtpResponse } from '@/types/api/auth';
 import {
@@ -11,12 +10,12 @@ import {
   VerifyOtpCodeResponse,
 } from '@/types/api/auth';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { AxiosError } from 'axios';
 import { useRouter } from 'next/navigation';
 import {
   initiateSignUpAction,
   loginWithPasswordAction,
   sendOtpCodeAction,
+  SerializedError,
   verifyOtpCodeAction,
 } from '@/actions/auth';
 
@@ -29,8 +28,14 @@ export const useLoginWithPasswordMutation = () => {
   const router = useRouter();
   const login = useAuthStore((state) => state.login);
 
-  return useMutation<LoginResponse, ApiError | AxiosError, LoginPayload>({
-    mutationFn: (payload: LoginPayload) => loginWithPasswordAction(payload),
+  return useMutation<LoginResponse, SerializedError, LoginPayload>({
+    mutationFn: async (payload: LoginPayload) => {
+      const result = await loginWithPasswordAction(payload);
+      if (!result.success) {
+        throw result.error;
+      }
+      return result.data;
+    },
     onSuccess: (data) => {
       login(data.user);
       queryClient.invalidateQueries({ queryKey: ['user', 'me'] });
@@ -40,17 +45,32 @@ export const useLoginWithPasswordMutation = () => {
 };
 
 /**
- * 회원가입을 시작하는 뮤테이션 (v3 또는 v2 reCAPTCHA 사용)
- * onSuccess 콜백을 통해 특정 UI 로직을 실행할 수 있다.
+ * Initiates the sign-up process and manages the mutation state.
+ *
+ * This hook wraps the server action for initiating sign-up with TanStack Query,
+ * providing automatic loading, error, and success state management.
+ *
+ * @param onSuccessCallback - Optional callback function to execute after successful sign-up initiation
+ * @returns A mutation object with the following properties:
+ *   - mutate: Function to trigger the sign-up mutation
+ *   - mutateAsync: Async version that returns a promise
+ *   - isPending: Loading state
+ *   - isError: Error state
+ *   - error: Error object if mutation failed
+ * @throws {SerializedError} Throws when the server action fails
  */
 export const useInitiateSignUpMutation = (onSuccessCallback?: () => void) => {
-  return useMutation<InitiateSignUpResponse, ApiError | AxiosError, InitiateSignUpPayload>({
-    mutationFn: (payload: InitiateSignUpPayload) => initiateSignUpAction(payload),
+  return useMutation<InitiateSignUpResponse, SerializedError, InitiateSignUpPayload>({
+    mutationFn: async (payload: InitiateSignUpPayload) => {
+      const result = await initiateSignUpAction(payload);
+
+      if (!result.success) {
+        throw result.error;
+      }
+      return result.data;
+    },
     onSuccess: () => {
       onSuccessCallback?.();
-    },
-    onError: (error, variables, context) => {
-      console.error('Error during initiateSignUp:', error, variables, context);
     },
   });
 };
@@ -64,8 +84,14 @@ export const useVerifyOtpMutation = () => {
   const router = useRouter();
   const login = useAuthStore((state) => state.login);
 
-  return useMutation<VerifyOtpCodeResponse, ApiError | AxiosError, VerifyOtpCodePayload>({
-    mutationFn: (payload: VerifyOtpCodePayload) => verifyOtpCodeAction(payload),
+  return useMutation<VerifyOtpCodeResponse, SerializedError, VerifyOtpCodePayload>({
+    mutationFn: async (payload: VerifyOtpCodePayload) => {
+      const result = await verifyOtpCodeAction(payload);
+      if (!result.success) {
+        throw result.error;
+      }
+      return result.data;
+    },
     onSuccess: (data) => {
       login(data.user);
       queryClient.invalidateQueries({ queryKey: ['user', 'me'] });
@@ -79,8 +105,14 @@ export const useVerifyOtpMutation = () => {
  * onSuccess 콜백을 통해 특정 UI 로직을 실행할 수 있다.
  */
 export const useSendOtpMutation = (onSuccessCallback?: () => void) => {
-  return useMutation<SendOtpResponse, ApiError | AxiosError, SendOtpPayload>({
-    mutationFn: (payload: SendOtpPayload) => sendOtpCodeAction(payload),
+  return useMutation<SendOtpResponse, SerializedError, SendOtpPayload>({
+    mutationFn: async (payload: SendOtpPayload) => {
+      const result = await sendOtpCodeAction(payload);
+      if (!result.success) {
+        throw result.error;
+      }
+      return result.data;
+    },
     onSuccess: () => {
       onSuccessCallback?.();
     },

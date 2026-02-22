@@ -3,8 +3,8 @@ package com.contentria.api.category.application
 import com.contentria.api.category.application.dto.CategoryInfo
 import com.contentria.api.category.domain.Category
 import com.contentria.api.category.domain.CategoryRepository
-import com.contentria.api.global.error.ContentriaException
-import com.contentria.api.global.error.ErrorCode
+import com.contentria.common.global.error.ContentriaException
+import com.contentria.common.global.error.ErrorCode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional

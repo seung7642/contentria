@@ -1,6 +1,6 @@
 package com.contentria.api.global.security
 
-import com.contentria.api.global.error.ErrorCode
+import com.contentria.common.global.error.ErrorCode
 import com.contentria.api.global.error.ErrorResponse
 import com.contentria.api.global.properties.AppProperties
 import com.fasterxml.jackson.databind.ObjectMapper

@@ -13,13 +13,13 @@ interface RecaptchaV2StepProps {
   onError: (errorMessage: string) => void;
 }
 
-const RecaptchaV2Step = ({
+export default function RecaptchaV2Step({
   isLoading,
   error,
   goToPreviousStep,
   onVerify,
   onError,
-}: RecaptchaV2StepProps) => {
+}: RecaptchaV2StepProps) {
   const recaptchaV2Ref = useRef<ReCAPTCHA>(null);
   const siteKeyV2 = process.env.NEXT_PUBLIC_RECAPTCHA_V2_CHECKBOX_SITE_KEY;
 
@@ -85,6 +85,4 @@ const RecaptchaV2Step = ({
       {error && <p className="mt-4 text-center text-sm text-red-600">{error}</p>}
     </>
   );
-};
-
-export default RecaptchaV2Step;
+}

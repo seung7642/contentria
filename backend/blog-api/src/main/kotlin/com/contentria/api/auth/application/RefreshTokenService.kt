@@ -2,8 +2,8 @@ package com.contentria.api.auth.application
 
 import com.contentria.api.auth.domain.RefreshToken
 import com.contentria.api.auth.domain.RefreshTokenRepository
-import com.contentria.api.global.error.ContentriaException
-import com.contentria.api.global.error.ErrorCode
+import com.contentria.common.global.error.ContentriaException
+import com.contentria.common.global.error.ErrorCode
 import com.contentria.api.global.properties.AppProperties
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service

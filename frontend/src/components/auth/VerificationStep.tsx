@@ -10,14 +10,14 @@ interface VerificationStepProps {
   onResendCode: () => void;
 }
 
-export const VerificationStep = ({
+export default function VerificationStep({
   email,
   verificationCode,
   isLoading,
   error,
   onCodeChange,
   onResendCode,
-}: VerificationStepProps) => {
+}: VerificationStepProps) {
   return (
     <>
       <div className="mt-4 pl-8 text-sm text-gray-600">
@@ -60,4 +60,4 @@ export const VerificationStep = ({
       </div>
     </>
   );
-};
+}

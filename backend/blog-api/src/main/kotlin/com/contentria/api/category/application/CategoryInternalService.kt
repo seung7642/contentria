@@ -6,9 +6,8 @@ import com.contentria.api.category.domain.Category
 import com.contentria.api.category.domain.CategoryRepository
 import com.contentria.api.category.domain.CategorySlugGenerator
 import com.contentria.api.category.domain.CategoryValidator
-import com.contentria.api.category.domain.query.CategoryWithCountView
-import com.contentria.api.global.error.ContentriaException
-import com.contentria.api.global.error.ErrorCode
+import com.contentria.common.global.error.ContentriaException
+import com.contentria.common.global.error.ErrorCode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional

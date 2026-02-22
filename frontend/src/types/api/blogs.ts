@@ -1,4 +1,4 @@
-import { OwnerResponse, UserSummaryResponse } from './user';
+import { OwnerResponse } from './user';
 import { CategoryResponse } from './category';
 
 export interface CategoryNode {

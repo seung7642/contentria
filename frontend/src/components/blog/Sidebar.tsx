@@ -16,6 +16,7 @@ export default function Sidebar({ blog, owner, categories }: SidebarProps) {
   const profileImageUrl =
     getHighResGoogleProfileImage(owner.profileImageUrl, 256) ?? '/images/default-profile.png';
   const blogDescription = blog.description ?? '블로그에 오신 것을 환영합니다.';
+  console.log('nickname' + JSON.stringify(owner));
 
   const categoryTree = buildCategoryTree(categories, blog.slug);
 
@@ -34,7 +35,7 @@ export default function Sidebar({ blog, owner, categories }: SidebarProps) {
             className="rounded-lg"
           />
         </div>
-        <h2 className="mb-2 text-lg">닉네임</h2>
+        <h2 className="mb-2 text-lg">{owner.nickname}</h2>
         <p className="text-center text-sm text-gray-600">{blogDescription}</p>
       </div>
 

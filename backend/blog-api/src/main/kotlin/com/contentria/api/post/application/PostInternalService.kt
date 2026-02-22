@@ -1,7 +1,7 @@
 package com.contentria.api.post.application
 
-import com.contentria.api.global.error.ContentriaException
-import com.contentria.api.global.error.ErrorCode
+import com.contentria.common.global.error.ContentriaException
+import com.contentria.common.global.error.ErrorCode
 import com.contentria.api.post.domain.Post
 import com.contentria.api.post.domain.PostRepository
 import com.contentria.api.post.domain.PostSlugGenerator

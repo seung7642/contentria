@@ -8,7 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { SignUpEmailStepFormData, signUpEmailStepSchema } from '@/lib/schemas/authSchemas';
 import { useSignUpFlow } from '@/hooks/useSignUpFlow';
 
-export const EmailStep = () => {
+export default function EmailStep() {
   const { formData, isLoading, error, submitEmailStep, startGoogleLogin } = useSignUpFlow();
   const {
     register,
@@ -80,4 +80,4 @@ export const EmailStep = () => {
       </div>
     </>
   );
-};
+}

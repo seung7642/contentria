@@ -2,17 +2,19 @@
 
 import { SignUpFlowProvider, useSignUpFlow } from '@/hooks/useSignUpFlow';
 import AuthFormCard from '../AuthFormCard';
-import { VerificationStep } from '../VerificationStep';
+import VerificationStep from '../VerificationStep';
 import RecaptchaV2Step from '../RecaptchaV2Step';
-import { PasswordStep } from './PasswordStep';
-import { EmailStep } from './EmailStep';
+import PasswordStep from './PasswordStep';
+import EmailStep from './EmailStep';
 
-const SignUpFlow = () => {
+function SignUpFlow() {
   const signUpFlow = useSignUpFlow();
 
-  const getTitle = () => (signUpFlow.step === 'verify_otp_code' ? 'Verify your email' : 'Sign up');
+  function getTitle() {
+    return signUpFlow.step === 'verify_otp_code' ? 'Verify your email' : 'Sign up';
+  }
 
-  const renderCurrentStep = () => {
+  function renderCurrentStep() {
     switch (signUpFlow.step) {
       case 'email':
         return <EmailStep />;
@@ -42,10 +44,10 @@ const SignUpFlow = () => {
       default:
         return null;
     }
-  };
+  }
 
   return <AuthFormCard title={getTitle()}>{renderCurrentStep()}</AuthFormCard>;
-};
+}
 
 export default function SignUpContainer() {
   return (
