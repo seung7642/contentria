@@ -20,7 +20,7 @@ const ProfileDropdown = ({ user, onClose, onLogout }: ProfileDropdownProps) => {
           </div>
           <div className="ml-3 min-w-0 text-left">
             <p className="truncate text-sm font-medium text-gray-800">
-              {user?.username || '사용자'}
+              {user?.nickname || '사용자'}
             </p>
             <p className="truncate text-xs text-gray-500">{user?.email || ''}</p>
           </div>

@@ -1,5 +1,6 @@
 'use server';
 
+import { PATHS } from '@/constants/paths';
 import apiServer from '@/lib/apiServer';
 import { Page } from '@/types/api/common';
 import {
@@ -11,6 +12,7 @@ import {
   UpdatePostRequest,
   UpdatePostResponse,
 } from '@/types/api/posts';
+import { revalidatePath } from 'next/cache';
 
 interface GetBlogPostsOptions {
   categorySlug?: string | null;
@@ -68,19 +70,33 @@ export async function getPostDetailByIdAction(postId: string): Promise<PostDetai
 export async function createNewPostAction(
   payload: CreateNewPostRequest
 ): Promise<CreateNewPostResponse> {
-  return await apiServer.post<CreateNewPostResponse>('/api/posts', payload, {
+  const response = await apiServer.post<CreateNewPostResponse>('/api/posts', payload, {
     requireAuth: true,
   });
+
+  revalidatePath('/dashboard/posts');
+
+  return response;
 }
 
 export async function updatePostAction(payload: UpdatePostRequest): Promise<UpdatePostResponse> {
-  return await apiServer.post<UpdatePostResponse>(`/api/posts/${payload.postId}`, payload, {
-    requireAuth: true,
-  });
+  const response = await apiServer.post<UpdatePostResponse>(
+    `/api/posts/${payload.postId}`,
+    payload,
+    {
+      requireAuth: true,
+    }
+  );
+
+  revalidatePath('/dashboard/posts');
+
+  return response;
 }
 
 export async function deletePostAction(postId: string): Promise<void> {
   await apiServer.delete(`/api/posts/${postId}`, {
     requireAuth: true,
   });
+
+  revalidatePath('/dashboard/posts');
 }

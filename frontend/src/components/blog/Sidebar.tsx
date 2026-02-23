@@ -52,7 +52,7 @@ export default function Sidebar({ blog, owner, categories }: SidebarProps) {
       )}
 
       {/* 아이콘 박스 */}
-      <div className="mt-auto border-t border-gray-200 pt-4">
+      {/* <div className="mt-auto border-t border-gray-200 pt-4">
         <div className="flex justify-around">
           <a
             href="https://github.com"
@@ -74,7 +74,7 @@ export default function Sidebar({ blog, owner, categories }: SidebarProps) {
             <Image src="/icons/rss.svg" alt="RSS Feed" width={24} height={24} />
           </a>
         </div>
-      </div>
+      </div> */}
     </aside>
   );
 }

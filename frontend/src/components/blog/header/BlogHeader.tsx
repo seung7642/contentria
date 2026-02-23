@@ -74,12 +74,12 @@ export default function BlogHeader({ blogTitle, blogSlug }: BlogHeaderProps) {
 
         {/* 우측 영역 */}
         <div className="flex items-center space-x-2 md:space-x-4">
-          <button
+          {/* <button
             onClick={openSubscribeModal}
             className="hidden rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:block"
           >
             구독하기
-          </button>
+          </button> */}
 
           {user ? (
             <div className="relative" ref={profileRef}>

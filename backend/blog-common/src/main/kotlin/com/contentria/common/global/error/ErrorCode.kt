@@ -41,6 +41,7 @@ enum class ErrorCode(
     DUPLICATE_BLOG_SLUG(HttpStatus.CONFLICT, "BL0000", "Blog slug already in use. Please choose a different one."),
     NOT_FOUND_BLOG(HttpStatus.NOT_FOUND, "BL0001", "Not found blog. Please contact support."),
     FORBIDDEN_ACCESS_BLOG(HttpStatus.FORBIDDEN, "BL0002", "You do not have permission to access this blog."),
+    NOT_ALLOWED_BLOG_NAME(HttpStatus.BAD_REQUEST, "BL0003", "Not allowed blog name. Please choose a different one."),
 
     // Post
     NOT_FOUND_POST(HttpStatus.NOT_FOUND, "PO0000", "Not found post. Please contact support."),

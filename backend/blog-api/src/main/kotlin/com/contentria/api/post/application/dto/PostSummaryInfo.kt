@@ -14,7 +14,7 @@ data class PostSummaryInfo(
     val metaDescription: String?,
     val status: PostStatus,
     val featuredImageUrl: String?,
-    val publishedAt: ZonedDateTime,
+    val publishedAt: ZonedDateTime?,
     val createdAt: ZonedDateTime,
     val updatedAt: ZonedDateTime,
     val likeCount: Int,
