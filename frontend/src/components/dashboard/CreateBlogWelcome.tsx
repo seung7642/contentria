@@ -6,6 +6,7 @@ import { AlertTriangle, Loader2 } from 'lucide-react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import z from 'zod';
 import InputWithAddon from '../common/InputWithAddon';
+import { useRouter } from 'next/navigation';
 
 const schema = z.object({
   slug: z
@@ -17,7 +18,7 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-const CreateBlogWelcome = () => {
+export default function CreateBlogWelcome() {
   const {
     register,
     handleSubmit,
@@ -26,10 +27,16 @@ const CreateBlogWelcome = () => {
     resolver: zodResolver(schema),
   });
 
+  const router = useRouter();
   const { mutate: createBlog, isPending, error } = useCreateBlogMutation();
 
   const onSubmit: SubmitHandler<FormValues> = (data) => {
-    createBlog(data);
+    try {
+      createBlog(data);
+      router.refresh(); // 블로그 생성 후 대시보드 새로고침
+    } catch (error) {
+      console.error('블로그 생성 실패:', error);
+    }
   };
 
   return (
@@ -91,6 +98,4 @@ const CreateBlogWelcome = () => {
       </div>
     </div>
   );
-};
-
-export default CreateBlogWelcome;
+}

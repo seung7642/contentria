@@ -13,7 +13,12 @@ import { userKeys } from '@/hooks/queries/keys';
 import { logoutAction } from '@/actions/auth';
 import { PATHS } from '@/constants/paths';
 
-export default function DashboardHeader() {
+interface DashboardHeaderProps {
+  blogSlug: string | null;
+}
+
+export default function DashboardHeader({ blogSlug }: DashboardHeaderProps) {
+  const isBlogLinkActive = blogSlug !== null;
   const { data: user } = useUserProfile();
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -75,7 +80,7 @@ export default function DashboardHeader() {
             Contentria
           </Link>
 
-          <div className={`relative ${isSearchVisible ? 'block' : 'hidden'} md:block`}>
+          {/* <div className={`relative ${isSearchVisible ? 'block' : 'hidden'} md:block`}>
             <div className="absolute inset-y-0 left-0 flex items-center pl-3">
               <Search size={18} className="text-gray-400" />
             </div>
@@ -84,7 +89,7 @@ export default function DashboardHeader() {
               placeholder="검색..."
               className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 md:w-64"
             />
-          </div>
+          </div> */}
 
           {!isSearchVisible && (
             <button
@@ -103,7 +108,8 @@ export default function DashboardHeader() {
         <div className="flex items-center space-x-2">
           {/* 블로그로 돌아가기 버튼 */}
           <Link
-            href="/"
+            href={blogSlug ? `/@${blogSlug}` : '/dashboard'}
+            target={isBlogLinkActive ? '_blank' : '_self'}
             className="mx-2 hidden items-center rounded-lg bg-white px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 md:flex"
           >
             <Home size={18} className="mr-2" />
@@ -111,7 +117,7 @@ export default function DashboardHeader() {
           </Link>
 
           {/* 알림 버튼 */}
-          <div className="relative" ref={notificationRef}>
+          {/* <div className="relative" ref={notificationRef}>
             <button
               onClick={() => setIsNotificationOpen(!isNotificationOpen)}
               className="relative rounded-full p-2 hover:bg-gray-100"
@@ -126,7 +132,7 @@ export default function DashboardHeader() {
             </button>
 
             {isNotificationOpen && <NotificationDropdown notifications={notifications} />}
-          </div>
+          </div> */}
 
           {/* 프로필 드롭다운 */}
           <div className="relative" ref={profileRef}>

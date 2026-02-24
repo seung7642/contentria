@@ -13,6 +13,8 @@ interface DashboardSidebarProps {
 }
 
 export default function DashboardSidebar({ blogInfos }: DashboardSidebarProps) {
+  const firstBlogSlug = blogInfos && blogInfos.length > 0 ? blogInfos[0].slug : null;
+  const isBlogLinkActive = firstBlogSlug !== null;
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -86,7 +88,8 @@ export default function DashboardSidebar({ blogInfos }: DashboardSidebarProps) {
 
         <div className="p-4">
           <Link
-            href="/"
+            href={firstBlogSlug ? `/@${firstBlogSlug}` : '/dashboard'}
+            target={isBlogLinkActive ? '_blank' : '_self'}
             className="flex items-center rounded-lg px-3 py-2 text-gray-600 hover:bg-gray-100"
           >
             <Home size={20} className="mr-3" />

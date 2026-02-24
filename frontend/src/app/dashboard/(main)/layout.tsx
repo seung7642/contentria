@@ -8,16 +8,18 @@ import { getMyBlogAction } from '@/actions/blog';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = await getUserProfileAction();
-  const blogInfos = user ? await getMyBlogAction() : null;
+  const blogInfos = await getMyBlogAction();
+  const hasBlogs = blogInfos && blogInfos.length > 0;
+  const firstBlogSlug = hasBlogs ? blogInfos[0].slug : null;
 
-  if (!user || !blogInfos) {
-    console.log('No user or blog found, rendering nothing.');
+  if (!user) {
+    console.log('No user found, rendering nothing.');
     return null;
   }
 
   return (
     <div className="grid h-screen grid-rows-[auto_1fr_auto] bg-gray-50">
-      <DashboardHeader />
+      <DashboardHeader blogSlug={firstBlogSlug} />
 
       <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-6 p-4 md:grid-cols-[auto_1fr]">
         <DashboardSidebar blogInfos={blogInfos} />
