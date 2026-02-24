@@ -17,6 +17,38 @@ class UserService(
     private val roleRepository: RoleRepository,
     private val nicknameGenerator: NicknameGenerator
 ) {
+    @Transactional(readOnly = true)
+    fun getActiveUserInfo(userId: UUID): UserInfo {
+        val user = userRepository.findActiveById(userId)
+            ?: throw ContentriaException(ErrorCode.USER_NOT_FOUND)
+
+        if (!user.status.isActive()) {
+            throw ContentriaException(ErrorCode.USER_NOT_ACTIVATED)
+        }
+
+        return UserInfo.from(user)
+    }
+
+    @Transactional(readOnly = true)
+    fun getActiveUserInfo(email: String): UserInfo {
+        val user = userRepository.findByEmail(email)
+            ?: throw ContentriaException(ErrorCode.USER_NOT_FOUND)
+
+        if (!user.status.isActive()) {
+            throw ContentriaException(ErrorCode.USER_NOT_ACTIVATED)
+        }
+
+        return UserInfo.from(user)
+    }
+
+    @Transactional(readOnly = true)
+    fun getUserInfo(email: String): UserInfo {
+        val user = userRepository.findByEmail(email)
+            ?: throw ContentriaException(ErrorCode.USER_NOT_FOUND)
+
+        return UserInfo.from(user)
+    }
+
     @Transactional
     fun upsertSocialUser(email: String, name: String, pictureUrl: String?): UserInfo {
         return userRepository.findByEmail(email)?.let { existingUser ->
@@ -94,34 +126,12 @@ class UserService(
         return UserInfo.from(user)
     }
 
-    @Transactional(readOnly = true)
-    fun getActiveUserInfo(userId: UUID): UserInfo {
+    @Transactional
+    fun updateNickname(userId: UUID, newNickname: String): UserInfo {
         val user = userRepository.findActiveById(userId)
             ?: throw ContentriaException(ErrorCode.USER_NOT_FOUND)
 
-        if (!user.status.isActive()) {
-            throw ContentriaException(ErrorCode.USER_NOT_ACTIVATED)
-        }
-
-        return UserInfo.from(user)
-    }
-
-    @Transactional(readOnly = true)
-    fun getActiveUserInfo(email: String): UserInfo {
-        val user = userRepository.findByEmail(email)
-            ?: throw ContentriaException(ErrorCode.USER_NOT_FOUND)
-
-        if (!user.status.isActive()) {
-            throw ContentriaException(ErrorCode.USER_NOT_ACTIVATED)
-        }
-
-        return UserInfo.from(user)
-    }
-
-    @Transactional(readOnly = true)
-    fun getUserInfo(email: String): UserInfo {
-        val user = userRepository.findByEmail(email)
-            ?: throw ContentriaException(ErrorCode.USER_NOT_FOUND)
+        user.nickname = newNickname
 
         return UserInfo.from(user)
     }

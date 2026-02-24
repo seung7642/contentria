@@ -1,9 +1,9 @@
 'use server';
 
 import apiServer from '@/lib/apiServer';
-import { ProfileFormValues } from '@/lib/schemas/userSchemas';
 import { User } from '@/types/api/user';
 import { revalidatePath } from 'next/cache';
+import { UpdateUserProfileRequest, updateUserProfileRequestSchema } from './schemas';
 
 export async function getUserProfileAction(
   shouldRedirectOn401: boolean = true
@@ -18,14 +18,22 @@ export async function getUserProfileAction(
   }
 }
 
-export async function updateUserProfileAction(data: ProfileFormValues) {
+export async function updateUserProfileAction(formData: unknown): Promise<User> {
+  const validationResult = updateUserProfileRequestSchema.safeParse(formData);
+  if (!validationResult.success) {
+    console.error('Profile update validation failed:', validationResult.error);
+    throw new Error('Invalid profile data. Please check your input and try again.');
+  }
+  const validatedPayload: UpdateUserProfileRequest = validationResult.data;
+
   try {
-    await apiServer.put('/api/users/me', {
-      body: JSON.stringify(data),
+    const response = await apiServer.put<User>('/api/users/me', validatedPayload, {
       requireAuth: true,
     });
 
     revalidatePath('/dashboard/settings');
+
+    return response;
   } catch (error) {
     console.error('Update profile error:', error);
     throw error;
