@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blog-api-deployment
+  labels:
+    app: blog-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: blog-api
+  template:
+    metadata:
+      labels:
+        app: blog-api
+    spec:
+      containers:
+        - name: blog-api
+          image: contentria/blog-api:1.0
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+          # ----------------------------------------------------
+          # 1. 일반 환경변수
+          # ----------------------------------------------------
+          # Database
+          - name: DATABASE_URL
+            value: "jdbc:postgresql://postgresql.databases.svc.cluster.local:5432/postgres"
+
+          # Mailgun
+          - name: MAILGUN_HOST
+            value: "smtp.mailgun.org"
+          - name: MAILGUN_PORT
+            value: "587"
+          - name: MAILGUN_DOMAIN
+            value: "contentria.com"
+
+          # ----------------------------------------------------
+          # 2. Secret 참조 환경변수
+          # ----------------------------------------------------
+          - name: DATABASE_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: blog-api-secret
+                key: db-username
+          - name: DATABASE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: blog-api-secret
+                key: db-password
+          - name: SPRING_OAUTH_GOOGLE_CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                name: blog-api-secret
+                key: oauth-google-client-id
+          - name: SPRING_OAUTH_GOOGLE_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: blog-api-secret
+                key: oauth-google-client-secret
+          - name: GOOGLE_RECAPTCHA_V2_SECRET_KEY
+            valueFrom:
+              secretKeyRef:
+                name: blog-api-secret
+                key: google-recaptcha-secret-v2
+          - name: GOOGLE_RECAPTCHA_V3_SECRET_KEY
+            valueFrom:
+              secretKeyRef:
+                name: blog-api-secret
+                key: google-recaptcha-secret-v3
+          - name: JWT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: blog-api-secret
+                key: jwt-secret
+          - name: MAILGUN_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: blog-api-secret
+                key: mailgun-username
+          - name: MAILGUN_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: blog-api-secret
+                key: mailgun-password
