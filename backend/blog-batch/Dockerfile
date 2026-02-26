@@ -101,5 +101,5 @@ USER spring
 #      Specifies how the Batch application starts. Spring Batch jobs can be
 #      triggered via command line arguments passed into CMD [].
 # =============================================================================
-ENTRYPOINT ["java", "org.springframework.boot.loader.JarLauncher"]
+ENTRYPOINT ["java", "org.springframework.boot.loader.launch.JarLauncher"]
 CMD []

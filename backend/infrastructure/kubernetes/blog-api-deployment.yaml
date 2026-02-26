@@ -26,7 +26,7 @@ spec:
           # ----------------------------------------------------
           # Database
           - name: DATABASE_URL
-            value: "jdbc:postgresql://postgresql.databases.svc.cluster.local:5432/postgres"
+            value: "jdbc:postgresql://postgresql.databases.svc.cluster.local:5432/postgres?currentSchema=contentria"
 
           # Mailgun
           - name: MAILGUN_HOST

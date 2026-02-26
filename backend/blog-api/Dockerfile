@@ -115,5 +115,5 @@ EXPOSE 8080
 # 2.4. Define Application Entrypoint and Default Command
 #      Specifies how the Spring Boot application is started within the container.
 # =============================================================================
-ENTRYPOINT ["java", "org.springframework.boot.loader.JarLauncher"]
+ENTRYPOINT ["java", "org.springframework.boot.loader.launch.JarLauncher"]
 CMD []
