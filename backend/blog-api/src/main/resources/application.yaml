@@ -135,6 +135,5 @@ app:
 common:
   mail:
     mailgun:
-      api-key: ${MAILGUN_API_KEY}
       domain: ${MAILGUN_DOMAIN}
       from-address: "Contentria <no-reply@${MAILGUN_DOMAIN}>"

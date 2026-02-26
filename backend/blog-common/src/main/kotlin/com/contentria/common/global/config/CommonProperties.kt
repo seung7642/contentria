@@ -18,7 +18,6 @@ data class MailProperties(
 
 @Validated
 data class MailgunProperties(
-    @field:NotBlank val apiKey: String,
     @field:NotBlank val domain: String,
     @field:NotBlank val fromAddress: String,
 )
