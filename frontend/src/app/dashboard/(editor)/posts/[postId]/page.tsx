@@ -1,24 +1,20 @@
 import { getMyBlogAction } from '@/actions/blog';
 import { getCategoriesAction } from '@/actions/category';
-import { getPostDetailAction, getPostDetailByIdAction } from '@/actions/post';
+import { getPostDetailByIdAction } from '@/actions/post';
 import { PostEditorClient } from '@/components/dashboard/editor/PostEditorClient';
 import { Metadata } from 'next';
-
-export async function generateMetadata({
-  params,
-}: {
-  params: { postId: string };
-}): Promise<Metadata> {
-  return {
-    title: '게시글 수정',
-    description: '작성한 게시글을 수정합니다.',
-  };
-}
 
 interface EditPostPageProps {
   params: Promise<{
     postId: string;
   }>;
+}
+
+export async function generateMetadata({ params }: EditPostPageProps): Promise<Metadata> {
+  return {
+    title: '게시글 수정',
+    description: '작성한 게시글을 수정합니다.',
+  };
 }
 
 export default async function EditPostPage({ params }: EditPostPageProps) {

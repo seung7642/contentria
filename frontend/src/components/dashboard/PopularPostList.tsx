@@ -1,12 +1,12 @@
-import { PopularPost } from '@/services/dashboardService';
+import { PopularPostResponse } from '@/types/api/dashboard';
 import Link from 'next/link';
 import React from 'react';
 
 interface PopularPostListProps {
-  posts: PopularPost[];
+  posts: PopularPostResponse[];
 }
 
-const PopularPostList = ({ posts }: PopularPostListProps) => {
+export default function PopularPostList({ posts }: PopularPostListProps) {
   if (!posts || posts.length === 0) {
     return (
       <div className="flex h-[200px] items-center justify-center rounded-lg bg-gray-50">
@@ -40,6 +40,4 @@ const PopularPostList = ({ posts }: PopularPostListProps) => {
       ))}
     </div>
   );
-};
-
-export default PopularPostList;
+}

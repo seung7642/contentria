@@ -1,36 +1,24 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# frontend
 
-## Getting Started
+## Docker 이미지 빌드 및 배포
 
-First, run the development server:
+다음은 로컬에서 Docker 이미지를 빌드하고 원격 리눅스 서버로 배포하는 단계입니다:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. 프론트엔드 프로젝트 루트 디렉토리로 이동: `cd <frontend-project-root>`
+2. Docker 이미지 빌드: `docker build -t contentria/blog-frontend:1.0 .`
+3. Docker 이미지 저장: `docker save -o blog-frontend.tar contentria/blog-frontend:1.0`
+4. 원격 서버로 이미지 파일 전송: `scp blog-frontend.tar <username>@<remote-host>:~`
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+> note:
+>
+> - 로컬 환경이 Apple Silicon(M1, M2 등) Mac인 경우, 리눅스 서버(x86_64)와의 아키텍처 불일치로 인한 `exec format error`를 방지하기 위해 2번 단계에서 `docker buildx build --platform linux/amd64 -t contentria/blog-frontend:1.0 .` 명령어를 사용해야 합니다.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+다음은 원격 리눅스 서버에서 Docker 이미지를 로드하는 단계입니다:
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+> - 로컬 환경이 Apple Silicon(M1, M2 등) Mac인 경우, 리눅스 서버(x86_64)와의 아키텍처 불일치로 인한 `exec format error`를 방지하기 위해 2번 단계에서 `docker buildx build --platform linux/amd64 -t contentria/blog-frontend:1.0 .` 명령어를 사용해야 합니다.
 
-## Learn More
+다음은 원격 리눅스 서버에서 Docker 이미지를 로드하는 단계입니다:
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+1. 원격 서버에 SSH로 접속: `ssh <username>@<remote-host>`
+2. 원격 서버에서 Docker 이미지 로드: `sudo ctr -n k8s.io images import blog-frontend.tar`
+3. 이미지 로드 확인: `sudo crictl images`

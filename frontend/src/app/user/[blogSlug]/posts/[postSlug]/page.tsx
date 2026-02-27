@@ -4,7 +4,7 @@ import remarkGfm from 'remark-gfm';
 import rehypeSlug from 'rehype-slug';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypeShiftHeading from 'rehype-shift-heading';
-import SyntaxHighlighter from 'react-syntax-highlighter';
+import SyntaxHighlighter from 'react-syntax-highlighter/dist/esm/default-highlight';
 import { dracula } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import React from 'react';
 import { Heading } from '@/types/common';
@@ -17,6 +17,8 @@ import { notFound } from 'next/navigation';
 import GithubSlugger from 'github-slugger';
 import { toString } from 'mdast-util-to-string';
 import AnalyticsTracker from '@/components/analytics/AnalyticsTracker';
+
+export const dynamic = 'force-dynamic';
 
 interface PostDetailPageProps {
   params: Promise<{
@@ -73,47 +75,6 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
 
   const { post, author, blogId } = postDetailResponse;
   const { contentMarkdown } = post;
-  const markdown = `
-# 이것은 H1 제목입니다
-
-이것은 GFM (GitHub Flavored Markdown) 테이블입니다:
-
-| Feature | Support |
-| --- | --- |
-| Tables | ✔ |
-| Task lists | ✔ |
-| Strikethrough | ✔ |
-
-## 이것은 H2 제목입니다 (ID가 생성됩니다)
-
-- [x] 완료된 작업
-- [ ] 미완료 작업
-
-~~취소선~~
-<script>alert('XSS 공격!');</script>
-### 코드 하이라이팅 (H3)
-
-\`rehype-highlight\`가 이 코드 블록을 처리합니다.
-
-\`\`\`javascript
-// 언어를 명시했습니다 (javascript)
-function greet(name) {
-  console.log(\`Hello, \${name}!\`);
-}
-greet('World');
-\`\`\`
-
-\`\`\`
-// 언어를 명시하지 않으면 자동 감지합니다.
-<div class="test">
-  <p>HTML code</p>
-</div>
-\`\`\`
-
----
-
-[링크](https://www.google.com)
-  `;
 
   const headings = await getHeadingsFromMarkdown(contentMarkdown);
   console.log('Extracted headings:', headings);
