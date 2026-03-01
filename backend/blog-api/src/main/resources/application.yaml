@@ -2,6 +2,7 @@ server:
   port: 8080
   servlet:
     context-path: /api
+  forward-headers-strategy: native
 
 logging:
   level:
@@ -43,10 +44,10 @@ spring:
     oauth2.client.registration.google:
       client-id: ${SPRING_OAUTH_GOOGLE_CLIENT_ID}
       client-secret: ${SPRING_OAUTH_GOOGLE_CLIENT_SECRET}
-      scope:
-        - openid
-        - email
-        - profile
+      # The presence of the `openid` scope indicates that OpenID Connect 1.0 should be used.
+      # This instructs Spring Security to use OIDC-specific components (such as `OidcUserService`) during request processing.
+      # Without this scope, Spring Security will use OAuth2-specific components (such as `DefaultOAuth2UserService`) instead.
+      scope: openid,profile,email
       redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
   cache:
     jcache:

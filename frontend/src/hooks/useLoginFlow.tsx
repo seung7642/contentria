@@ -131,7 +131,7 @@ function useLoginFlowLogic() {
   }
 
   function startGoogleLogin() {
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    const baseUrl = process.env.NEXT_PUBLIC_EXTERNAL_API_BASE_URL;
     if (baseUrl) {
       window.location.href = `${baseUrl}/api/oauth2/authorization/google`;
     } else {

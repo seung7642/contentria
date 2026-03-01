@@ -47,7 +47,7 @@ export default function VerificationStep({
         />
         {error && <p className="text-center text-sm text-red-600">{error}</p>}
 
-        <div className="mt-4 text-center">
+        {/* <div className="mt-4 text-center">
           <button
             type="button"
             onClick={onResendCode}
@@ -56,7 +56,7 @@ export default function VerificationStep({
           >
             {isLoading ? 'Sending...' : "Didn't receive a code? Resend"}
           </button>
-        </div>
+        </div> */}
       </div>
     </>
   );

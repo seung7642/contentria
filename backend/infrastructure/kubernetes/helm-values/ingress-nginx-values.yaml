@@ -1,0 +1,7 @@
+controller:
+  service:
+    type: NodePort
+    nodePorts:
+      http: 30080  # 외부 접속용 HTTP 포트 (원하시는 포트로 변경 가능)
+      https: 30443 # 외부 접속용 HTTPS 포트
+  watchIngressWithoutClass: true

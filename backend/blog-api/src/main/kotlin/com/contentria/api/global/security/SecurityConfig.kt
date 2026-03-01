@@ -53,6 +53,10 @@ class SecurityConfig(
             }
             .oauth2Login { oauth2 ->
                 oauth2.successHandler(customAuthenticationSuccessHandler)
+                oauth2.failureHandler { request, response, exception ->
+                    val frontendUrl = "https://www.contentria.com/login?error=${exception.message}"
+                    response.sendRedirect(frontendUrl)
+                }
             }
             .logout { logout ->
                 logout

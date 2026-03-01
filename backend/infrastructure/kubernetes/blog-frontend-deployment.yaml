@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blog-frontend-deployment
+  labels:
+    app: blog-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: blog-frontend
+  template:
+    metadata:
+      labels:
+        app: blog-frontend
+    spec:
+      containers:
+        - name: blog-frontend
+          image: contentria/blog-frontend:1.0
+          imagePullPolicy: Never # 로컬 이미지 사용
+          ports:
+            - containerPort: 3000
+          env:
+            # ----------------------------------------------------
+            # 외부 노출이 허용된 공개 환경변수 (Secret 불필요)
+            # ----------------------------------------------------
+            - name: NEXT_PUBLIC_GOOGLE_CLIENT_ID
+              value: "339313876009-k4csh005somk8059gecvl4l2eu057hss.apps.googleusercontent.com"
+
+            - name: NEXT_PUBLIC_RECAPTCHA_V3_SITE_KEY
+              value: "6LdfOawrAAAAAEt7MDy5aFYKWQoFlK_XgRWzgxz1"
+
+            - name: NEXT_PUBLIC_RECAPTCHA_V2_CHECKBOX_SITE_KEY
+              value: "6LfqOawrAAAAAPfRduHFSGReBuwGmANSv0H6hU6S"
+
+            # ----------------------------------------------------
+            # K8S 내부 통신 및 라우팅을 위한 URL
+            # ----------------------------------------------------
+            # Next.js(Server Action) -> Spring Boot (K8S 내부망 통신)
+            - name: NEXT_PUBLIC_API_BASE_URL
+              value: "http://blog-api-service.default.svc.cluster.local:8080"
+            - name: NEXT_PUBLIC_EXTERNAL_API_BASE_URL
+              value: "https://www.contentria.com/api"
+
+            # 사용자 브라우저 -> Google -> Spring Boot (외부 인터넷망 통신)
+            - name: NEXT_PUBLIC_GOOGLE_REDIRECT_URI
+              value: "https://www.contentria.com/api/auth/google/callback"
