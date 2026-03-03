@@ -1,9 +1,9 @@
 'use client';
 
 import BackButton from '@/components/common/BackButton';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
-import { ShieldCheck } from 'lucide-react';
+import { Loader2, ShieldCheck } from 'lucide-react';
 
 interface RecaptchaV2StepProps {
   isLoading: boolean;
@@ -23,9 +23,16 @@ export default function RecaptchaV2Step({
   const recaptchaV2Ref = useRef<ReCAPTCHA>(null);
   const siteKeyV2 = process.env.NEXT_PUBLIC_RECAPTCHA_V2_CHECKBOX_SITE_KEY;
 
+  const [isResetting, setIsResetting] = useState(false);
+
   useEffect(() => {
     if (error) {
-      recaptchaV2Ref.current?.reset();
+      setIsResetting(true);
+      const timer = setTimeout(() => {
+        recaptchaV2Ref.current?.reset();
+        setIsResetting(false);
+      }, 300);
+      return () => clearTimeout(timer);
     }
   }, [error]);
 
@@ -66,23 +73,32 @@ export default function RecaptchaV2Step({
         </p>
       </div>
       <div className="mt-8 flex justify-center">
-        {isLoading ? (
-          <div className="text-center">
-            <div className="h-20 w-20 animate-spin rounded-full border-4 border-solid border-indigo-600 border-t-transparent"></div>
-            <p className="mt-2 text-sm text-gray-600">Verifying...</p>
-          </div>
-        ) : (
-          <ReCAPTCHA
-            ref={recaptchaV2Ref}
-            sitekey={siteKeyV2}
-            onChange={handleV2TokenSubmit}
-            onErrored={handleOnError}
-            onExpired={handleOnExpired}
-            hl="ko"
-          />
-        )}
+        <ReCAPTCHA
+          ref={recaptchaV2Ref}
+          sitekey={siteKeyV2}
+          onChange={handleV2TokenSubmit}
+          onErrored={handleOnError}
+          onExpired={handleOnExpired}
+          hl="ko"
+        />
       </div>
-      {error && <p className="mt-4 text-center text-sm text-red-600">{error}</p>}
+
+      <div className="relative mt-4 h-6 w-full">
+        {/* 로딩 인디케이터 */}
+        <div
+          className={`absolute inset-0 flex items-center justify-center space-x-2 text-indigo-600 transition-all duration-300 ${isLoading ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-1 opacity-0'} `}
+        >
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span className="text-sm font-medium">인증 처리 중...</span>
+        </div>
+
+        {/* 에러 메시지 */}
+        <div
+          className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${error && !isResetting && !isLoading ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-1 opacity-0'} `}
+        >
+          <p className="text-sm text-red-600">{error}</p>
+        </div>
+      </div>
     </>
   );
 }
