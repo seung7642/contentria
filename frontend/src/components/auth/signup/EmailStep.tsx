@@ -1,5 +1,5 @@
-import Divider from '@/components/common/Divider';
-import InputField from '@/components/common/InputField';
+'use client';
+
 import React from 'react';
 import GoogleLoginButton from '../GoogleLoginButton';
 import Link from 'next/link';
@@ -7,6 +7,11 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SignUpEmailStepFormData, signUpEmailStepSchema } from '@/lib/schemas/authSchemas';
 import { useSignUpFlow } from '@/hooks/useSignUpFlow';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
 export default function EmailStep() {
   const { formData, isLoading, error, submitEmailStep, startGoogleLogin } = useSignUpFlow();
@@ -30,50 +35,89 @@ export default function EmailStep() {
 
   return (
     <>
-      <form className="mt-2 space-y-6" onSubmit={handleSubmit(onSubmit)}>
-        <InputField
-          id="name"
-          label="Name"
-          type="text"
-          placeholder="Your name"
-          autoComplete="name"
-          isRounded="both"
-          {...register('name')}
-          errorMessage={errors.name?.message}
-        />
-        <InputField
-          id="email"
-          label="Email"
-          type="email"
-          placeholder="Your email address"
-          autoComplete="email"
-          isRounded="both"
-          {...register('email')}
-          errorMessage={errors.email?.message}
-        />
-        {error && <p className="text-center text-sm text-red-600">{error.message}</p>}
-        <div>
-          <button
-            type="submit"
+      <form className="mt-8 flex flex-col" onSubmit={handleSubmit(onSubmit)}>
+        <div className="space-y-2">
+          <Label htmlFor="name">Name</Label>
+          <Input
+            id="name"
+            type="text"
+            placeholder="Your name"
+            autoComplete="name"
             disabled={isLoading}
-            className="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
-          >
-            {isLoading ? 'Processing...' : 'Continue'}
-          </button>
+            {...register('name')}
+            className={errors.name ? 'border-destructive focus-visible:ring-destructive' : ''}
+            data-bwignore="true"
+            data-1p-ignore="true"
+            data-lpignore="true"
+          />
         </div>
+
+        <div className="relative mt-1.5 h-5 w-full">
+          <div
+            className={`absolute inset-0 transition-all duration-300 ${errors.name ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-1 opacity-0'}`}
+          >
+            <p className="text-sm font-medium text-destructive">{errors.name?.message}</p>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="Your email address"
+            autoComplete="email"
+            disabled={isLoading}
+            {...register('email')}
+            className={errors.email ? 'border-destructive focus-visible:ring-destructive' : ''}
+            data-bwignore="true"
+            data-1p-ignore="true"
+            data-lpignore="true"
+          />
+        </div>
+
+        <div className="relative mt-1.5 h-5 w-full">
+          <div
+            className={`absolute inset-0 transition-all duration-300 ${errors.email || error ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-1 opacity-0'}`}
+          >
+            <p className="text-sm font-medium text-destructive">
+              {errors.email?.message || error?.message}
+            </p>
+          </div>
+        </div>
+
+        <Button
+          type="submit"
+          className="mt-4 w-full bg-indigo-600 hover:bg-indigo-500"
+          disabled={isLoading}
+        >
+          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {isLoading ? 'Processing...' : 'Continue'}
+        </Button>
       </form>
 
       <div className="mt-6">
-        <Divider text="OR" />
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <Separator className="w-full" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-2 text-muted-foreground">Or</span>
+          </div>
+        </div>
+
         <div className="mt-6">
           <GoogleLoginButton onClick={startGoogleLogin} />
         </div>
       </div>
 
       <div className="mt-4 text-center">
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-muted-foreground">
           Already have an account?{' '}
-          <Link href="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
+          <Link
+            href="/login"
+            className="font-medium text-indigo-600 hover:text-indigo-500 hover:underline"
+          >
             Sign in
           </Link>
         </p>

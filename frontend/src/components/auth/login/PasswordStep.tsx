@@ -1,14 +1,18 @@
+'use client';
+
 import BackButton from '@/components/common/BackButton';
-import Divider from '@/components/common/Divider';
-import InputField from '@/components/common/InputField';
 import { PasswordStepFormData, passwordStepSchema } from '@/lib/schemas/authSchemas';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Mail } from 'lucide-react';
-import Link from 'next/link';
+import { Eye, EyeOff, Loader2, Mail } from 'lucide-react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { useLoginFlow } from '@/hooks/useLoginFlow';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { useState } from 'react';
 
-const PasswordStep = () => {
+export default function PasswordStep() {
   const {
     formData,
     isLoading,
@@ -18,6 +22,8 @@ const PasswordStep = () => {
     submitPasswordLogin,
     requestOtpLogin,
   } = useLoginFlow();
+
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -32,65 +38,111 @@ const PasswordStep = () => {
     submitPasswordLogin(data);
   };
 
+  const displayError =
+    errors.password?.message || (loginAttemptType === 'password' ? error?.message : null);
+
   return (
     <>
       <BackButton onClick={goToPreviousStep} />
-      <form className="mt-8" onSubmit={handleSubmit(processPasswordSubmit)}>
-        <InputField
-          id="email-display"
-          type="email"
-          placeholder="Your email address"
-          disabled
-          value={formData.email}
-        />
 
-        <div className="mb-1 mt-6 flex items-center justify-between">
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-            Password
-          </label>
-          <Link
-            href="/forgot-password"
-            className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
-          >
-            Forgot your password?
-          </Link>
+      <form className="mt-8 flex flex-col" onSubmit={handleSubmit(processPasswordSubmit)}>
+        <div className="space-y-2">
+          <Label htmlFor="email-display">Email</Label>
+          <Input
+            id="email-display"
+            type="email"
+            disabled
+            value={formData.email}
+            className="bg-muted"
+            data-bwignore="true"
+            data-1p-ignore="true"
+            data-lpignore="true"
+          />
         </div>
-        <InputField
-          id="password"
-          type="password"
-          placeholder="Enter your password"
-          autoComplete="current-password"
-          {...register('password')}
-          errorMessage={errors.password?.message}
-        />
-        {error && <p className="mt-4 text-center text-sm text-red-600">{error.message}</p>}
-        <div className="mt-8">
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
-          >
-            {isLoading && loginAttemptType === 'password' ? 'Signing in...' : 'Sign in'}
-          </button>
+
+        <div className="mt-5 space-y-2">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password">Password</Label>
+            {/* <Link
+              href="/forgot-password"
+              className="text-sm font-medium text-indigo-600 hover:text-indigo-500 hover:underline"
+            >
+              Forgot your password?
+            </Link> */}
+          </div>
+
+          <div className="relative">
+            <Input
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Enter your password"
+              autoComplete="current-password"
+              disabled={isLoading}
+              {...register('password')}
+              className={`pr-10 ${displayError ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+              data-bwignore="true"
+              data-1p-ignore="true"
+              data-lpignore="true"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              disabled={isLoading}
+              className="absolute right-0 top-0 flex h-full w-10 items-center justify-center text-muted-foreground hover:text-foreground focus:outline-none disabled:opacity-50"
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
         </div>
+
+        <div className="relative mt-1.5 h-5 w-full">
+          <div
+            className={`absolute inset-0 transition-all duration-300 ${displayError ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-1 opacity-0'}`}
+          >
+            <p className="text-sm font-medium text-destructive">{displayError}</p>
+          </div>
+        </div>
+
+        <Button
+          type="submit"
+          className="mt-4 w-full bg-indigo-600 hover:bg-indigo-500"
+          disabled={isLoading}
+        >
+          {isLoading && loginAttemptType === 'password' && (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          )}
+          {isLoading && loginAttemptType === 'password' ? 'Signing in...' : 'Sign in'}
+        </Button>
       </form>
 
       <div className="mt-6">
-        <Divider text={'OR'} />
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <Separator className="w-full" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-2 text-muted-foreground">Or</span>
+          </div>
+        </div>
+
         <div className="mt-6">
-          <button
+          <Button
             type="button"
+            variant="outline"
+            className="w-full bg-white text-black hover:bg-gray-100"
             onClick={requestOtpLogin}
             disabled={isLoading}
-            className="group relative flex w-full items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
           >
-            <Mail className="mr-2 h-4 w-4" />
+            {isLoading && loginAttemptType === 'otp' ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Mail className="mr-2 h-4 w-4" />
+            )}
             {isLoading && loginAttemptType === 'otp' ? 'Sending...' : 'Email sign-in code'}
-          </button>
+          </Button>
         </div>
       </div>
     </>
   );
-};
-
-export default PasswordStep;
+}

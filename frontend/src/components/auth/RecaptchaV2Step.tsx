@@ -56,7 +56,7 @@ export default function RecaptchaV2Step({
       <>
         <BackButton onClick={goToPreviousStep} />
         <p className="mt-4 text-center text-red-500">
-          reCAPTCHA v2 is not configured. Please contack support.
+          reCAPTCHA v2 is not configured. Please contact support.
         </p>
       </>
     );
@@ -64,7 +64,8 @@ export default function RecaptchaV2Step({
 
   return (
     <>
-      <BackButton onClick={goToPreviousStep} />
+      <BackButton onClick={goToPreviousStep} disabled={isLoading || isResetting} />
+
       <div className="mt-4 text-center">
         <ShieldCheck className="mx-auto h-12 w-12 text-gray-400" />
         <h2 className="mt-2 text-lg font-medium text-gray-900">Security Check</h2>
@@ -72,15 +73,20 @@ export default function RecaptchaV2Step({
           Before continuing, we need to be sure you are human.
         </p>
       </div>
-      <div className="mt-8 flex justify-center">
-        <ReCAPTCHA
-          ref={recaptchaV2Ref}
-          sitekey={siteKeyV2}
-          onChange={handleV2TokenSubmit}
-          onErrored={handleOnError}
-          onExpired={handleOnExpired}
-          hl="ko"
-        />
+
+      <div className="mt-8 flex flex-col items-center justify-center">
+        <div
+          className={`flex min-h-[78px] items-center justify-center transition-all duration-300 ease-in-out ${isResetting ? 'scale-95 opacity-0' : 'scale-100 opacity-100'} ${isLoading ? 'pointer-events-none opacity-50' : ''}`}
+        >
+          <ReCAPTCHA
+            ref={recaptchaV2Ref}
+            sitekey={siteKeyV2}
+            onChange={handleV2TokenSubmit}
+            onErrored={handleOnError}
+            onExpired={handleOnExpired}
+            hl="ko"
+          />
+        </div>
       </div>
 
       <div className="relative mt-4 h-6 w-full">
