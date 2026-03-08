@@ -9,9 +9,9 @@ export const metadata: Metadata = {
 
 export default function HomeLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="grid min-h-screen grid-rows-[auto_1fr_auto] bg-white antialiased">
+    <div className="grid min-h-[100dvh] grid-rows-[auto_1fr_auto] bg-white antialiased">
       <HomeHeader />
-      <main className="w-full overflow-auto">{children}</main>
+      <main className="w-full">{children}</main>
       <Footer />
     </div>
   );

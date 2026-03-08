@@ -3,15 +3,16 @@ import HeroSection from '@/components/home/HeroSection';
 
 export default function HomePage() {
   return (
-    <div className="flex min-h-screen flex-col bg-white">
+    <div className="bg-white">
       <HeroSection />
 
-      <section className="bg-white py-20 md:py-24">
+      <section className="bg-white py-16 md:py-24">
         <div className="container mx-auto max-w-6xl px-6">
           <h2 className="mb-16 text-center text-3xl font-bold text-gray-800 md:text-4xl">
             쉽고 강력한 <span className="text-indigo-600">나만의 블로그</span>
           </h2>
-          <div className="grid grid-cols-1 gap-10 md:grid-cols-3">
+
+          <div className="grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-3 md:gap-10">
             <div className="transform rounded-xl border border-gray-100 p-8 text-center shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg">
               <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
                 <Edit3 size={32} strokeWidth={1.5} />

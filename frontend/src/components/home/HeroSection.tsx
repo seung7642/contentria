@@ -36,11 +36,11 @@ export default function HeroSection() {
   };
 
   return (
-    <section className="bg-gradient-to-br from-indigo-50 via-white to-white py-24 text-center md:py-32">
+    <section className="bg-gradient-to-br from-indigo-50 via-white to-white py-16 text-center md:py-32">
       <div className="container mx-auto max-w-4xl px-6">
         <h1
           ref={h1Ref}
-          className="mb-5 text-4xl font-extrabold tracking-tight text-gray-900 md:text-6xl"
+          className="mb-6 break-keep text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl md:text-5xl lg:text-6xl"
         >
           <MemoizedTypeAnimation
             sequence={[
@@ -53,13 +53,14 @@ export default function HeroSection() {
             cursor={true}
             repeat={0}
             speed={20}
-            className="inline-block whitespace-nowrap"
+            className="inline-block"
           />
         </h1>
         <p className="mb-10 text-lg text-gray-600 md:text-xl">
           당신의 이야기가 곧 당신의 브랜드가 됩니다.
         </p>
-        <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+
+        <div className="mx-auto flex max-w-sm flex-col items-center justify-center gap-3 sm:max-w-none sm:flex-row sm:gap-4">
           {user ? (
             <>
               <Link
@@ -68,12 +69,12 @@ export default function HeroSection() {
               >
                 대시보드로 이동
               </Link>
-              <Link
+              {/* <Link
                 href={PATHS.NEW_POST}
                 className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-8 py-3.5 text-base font-semibold text-gray-700 shadow-sm transition duration-300 ease-in-out hover:bg-gray-50"
               >
                 새 글 작성
-              </Link>
+              </Link> */}
             </>
           ) : (
             <Link
