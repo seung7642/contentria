@@ -24,7 +24,7 @@ interface PostCardProps {
   post: PostSummary;
 }
 
-const PostCard = ({ blogSlug, post }: PostCardProps) => {
+export default function PostCard({ blogSlug, post }: PostCardProps) {
   const postUrl = `/@${blogSlug}/${post.slug}`;
 
   return (
@@ -35,7 +35,7 @@ const PostCard = ({ blogSlug, post }: PostCardProps) => {
       <Link href={postUrl} key={post.id} className="group block">
         <div className="flex items-start justify-between space-x-6">
           {/* 좌측: 제목 및 요약 */}
-          <div className="flex flex-1 flex-col space-y-2">
+          <div className="flex min-w-0 flex-1 flex-col space-y-2">
             <h2 className="text-xl font-bold text-gray-900 group-hover:text-indigo-600">
               {post.title}
             </h2>
@@ -77,6 +77,4 @@ const PostCard = ({ blogSlug, post }: PostCardProps) => {
       </div>
     </div>
   );
-};
-
-export default PostCard;
+}

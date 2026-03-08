@@ -11,20 +11,31 @@ export default function TableOfContents({ headings }: TableOfContentsProps) {
   const [activeId, setActiveId] = useState<string>('');
 
   useEffect(() => {
+    let ticking = false; // 💡 성능 최적화를 위한 플래그
+
     const handleScroll = () => {
-      let currentId = '';
-      for (const heading of headings) {
-        const element = document.getElementById(heading.id);
-        if (element && element.getBoundingClientRect().top < 150) {
-          currentId = heading.id;
-        } else {
-          break;
-        }
+      // 💡 requestAnimationFrame을 사용하여 브라우저 렌더링 주기에 맞춰 한 번만 실행되도록 제어
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          let currentId = '';
+          for (const heading of headings) {
+            const element = document.getElementById(heading.id);
+            // 상단 기준 150px 위치를 지났는지 체크
+            if (element && element.getBoundingClientRect().top < 150) {
+              currentId = heading.id;
+            } else {
+              // 화면 아래에 있는 헤딩을 만나면 즉시 루프 종료 (성능 이점)
+              break;
+            }
+          }
+          setActiveId(currentId);
+          ticking = false;
+        });
+        ticking = true;
       }
-      setActiveId(currentId);
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll(); // 초기 로드 시 실행
 
     return () => window.removeEventListener('scroll', handleScroll);

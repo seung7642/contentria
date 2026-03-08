@@ -17,6 +17,7 @@ import { notFound } from 'next/navigation';
 import GithubSlugger from 'github-slugger';
 import { toString } from 'mdast-util-to-string';
 import AnalyticsTracker from '@/components/analytics/AnalyticsTracker';
+import { Separator } from '@/components/ui/separator';
 
 export const dynamic = 'force-dynamic';
 
@@ -83,19 +84,24 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
     <>
       <AnalyticsTracker blogId={blogId} postId={post.id} />
 
-      <div className="relative mx-auto flex w-full max-w-7xl justify-center">
-        <div className="w-full max-w-4xl">
-          <div className="mb-8">
-            <h1 className="mb-4 text-4xl font-bold text-gray-900">{post.title}</h1>
+      <div className="flex w-full flex-col items-start xl:flex-row xl:gap-12">
+        <div className="w-full min-w-0 max-w-4xl flex-1">
+          <header className="mb-8 lg:mb-10">
+            <h1 className="mb-6 break-keep text-3xl font-extrabold leading-tight text-gray-900 sm:text-4xl lg:text-5xl">
+              {post.title}
+            </h1>
             <div className="flex items-center space-x-3 text-sm text-gray-500">
-              <span className="font-semibold text-gray-800">{author.username}</span>
+              <span className="font-semibold text-indigo-600">{author.username}</span>
               <span>•</span>
-              <span>{new Date(post.publishedAt).toLocaleDateString('ko-KR')}</span>
+              <time dateTime={post.publishedAt}>
+                {new Date(post.publishedAt).toLocaleDateString('ko-KR')}
+              </time>
             </div>
-          </div>
-          <hr className="mb-8" />
+          </header>
 
-          <article className="prose max-w-none flex-shrink-0">
+          <Separator className="mb-8 lg:mb-10" />
+
+          <article className="prose prose-indigo max-w-none lg:prose-lg prose-headings:scroll-mt-24">
             <Markdown
               remarkPlugins={[remarkGfm]}
               rehypePlugins={[
@@ -127,9 +133,10 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
             </Markdown>
           </article>
         </div>
-        <div className="ml-8 hidden w-64 flex-shrink-0 lg:block">
+
+        <aside className="hidden w-64 shrink-0 xl:sticky xl:top-24 xl:block xl:max-h-[calc(100vh-8rem)] xl:overflow-y-auto">
           <TableOfContents headings={headings} />
-        </div>
+        </aside>
       </div>
     </>
   );

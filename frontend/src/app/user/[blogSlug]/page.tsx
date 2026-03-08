@@ -63,19 +63,25 @@ export default async function BlogPage({ params, searchParams }: UserBlogPagePro
     <>
       <AnalyticsTracker blogId={layoutData.blog.id} />
 
-      <div className="mx-auto w-full max-w-4xl px-4 py-6">
-        <h1 className="mb-8 text-3xl font-bold">최신 글</h1>
-        <div className="space-y-4">
+      <div className="w-full max-w-4xl">
+        {category ? (
+          <h1 className="mb-8 text-2xl font-bold sm:text-3xl">'{category}' 카테고리 글</h1>
+        ) : (
+          <h1 className="mb-8 text-2xl font-bold sm:text-3xl">최신 글</h1>
+        )}
+
+        <div className="flex flex-col divide-y divide-gray-100">
           {initialPosts.length > 0 ? (
             initialPosts.map((post) => <PostCard key={post.id} blogSlug={blogSlug} post={post} />)
           ) : (
-            <div className="flex h-40 items-center justify-center rounded-lg border-2 border-dashed border-gray-300">
-              <p className="text-center text-gray-500">아직 작성된 글이 없습니다.</p>
+            <div className="flex h-40 items-center justify-center rounded-lg border-2 border-dashed border-gray-200 bg-gray-50">
+              <p className="text-sm text-gray-500">아직 작성된 글이 없습니다.</p>
             </div>
           )}
         </div>
 
-        <div className="mt-10">
+        <div className="mt-12">
+          {/* 💡 CustomPagination 컴포넌트 내부도 Shadcn의 <Pagination> 컴포넌트로 마이그레이션 하시면 더욱 좋습니다! */}
           <CustomPagination totalPages={totalPages} />
         </div>
       </div>
