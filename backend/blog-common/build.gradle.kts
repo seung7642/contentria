@@ -22,9 +22,6 @@ dependencies {
     // UUID
     implementation("com.github.f4b6a3:uuid-creator:6.1.0")
 
-    // 메일 전송
-    implementation("com.mailgun:mailgun-java:1.1.6")
-
     // Slug 생성
     implementation("com.github.slugify:slugify:3.0.7")
 

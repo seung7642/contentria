@@ -6,6 +6,8 @@ plugins {
     kotlin("plugin.jpa")
 }
 
+val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
+
 group = "com.contentria"
 version = "0.0.1-SNAPSHOT"
 
@@ -21,7 +23,8 @@ dependencies {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        val javaVersion = libs.findVersion("java").get().toString()
+        languageVersion = JavaLanguageVersion.of(javaVersion)
     }
 }
 
