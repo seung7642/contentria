@@ -6,15 +6,16 @@ dependencies {
     implementation(project(":blog-common"))
 
     // Spring Boot 기본
-    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.springframework.boot:spring-boot-starter-cache")
-    implementation("org.springframework.boot:spring-boot-starter-aop")
+    implementation("org.springframework.boot:spring-boot-starter-aspectj")
     implementation("org.springframework.boot:spring-boot-starter-mail")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
+    implementation("org.springframework.boot:spring-boot-starter-jackson")
 
     // Security & JWT
     implementation("org.springframework.boot:spring-boot-starter-security")
@@ -24,7 +25,7 @@ dependencies {
     implementation("com.auth0:java-jwt:4.4.0")
 
     // OAuth2 클라이언트
-    implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+    implementation("org.springframework.boot:spring-boot-starter-security-oauth2-client")
 
     // HTTP 클라이언트
     implementation("org.springframework.boot:spring-boot-starter-webflux")
@@ -40,7 +41,7 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql") // 프로덕션용
 
     // Rate Limiting
-    implementation("com.giffing.bucket4j.spring.boot.starter:bucket4j-spring-boot-starter:0.13.0")
+    implementation("com.giffing.bucket4j.spring.boot.starter:bucket4j-spring-boot-starter:0.14.0")
     implementation("com.github.ben-manes.caffeine:jcache:3.2.2")
 
     // Markdown parser

@@ -1,6 +1,5 @@
 package com.contentria.common.global.aop
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.aspectj.lang.ProceedingJoinPoint
 import org.aspectj.lang.annotation.Around
@@ -8,6 +7,7 @@ import org.aspectj.lang.annotation.Aspect
 import org.aspectj.lang.reflect.MethodSignature
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
+import tools.jackson.databind.ObjectMapper
 
 private val log = KotlinLogging.logger {}
 

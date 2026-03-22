@@ -11,11 +11,11 @@ import java.time.Duration
 class WebClientConfig {
 
     @Bean
-    fun webClient(builder: WebClient.Builder): WebClient {
+    fun webClient(): WebClient {
         val httpClient = HttpClient.create()
             .responseTimeout(Duration.ofSeconds(10))
 
-        return builder
+        return WebClient.builder()
             .clientConnector(ReactorClientHttpConnector(httpClient))
             .codecs { configurer -> configurer.defaultCodecs().maxInMemorySize(2 * 1024 * 1024) }
             .build()

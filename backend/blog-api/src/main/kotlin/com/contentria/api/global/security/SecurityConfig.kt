@@ -3,7 +3,6 @@ package com.contentria.api.global.security
 import com.contentria.common.global.error.ErrorCode
 import com.contentria.api.global.error.ErrorResponse
 import com.contentria.api.global.properties.AppProperties
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.context.annotation.Bean
@@ -24,6 +23,7 @@ import org.springframework.security.web.authentication.logout.LogoutHandler
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
+import tools.jackson.databind.ObjectMapper
 
 private val log = KotlinLogging.logger {}
 

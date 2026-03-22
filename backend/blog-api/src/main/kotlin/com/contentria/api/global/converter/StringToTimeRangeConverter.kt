@@ -5,7 +5,7 @@ import org.springframework.core.convert.converter.Converter
 import org.springframework.stereotype.Component
 
 @Component
-class StringToTimeRangeConverter : Converter<String, TimeRange> {
+class StringToTimeRangeConverter : Converter<String, TimeRange?> {
 
     override fun convert(source: String): TimeRange? {
         return TimeRange.entries.find { it.value.equals(source, ignoreCase = true) }
