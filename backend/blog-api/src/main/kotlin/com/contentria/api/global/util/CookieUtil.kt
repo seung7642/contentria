@@ -42,7 +42,7 @@ class CookieUtil(
     ): Cookie {
         return Cookie(name, value).apply {
             isHttpOnly = isHttpOnlyCookie
-//            secure = request.isSecure // HTTPS 에서만 쿠키 전송
+            secure = request.isSecure
             this.path = path
             this.maxAge = maxAge
         }
