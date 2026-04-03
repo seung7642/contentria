@@ -57,9 +57,6 @@ enum class ErrorCode(
     EMPTY_MARKDOWN_CONTENT(HttpStatus.BAD_REQUEST, "MD0001", "Markdown content cannot be empty."),
     MARKDOWN_CONTENT_TOO_LARGE(HttpStatus.BAD_REQUEST, "MD0002", "Markdown content exceeds the maximum allowed length."),
 
-    // Cache
-    NOT_FOUND_CACHE(HttpStatus.NOT_FOUND, "CA0000", "Not found cache. Please contact support."),
-
     // Mail
     MAIL_SENDING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MA0000", "Failed to send email. Please try again later.")
     ;
