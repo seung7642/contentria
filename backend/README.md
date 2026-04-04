@@ -30,6 +30,12 @@ backend/
 
 The primary REST API module. Contains all business domains and serves HTTP requests.
 
+Database schema files are located at `blog-api/src/main/resources/db/`:
+- `schema.sql` — Full DDL (tables, indexes, constraints). Serves as the source of truth for the current database structure. Not auto-executed by Spring Boot (only `resources/schema.sql` is).
+- `data.sql` — Seed data (e.g., default roles).
+
+> **Note**: The project uses `ddl-auto: validate`, so Hibernate only validates that entities match the existing schema. All schema changes must be applied manually via these SQL files.
+
 ### blog-batch
 
 Runs scheduled batch jobs. Currently contains:
