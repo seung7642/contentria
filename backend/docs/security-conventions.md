@@ -145,12 +145,23 @@ fun updatePost(@PathVariable postId: UUID, @RequestBody request: UpdatePostReque
 
 ## Password Handling
 
+### Design Context
+
+This project supports **two authentication paths**:
+
+1. **Email + Password login**: User sets a password during signup and uses it to log in.
+2. **Email OTP login**: User signs up without a password and authenticates via a one-time verification code sent to their email.
+
+Because of this, `password` is **intentionally nullable** in both `LoginRequest` and `Credential`. A null password is not a bug — it means the user registered via OTP-only flow.
+
+### Rules
+
 - Always use `PasswordEncoder` (BCrypt) for hashing
 - Never log raw or hashed passwords
-- Check for null passwords before calling `passwordEncoder.matches()` — passing null may throw or behave unpredictably depending on the encoder implementation
+- **Check for null before calling `passwordEncoder.matches()`** — passing null may throw or behave unpredictably depending on the encoder implementation. This also prevents OTP-only users (who have no password) from accidentally passing through password-based authentication.
 
 ```kotlin
-// Safe null check before matching
+// Safe: null password is rejected before reaching the encoder
 fun authenticate(email: String, rawPassword: String?): Credential {
     val credential = credentialRepository.findByEmail(email)
         ?: throw ContentriaException(ErrorCode.INVALID_CREDENTIALS)
