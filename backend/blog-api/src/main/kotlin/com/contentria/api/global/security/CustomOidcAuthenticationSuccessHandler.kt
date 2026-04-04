@@ -56,8 +56,8 @@ class CustomOidcAuthenticationSuccessHandler(
         try {
             val loginInfo = authFacade.loginWithSocial(socialLoginCommand)
 
-            response.addCookie(cookieUtil.createAccessTokenCookie(loginInfo.accessToken, request))
-            response.addCookie(cookieUtil.createRefreshTokenCookie(loginInfo.refreshToken, request))
+            response.addCookie(cookieUtil.createAccessTokenCookie(loginInfo.accessToken))
+            response.addCookie(cookieUtil.createRefreshTokenCookie(loginInfo.refreshToken))
 
             clearAuthenticationAttributes(request) // Clear temporary session data used by Spring Security
             SecurityContextHolder.clearContext()
@@ -69,8 +69,8 @@ class CustomOidcAuthenticationSuccessHandler(
         } catch (e: Exception) {
             log.error(e) { "OIDC post-authentication processing failed: provider=${socialLoginCommand.provider}" }
 
-            response.addCookie(cookieUtil.clearAccessTokenCookie(request))
-            response.addCookie(cookieUtil.clearRefreshTokenCookie(request))
+            response.addCookie(cookieUtil.clearAccessTokenCookie())
+            response.addCookie(cookieUtil.clearRefreshTokenCookie())
 
             if (e is ContentriaException) {
                 throw e

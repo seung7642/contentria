@@ -33,8 +33,8 @@ class AuthController(
     ): ResponseEntity<RefreshTokenResponse> {
         val newTokens = authFacade.refreshTokens(refreshTokenValue)
 
-        response.addCookie(cookieUtil.createAccessTokenCookie(newTokens.accessToken, request))
-        response.addCookie(cookieUtil.createRefreshTokenCookie(newTokens.refreshToken, request))
+        response.addCookie(cookieUtil.createAccessTokenCookie(newTokens.accessToken))
+        response.addCookie(cookieUtil.createRefreshTokenCookie(newTokens.refreshToken))
         return ResponseEntity.ok(
             RefreshTokenResponse(
                 accessToken = newTokens.accessToken,
@@ -55,8 +55,8 @@ class AuthController(
         val command = request.toCommand(clientIp)
         val result = authFacade.login(command)
 
-        httpResponse.addCookie(cookieUtil.createAccessTokenCookie(result.accessToken, httpRequest))
-        httpResponse.addCookie(cookieUtil.createRefreshTokenCookie(result.refreshToken, httpRequest))
+        httpResponse.addCookie(cookieUtil.createAccessTokenCookie(result.accessToken))
+        httpResponse.addCookie(cookieUtil.createRefreshTokenCookie(result.refreshToken))
 
         return ResponseEntity.ok(LoginResponse.from(result.user, result.accessToken, result.refreshToken))
     }
@@ -82,8 +82,8 @@ class AuthController(
     ): ResponseEntity<VerifyCodeResponse> {
         val verifyCodeInfo = authFacade.verifyCode(request.toCommand())
 
-        httpResponse.addCookie(cookieUtil.createAccessTokenCookie(verifyCodeInfo.accessToken, httpRequest))
-        httpResponse.addCookie(cookieUtil.createRefreshTokenCookie(verifyCodeInfo.refreshToken, httpRequest))
+        httpResponse.addCookie(cookieUtil.createAccessTokenCookie(verifyCodeInfo.accessToken))
+        httpResponse.addCookie(cookieUtil.createRefreshTokenCookie(verifyCodeInfo.refreshToken))
 
         return ResponseEntity.ok(VerifyCodeResponse.from(verifyCodeInfo))
     }

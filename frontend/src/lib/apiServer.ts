@@ -6,6 +6,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+const COOKIE_SECURE = process.env.COOKIE_SECURE === 'true';
 
 type FetchOptions = RequestInit & {
   requireAuth?: boolean; // 인증 필요 여부 (기본값: true)
@@ -128,6 +129,7 @@ async function refreshTokens(
   try {
     cookieStore.set('accessToken', newAccessToken, {
       httpOnly: true,
+      secure: COOKIE_SECURE,
       path: '/',
       maxAge: 15 * 60, // 15 minutes
       sameSite: 'lax',
@@ -136,6 +138,7 @@ async function refreshTokens(
     if (newRefreshToken) {
       cookieStore.set('refreshToken', newRefreshToken, {
         httpOnly: true,
+        secure: COOKIE_SECURE,
         path: '/',
         maxAge: 7 * 24 * 60 * 60, // 7 days
         sameSite: 'lax',

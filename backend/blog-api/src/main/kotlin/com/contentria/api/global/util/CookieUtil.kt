@@ -2,7 +2,6 @@ package com.contentria.api.global.util
 
 import com.contentria.api.global.properties.AppProperties
 import jakarta.servlet.http.Cookie
-import jakarta.servlet.http.HttpServletRequest
 import org.springframework.stereotype.Component
 
 @Component
@@ -16,20 +15,20 @@ class CookieUtil(
     private val accessTokenMaxAge: Int get() = appProperties.auth.jwt.accessTokenExpiration.toSeconds().toInt()
     private val refreshTokenMaxAge: Int get() = appProperties.auth.jwt.refreshTokenExpiration.toSeconds().toInt()
 
-    fun createAccessTokenCookie(tokenValue: String, request: HttpServletRequest): Cookie {
-        return createCookie(accessTokenCookieName, tokenValue, accessTokenPath, accessTokenMaxAge, request, true)
+    fun createAccessTokenCookie(tokenValue: String): Cookie {
+        return createCookie(accessTokenCookieName, tokenValue, accessTokenPath, accessTokenMaxAge, true)
     }
 
-    fun createRefreshTokenCookie(tokenValue: String, request: HttpServletRequest): Cookie {
-        return createCookie(refreshTokenCookieName, tokenValue, refreshTokenPath, refreshTokenMaxAge, request, true)
+    fun createRefreshTokenCookie(tokenValue: String): Cookie {
+        return createCookie(refreshTokenCookieName, tokenValue, refreshTokenPath, refreshTokenMaxAge, true)
     }
 
-    fun clearAccessTokenCookie(request: HttpServletRequest): Cookie {
-        return createCookie(accessTokenCookieName, null, accessTokenPath, 0, request, true)
+    fun clearAccessTokenCookie(): Cookie {
+        return createCookie(accessTokenCookieName, null, accessTokenPath, 0, true)
     }
 
-    fun clearRefreshTokenCookie(request: HttpServletRequest): Cookie {
-        return createCookie(refreshTokenCookieName, null, refreshTokenPath, 0, request, true)
+    fun clearRefreshTokenCookie(): Cookie {
+        return createCookie(refreshTokenCookieName, null, refreshTokenPath, 0, true)
     }
 
     private fun createCookie(
@@ -37,12 +36,11 @@ class CookieUtil(
         value: String?,
         path: String,
         maxAge: Int,
-        request: HttpServletRequest,
         isHttpOnlyCookie: Boolean
     ): Cookie {
         return Cookie(name, value).apply {
             isHttpOnly = isHttpOnlyCookie
-            secure = request.isSecure
+            secure = appProperties.auth.cookie.secure
             this.path = path
             this.maxAge = maxAge
             setAttribute("SameSite", "Lax")

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PATHS } from './constants/paths';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+const COOKIE_SECURE = process.env.COOKIE_SECURE === 'true';
 
 export async function middleware(request: NextRequest) {
   console.log('[Middleware] executed for path:', request.nextUrl.pathname);
@@ -101,12 +102,14 @@ function redirectToLogin(request: NextRequest, fromPath: string) {
 function setAuthCookies(response: NextResponse, accessToken: string, refreshToken: string) {
   response.cookies.set('accessToken', accessToken, {
     httpOnly: true,
+    secure: COOKIE_SECURE,
     path: '/',
     maxAge: 15 * 60, // 15 minutes
     sameSite: 'lax',
   });
   response.cookies.set('refreshToken', refreshToken, {
     httpOnly: true,
+    secure: COOKIE_SECURE,
     path: '/',
     maxAge: 7 * 24 * 60 * 60, // 7 days
     sameSite: 'lax',

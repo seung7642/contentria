@@ -36,7 +36,8 @@ data class CookieProperties(
     val accessTokenName: String,
     val refreshTokenName: String,
     val accessTokenPath: String,
-    val refreshTokenPath: String
+    val refreshTokenPath: String,
+    val secure: Boolean = true
 )
 
 @Validated

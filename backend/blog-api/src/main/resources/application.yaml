@@ -106,6 +106,7 @@ app:
       refresh-token-name: "refreshToken"
       access-token-path: "/"
       refresh-token-path: "/"
+      secure: ${COOKIE_SECURE:false}
     oidc:
       success-redirect-url: http://localhost:3000/login/callback
     verification-code:

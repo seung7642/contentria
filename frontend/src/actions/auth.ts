@@ -15,6 +15,8 @@ import { ApiError } from '@/types/api/errors';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
+const COOKIE_SECURE = process.env.COOKIE_SECURE === 'true';
+
 export interface SerializedError {
   name: string;
   message: string;
@@ -99,6 +101,7 @@ export async function verifyOtpCodeAction(
 
       cookieStore.set('accessToken', data.accessToken, {
         httpOnly: true,
+        secure: COOKIE_SECURE,
         path: '/',
         maxAge: 15 * 60, // 15 minutes
         sameSite: 'lax',
@@ -106,6 +109,7 @@ export async function verifyOtpCodeAction(
 
       cookieStore.set('refreshToken', data.refreshToken, {
         httpOnly: true,
+        secure: COOKIE_SECURE,
         path: '/',
         maxAge: 7 * 24 * 60 * 60, // 7 days
         sameSite: 'lax',
@@ -157,6 +161,7 @@ export async function loginWithPasswordAction(
 
       cookieStore.set('accessToken', data.accessToken, {
         httpOnly: true,
+        secure: COOKIE_SECURE,
         path: '/',
         maxAge: 15 * 60, // 15 minutes
         sameSite: 'lax',
@@ -164,6 +169,7 @@ export async function loginWithPasswordAction(
 
       cookieStore.set('refreshToken', data.refreshToken, {
         httpOnly: true,
+        secure: COOKIE_SECURE,
         path: '/',
         maxAge: 7 * 24 * 60 * 60, // 7 days
         sameSite: 'lax',
