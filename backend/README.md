@@ -80,6 +80,10 @@ PostFacade
 └── PostInternalService.createPost()
 ```
 
+**Why Facade?**
+- **Prevents circular dependencies** between bounded contexts. Services only know their own domain; cross-domain orchestration is lifted to the Facade layer. Without this, `PostService` ↔ `CategoryService` mutual dependencies become inevitable.
+- **Single transaction boundary** for operations spanning multiple domains.
+
 **Conventions:**
 - `*Facade` classes own the `@Transactional` boundary for write operations
 - `*Service` classes contain single-domain logic
@@ -120,8 +124,6 @@ Client Request
 | `blog` | Blog CRUD (slug validation, sample content creation) |
 | `post` | Post CRUD (markdown content, slug generation, draft/published status) |
 | `category` | Category management (hierarchical, drag-and-drop sync, max 2 levels) |
-| `comment` | Comment system |
-| `notification` | Notification system |
 | `analytics` | Visit logging, daily statistics aggregation |
 
 ## Developer Conventions
