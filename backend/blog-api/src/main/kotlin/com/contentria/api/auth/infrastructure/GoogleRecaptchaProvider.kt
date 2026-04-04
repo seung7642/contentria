@@ -58,7 +58,7 @@ class GoogleRecaptchaProvider(
 
         val score = response.score ?: 0.0
         if (score < threshold) {
-            log.info { "reCAPTCHA score too low. Score: $score, Threshold: $threshold" }
+            log.warn { "reCAPTCHA score below threshold: score=$score, threshold=$threshold" }
             throw ContentriaException(ErrorCode.RECAPTCHA_VERIFICATION_FAILED)
         }
     }

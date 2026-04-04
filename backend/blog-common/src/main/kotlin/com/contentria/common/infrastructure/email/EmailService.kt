@@ -58,9 +58,9 @@ class EmailService(
             helper.addInline("logoImage", logoResource)
 
             mailSender.send(message)
-            log.info { "Successfully sent email to $to" }
+            log.debug { "Email sent successfully" }
         } catch (e: Exception) {
-            log.error(e) { "Failed to send email to $to: ${e.message}" }
+            log.error(e) { "Failed to send email" }
             throw ContentriaException(ErrorCode.MAIL_SENDING_FAILED)
         }
     }

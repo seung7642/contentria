@@ -59,7 +59,7 @@ class PostController(
         @AuthenticationPrincipal userDetails: AuthUserDetails,
         @Valid @RequestBody request: CreateNewPostRequest
     ): ResponseEntity<CreateNewPostResponse> {
-        log.info { "Creating new post for userId=${userDetails.userId}, request=$request" }
+        log.debug { "Creating post: userId=${userDetails.userId}, blogId=${request.blogId}" }
         val createNewPostInfo = postFacade.createNewPost(userDetails.userId, request.toCommand())
         return ResponseEntity.ok(CreateNewPostResponse.from(createNewPostInfo))
     }
@@ -70,7 +70,7 @@ class PostController(
         @PathVariable postId: UUID,
         @Valid @RequestBody request: UpdatePostRequest
     ): ResponseEntity<UpdatePostResponse> {
-        log.info { "Updating post with postId=$postId for userId=${userDetails.userId}, request=$request" }
+        log.debug { "Updating post: postId=$postId, userId=${userDetails.userId}" }
         val updatePostInfo = postFacade.updatePost(userDetails.userId, request.toCommand())
         return ResponseEntity.ok(UpdatePostResponse.from(updatePostInfo))
     }
@@ -80,7 +80,7 @@ class PostController(
         @AuthenticationPrincipal userDetails: AuthUserDetails,
         @PathVariable postId: UUID
     ): ResponseEntity<Void> {
-        log.info { "Deleting post with postId=$postId for userId=${userDetails.userId}" }
+        log.debug { "Deleting post: postId=$postId, userId=${userDetails.userId}" }
         postFacade.deletePost(userDetails.userId, postId)
         return ResponseEntity.noContent().build()
     }

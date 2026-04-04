@@ -25,7 +25,7 @@ class MailVerificationProvider(
         val cache = getCacheOrThrow()
 
         if (cache.get(email) != null) {
-            log.warn { "Verification code requested too frequently for $email" }
+            log.warn { "Verification code requested too frequently" }
             throw ContentriaException(ErrorCode.TOO_MANY_REQUESTS)
         }
 
@@ -35,7 +35,7 @@ class MailVerificationProvider(
 
         cache.put(email, VerificationCodeCacheDto(code, email, name))
 
-        log.info { "Verification code sent to $email" }
+        log.debug { "Verification code sent successfully" }
     }
 
     private fun generateRandomCode(): String {
@@ -48,17 +48,17 @@ class MailVerificationProvider(
         val cachedData = cache.get(email, VerificationCodeCacheDto::class.java)
 
         if (cachedData == null) {
-            log.warn { "Verification failed: Code expired or not found for $email" }
+            log.warn { "Verification failed: code expired or not found" }
             throw ContentriaException(ErrorCode.INVALID_VERIFICATION_CODE)
         }
 
         if (cachedData.code != code) {
-            log.warn { "Verification failed: Invalid code for $email" }
+            log.warn { "Verification failed: invalid code" }
             throw ContentriaException(ErrorCode.INVALID_VERIFICATION_CODE)
         }
 
         cache.evict(email)
-        log.info { "Verification successful for $email" }
+        log.debug { "Verification successful" }
     }
 
     private fun getCacheOrThrow(): Cache {

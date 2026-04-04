@@ -104,7 +104,7 @@ class PostFacade(
             status = command.status
         )
 
-        log.info { "Created new post: ${savedPost.id}" }
+        log.info { "Post created: postId=${savedPost.id}, blogId=${command.blogId}, userId=$userId" }
         return CreateNewPostInfo.from(savedPost)
     }
 
@@ -126,7 +126,7 @@ class PostFacade(
             status = command.status
         )
 
-        log.info { "Updated post: ${updatedPost.id}" }
+        log.info { "Post updated: postId=${updatedPost.id}, blogId=${command.blogId}, userId=$userId" }
         return UpdatePostInfo.from(updatedPost)
     }
 

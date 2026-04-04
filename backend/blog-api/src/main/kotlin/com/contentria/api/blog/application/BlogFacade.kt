@@ -55,7 +55,7 @@ class BlogFacade(
 
         postService.createSamplePosts(userId, savedBlogInfo.blogId, createdCategoryIds, sampleContents)
 
-        log.info { "Created blog with samples. email:${user.email}, slug:${savedBlogInfo.slug}" }
+        log.info { "Blog created with samples: blogId=${savedBlogInfo.blogId}, userId=$userId" }
 
         return savedBlogInfo
     }

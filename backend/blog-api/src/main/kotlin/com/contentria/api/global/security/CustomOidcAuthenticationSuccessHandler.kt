@@ -34,7 +34,7 @@ class CustomOidcAuthenticationSuccessHandler(
         response: HttpServletResponse,
         authentication: Authentication
     ) {
-        log.info { "OIDC authentication success handler started." }
+        log.debug { "OIDC authentication success handler started" }
 
         val oidcUser = authentication.principal as? OidcUser
             ?: run {
@@ -65,9 +65,9 @@ class CustomOidcAuthenticationSuccessHandler(
 
             redirectStrategy.sendRedirect(request, response, frontendRedirectUrl)
 
-            log.info { "OIDC authentication success handler ended." }
+            log.debug { "OIDC authentication success handler completed" }
         } catch (e: Exception) {
-            log.error(e) { "Error during post-authentication processing for user: ${socialLoginCommand.email}" }
+            log.error(e) { "OIDC post-authentication processing failed: provider=${socialLoginCommand.provider}" }
 
             response.addCookie(cookieUtil.clearAccessTokenCookie(request))
             response.addCookie(cookieUtil.clearRefreshTokenCookie(request))

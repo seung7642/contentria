@@ -33,7 +33,7 @@ class ApiLogAspect(
             "[]"
         }
 
-        log.info { "===> [START] Method: $methodName, Args: $params" }
+        log.debug { "[API START] $methodName args=$params" }
 
         var result: Any? = null
 
@@ -42,14 +42,12 @@ class ApiLogAspect(
             return result
         } finally {
             val responseLog = if (result is ResponseEntity<*>) {
-                val status = result.statusCode
-                val body = result.body
-                "Status: $status, Body: ${body?.let { toJson(it) } ?: "null" }"
+                "status=${result.statusCode}"
             } else {
-                "Return: ${result?.let { toJson(it) } ?: "null" }"
+                "returned=${result != null}"
             }
 
-            log.info { "===> [END] Method: $methodName, Result: $result" }
+            log.debug { "[API END] $methodName $responseLog" }
         }
     }
 

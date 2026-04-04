@@ -67,12 +67,12 @@ class UserService(
             }
 
             if (updated) {
-                log.info { "Updated social user profile: $email" }
+                log.debug { "Social user profile updated: userId=${existingUser.id}" }
             }
 
             UserInfo.from(existingUser)
         } ?: run {
-            log.info { "Creating new social user: $email" }
+            log.info { "New social user created" }
             val newUser = User.createSocialUser(
                 email = email,
                 realUsername = name,

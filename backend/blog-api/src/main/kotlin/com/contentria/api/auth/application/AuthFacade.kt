@@ -56,7 +56,7 @@ class AuthFacade(
         val user = userService.getActiveUserInfo(credential.userId)
         val (accessToken, refreshToken) = generateTokens(user)
 
-        log.info { "User logged in successfully: ${user.email}" }
+        log.info { "Login successful: userId=${user.userId}" }
 
         return LoginInfo(
             accessToken = accessToken,

@@ -31,13 +31,10 @@ class AuthController(
         request: HttpServletRequest,
         response: HttpServletResponse
     ): ResponseEntity<RefreshTokenResponse> {
-        log.info { "=== Refresh with $refreshTokenValue ===" }
         val newTokens = authFacade.refreshTokens(refreshTokenValue)
 
         response.addCookie(cookieUtil.createAccessTokenCookie(newTokens.accessToken, request))
         response.addCookie(cookieUtil.createRefreshTokenCookie(newTokens.refreshToken, request))
-
-        log.info { "=== Successfully refreshed token. accessToken:${newTokens.accessToken.substring(0, 10)}, refreshToken:${newTokens.refreshToken.substring(0, 10)}" }
         return ResponseEntity.ok(
             RefreshTokenResponse(
                 accessToken = newTokens.accessToken,
