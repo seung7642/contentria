@@ -56,17 +56,81 @@ secure = request.isSecure
 secure = appProperties.auth.cookie.secure  // true in prod, false in dev
 ```
 
-#### Missing SameSite
+### SameSite Attribute
 
-Without `SameSite`, browsers may default to `Lax` (modern browsers) or `None` (older browsers). Explicitly set it to avoid inconsistent behavior across browsers.
+#### What Is SameSite?
 
-#### CSRF and SameSite Relationship
+`SameSite` is a cookie attribute that controls **when the browser attaches cookies to cross-site requests**. It is the browser-enforced defense against CSRF (Cross-Site Request Forgery) attacks.
+
+| Value | Behavior |
+|-------|----------|
+| `Strict` | Cookie is only sent on same-site requests. Never sent on cross-site navigation (e.g., clicking a link from another site to your site). |
+| `Lax` | Cookie is sent on same-site requests **and** top-level navigations (GET only) from other sites. Blocks cross-site POST, iframe, and AJAX. |
+| `None` | Cookie is always sent, including on cross-site requests. **Requires `Secure` flag.** |
+
+**Lax is the recommended default** for authentication cookies. `Strict` breaks OAuth redirect flows because the browser would not attach cookies when the OAuth provider redirects back to your site.
+
+#### Browser Default Behavior
+
+Since Chrome 80 (February 2020), if a server does not explicitly set `SameSite`, Chrome treats the cookie as `SameSite=Lax`. Other modern browsers (Edge, Firefox, Safari) have adopted similar defaults. However:
+
+- Older browsers may default to `None` (no restriction), leaving the cookie unprotected.
+- Relying on browser defaults makes the security posture **implicit** — a reader of the code cannot tell whether SameSite was intentionally omitted or accidentally forgotten.
+
+**Always set `SameSite` explicitly** to ensure consistent behavior across all browsers and to make the security intent clear.
+
+#### Why SameSite Matters in This Project
 
 This project disables Spring Security's CSRF protection (`csrf.disable()`) because:
 - The API is stateless (JWT-based), not session-based
 - Cookies use `SameSite` attribute as the primary CSRF defense
 
-**This means `SameSite` is the only CSRF protection**. If `SameSite` is missing, the API is vulnerable to CSRF attacks.
+**This means `SameSite` is the only CSRF protection.** If `SameSite` is missing, the API is vulnerable to CSRF attacks.
+
+#### SameSite in the Contentria Architecture
+
+The request flow involves multiple hops, and SameSite applies differently at each:
+
+```
+Browser  ──(1)──>  Next.js (Server Actions)  ──(2)──>  Nginx  ──(3)──>  Spring Boot
+                   (sets/reads cookies)                (proxy)           (sets cookies)
+```
+
+**Hop (1): Browser → Next.js** — SameSite is enforced here. The browser checks the `SameSite` attribute before attaching cookies to the request. This is the critical boundary.
+
+**Hop (2): Next.js → Nginx** — Server-to-server. The browser is not involved, so SameSite has no effect. Next.js manually forwards cookies in the `Cookie` header.
+
+**Hop (3): Nginx → Spring Boot** — Server-to-server. Same as above — SameSite is irrelevant at this hop.
+
+All cookie-setting code points (regardless of hop) must include `SameSite=Lax` because the cookie will eventually be stored in the browser and evaluated against the SameSite policy on subsequent requests.
+
+| Layer | Where cookies are set | Files |
+|-------|-----------------------|-------|
+| Spring Boot | Token refresh, OAuth2 login response | `CookieUtil.kt` |
+| Middleware | Token refresh via redirect | `middleware.ts` |
+| Server Actions | Login, OTP verification | `actions/auth.ts` |
+| apiServer | Token refresh during API calls | `lib/apiServer.ts` |
+
+#### SameSite and Google OAuth2 (OIDC)
+
+The Google OAuth flow **bypasses the BFF (Next.js) layer** — the browser communicates directly with Spring Boot during the redirect:
+
+```
+Browser  ──>  Google Authorization Server  ──>  Spring Boot (/login/oauth2/code/google)
+                                                     │
+                                                     ├── Sets accessToken + refreshToken cookies
+                                                     └── Redirects to frontend (Next.js)
+```
+
+After Spring Boot processes the OAuth callback, it sets cookies and redirects the browser to the frontend. At this point, the browser stores the cookies with their `SameSite` attribute. On subsequent requests to the frontend (same site), the browser attaches these cookies normally.
+
+If `SameSite` were set to `Strict` instead of `Lax`, the cookies would **not** be sent on the redirect from Google → Spring Boot → Frontend, because the browser would consider the navigation as originating from a cross-site context (Google). `Lax` allows cookies on top-level GET navigations, which is why it works with OAuth redirect flows.
+
+#### Summary
+
+- Set `SameSite=Lax` on every authentication cookie, in every layer.
+- `Lax` is preferred over `Strict` to support OAuth2 redirect flows.
+- Never omit `SameSite` — it is the sole CSRF defense since Spring Security CSRF is disabled.
 
 ## Sensitive Data Handling
 
