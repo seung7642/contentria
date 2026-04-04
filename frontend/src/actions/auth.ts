@@ -101,12 +101,14 @@ export async function verifyOtpCodeAction(
         httpOnly: true,
         path: '/',
         maxAge: 15 * 60, // 15 minutes
+        sameSite: 'lax',
       });
 
       cookieStore.set('refreshToken', data.refreshToken, {
         httpOnly: true,
         path: '/',
         maxAge: 7 * 24 * 60 * 60, // 7 days
+        sameSite: 'lax',
       });
     } else {
       throw new Error('Login response is missing accessToken or refreshToken');
@@ -157,12 +159,14 @@ export async function loginWithPasswordAction(
         httpOnly: true,
         path: '/',
         maxAge: 15 * 60, // 15 minutes
+        sameSite: 'lax',
       });
 
       cookieStore.set('refreshToken', data.refreshToken, {
         httpOnly: true,
         path: '/',
         maxAge: 7 * 24 * 60 * 60, // 7 days
+        sameSite: 'lax',
       });
     } else {
       throw new Error('Login response is missing accessToken or refreshToken');

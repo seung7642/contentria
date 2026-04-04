@@ -45,6 +45,7 @@ class CookieUtil(
             secure = request.isSecure
             this.path = path
             this.maxAge = maxAge
+            setAttribute("SameSite", "Lax")
         }
     }
 }

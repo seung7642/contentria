@@ -102,12 +102,14 @@ function setAuthCookies(response: NextResponse, accessToken: string, refreshToke
   response.cookies.set('accessToken', accessToken, {
     httpOnly: true,
     path: '/',
-    maxAge: 1 * 60, // 1 minute
+    maxAge: 15 * 60, // 15 minutes
+    sameSite: 'lax',
   });
   response.cookies.set('refreshToken', refreshToken, {
     httpOnly: true,
     path: '/',
     maxAge: 7 * 24 * 60 * 60, // 7 days
+    sameSite: 'lax',
   });
 }
 

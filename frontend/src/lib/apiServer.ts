@@ -130,6 +130,7 @@ async function refreshTokens(
       httpOnly: true,
       path: '/',
       maxAge: 15 * 60, // 15 minutes
+      sameSite: 'lax',
     });
 
     if (newRefreshToken) {
@@ -137,6 +138,7 @@ async function refreshTokens(
         httpOnly: true,
         path: '/',
         maxAge: 7 * 24 * 60 * 60, // 7 days
+        sameSite: 'lax',
       });
     }
   } catch (error) {
