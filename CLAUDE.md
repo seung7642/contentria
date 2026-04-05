@@ -6,23 +6,42 @@ You are responsible for implementing features, fixing bugs, and submitting Pull 
 - **ALL** commit messages, PR titles, and PR descriptions MUST be written in **English**.
 - Internal documentation or comments within the code should also be in **English**.
 
-## 2. Branching Strategy (GitHub Flow)
-Always create a new branch from `main`. Use the following prefixes:
-- `feature/`: New features or enhancements.
-- `fix/`: Bug fixes.
-- `hotfix/`: Urgent production fixes.
-- `refactor/`: Code changes that neither fix a bug nor add a feature.
-- `docs/`: Documentation only changes.
-- `test/`: Adding missing tests or correcting existing tests.
+## 2. Issue-Driven Development
 
-## 3. Commit Message Convention (Conventional Commits)
+Every code change must be tied to a GitHub Issue. Do NOT create branches or PRs without a corresponding issue.
+
+### Workflow
+```
+Issue created → Branch created → Implementation → PR (closes #N) → Gemini review → Human merges
+```
+
+### When Starting Work
+1. Check for an existing GitHub Issue describing the task.
+2. If no issue exists, create one before writing code.
+3. Create a branch from `main` referencing the issue number.
+
+### Issue Templates
+- **Feature:** Desired behavior, background/motivation.
+- **Bug:** Current behavior, expected behavior, reproduction steps.
+- **Chore/Refactor:** Reason for change, scope.
+
+## 3. Branching Strategy (GitHub Flow)
+Always create a new branch from `main`. **Include the issue number** in the branch name:
+- `feature/#42-add-oauth-logout`
+- `fix/#57-cookie-secure-flag`
+- `hotfix/#80-critical-auth-bypass`
+- `refactor/#63-extract-cookie-util`
+- `docs/#71-update-security-conventions`
+- `test/#55-add-auth-integration-tests`
+
+## 4. Commit Message Convention (Conventional Commits)
 - Follow the **Angular-style Conventional Commits** standard.
 - Format: `<type>(<scope>): <description>`
 - Types: `feat`, `fix`, `chore`, `refactor`, `docs`, `style`, `test`, `perf`, `ci`.
 - Example: `feat(api): add user authentication endpoint`
 
-## 4. Collaboration Workflow
-1. **Claude (You):** Create a branch (`feature/*`, `fix/*`, etc.) → Implement changes → Submit a Pull Request (PR) to `main`.
+## 5. Collaboration Workflow
+1. **Claude (You):** Pick up a GitHub Issue → Create a branch (`feature/#N-*`, `fix/#N-*`, etc.) → Implement changes → Submit a PR to `main` with `closes #N` in the description.
 2. **GitHub Actions:** Triggered automatically upon PR submission.
 3. **Gemini (Reviewer):** Reviews your PR based on `GEMINI.md`.
 4. **Outcome:**
@@ -37,12 +56,13 @@ When Gemini leaves review comments instead of approving:
 
 In either case, never close or abandon a PR due to reviewer feedback alone. The human maintainer has the final say.
 
-## 5. Technical Standards
+## 6. Technical Standards
 - **Backend (Kotlin/Spring):** Follow Kotlin coding conventions. Ensure proper error handling and use of `blog-common` modules.
 - **Frontend (Next.js/TS):** Use functional components, hooks, and Tailwind CSS. Ensure strict TypeScript typing.
 - **Infrastructure (K8s):** Keep manifests in `infrastructure/kubernetes/` updated.
 
-## 6. Pull Request Guidelines
+## 7. Pull Request Guidelines
+- Reference the related issue with `closes #N` in the PR description.
 - Provide a clear summary of changes.
 - List any breaking changes.
 - Ensure the base branch is always `main`.
