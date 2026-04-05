@@ -1,5 +1,6 @@
 package com.contentria.api.global.security
 
+import com.contentria.api.global.properties.AppProperties
 import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -18,7 +19,9 @@ import java.util.Base64
  * while preserving the OAuth2 redirect flow.
  */
 @Component
-class CookieAuthorizationRequestRepository : AuthorizationRequestRepository<OAuth2AuthorizationRequest> {
+class CookieAuthorizationRequestRepository(
+    private val appProperties: AppProperties
+) : AuthorizationRequestRepository<OAuth2AuthorizationRequest> {
 
     companion object {
         const val COOKIE_NAME = "oauth2_auth_request"
@@ -43,7 +46,9 @@ class CookieAuthorizationRequestRepository : AuthorizationRequestRepository<OAut
         val cookie = Cookie(COOKIE_NAME, serialize(authorizationRequest)).apply {
             path = "/"
             isHttpOnly = true
+            secure = appProperties.auth.cookie.secure
             maxAge = COOKIE_MAX_AGE
+            setAttribute("SameSite", "Lax")
         }
         response.addCookie(cookie)
     }
@@ -61,7 +66,9 @@ class CookieAuthorizationRequestRepository : AuthorizationRequestRepository<OAut
         val cookie = Cookie(COOKIE_NAME, "").apply {
             path = "/"
             isHttpOnly = true
+            secure = appProperties.auth.cookie.secure
             maxAge = 0
+            setAttribute("SameSite", "Lax")
         }
         response.addCookie(cookie)
     }
