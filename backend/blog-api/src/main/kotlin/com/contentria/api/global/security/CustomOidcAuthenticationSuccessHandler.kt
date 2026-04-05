@@ -23,6 +23,7 @@ private val log = KotlinLogging.logger {}
 class CustomOidcAuthenticationSuccessHandler(
     private val authFacade: AuthFacade,
     private val cookieUtil: CookieUtil,
+    private val cookieAuthorizationRequestRepository: CookieAuthorizationRequestRepository,
     appProperties: AppProperties,
 ) : SimpleUrlAuthenticationSuccessHandler() {
 
@@ -59,9 +60,8 @@ class CustomOidcAuthenticationSuccessHandler(
             response.addCookie(cookieUtil.createAccessTokenCookie(loginInfo.accessToken))
             response.addCookie(cookieUtil.createRefreshTokenCookie(loginInfo.refreshToken))
 
-            clearAuthenticationAttributes(request) // Clear temporary session data used by Spring Security
+            cookieAuthorizationRequestRepository.deleteCookie(response)
             SecurityContextHolder.clearContext()
-            request.getSession(false)?.invalidate() // OAuth2 로그인 과정에서 생성된 임시 HTTP 세션 무효화
 
             redirectStrategy.sendRedirect(request, response, frontendRedirectUrl)
 

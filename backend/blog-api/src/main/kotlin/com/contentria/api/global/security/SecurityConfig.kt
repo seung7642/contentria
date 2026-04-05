@@ -33,6 +33,7 @@ class SecurityConfig(
     private val jwtAuthenticationFilter: JwtAuthenticationFilter,
     private val customAuthenticationSuccessHandler: AuthenticationSuccessHandler,
     private val customLogoutHandler: LogoutHandler,
+    private val cookieAuthorizationRequestRepository: CookieAuthorizationRequestRepository,
     private val appProperties: AppProperties,
     private val objectMapper: ObjectMapper
 ) {
@@ -43,7 +44,7 @@ class SecurityConfig(
             .cors { cors -> cors.configurationSource(corsConfigurationSource()) }
             .csrf { csrf -> csrf.disable() }
             .sessionManagement { session ->
-                session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             }
             .authorizeHttpRequests { auth ->
                 auth
@@ -52,9 +53,13 @@ class SecurityConfig(
                     .anyRequest().authenticated()
             }
             .oauth2Login { oauth2 ->
+                oauth2.authorizationEndpoint { endpoint ->
+                    endpoint.authorizationRequestRepository(cookieAuthorizationRequestRepository)
+                }
                 oauth2.successHandler(customAuthenticationSuccessHandler)
-                oauth2.failureHandler { request, response, exception ->
-                    val frontendUrl = "https://www.contentria.com/login?error=${exception.message}"
+                oauth2.failureHandler { request, response, _ ->
+                    cookieAuthorizationRequestRepository.deleteCookie(response)
+                    val frontendUrl = appProperties.auth.oidc.successRedirectUrl.replace("/login/callback", "/login?error=oauth_failed")
                     response.sendRedirect(frontendUrl)
                 }
             }
