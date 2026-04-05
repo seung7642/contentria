@@ -1,0 +1,104 @@
+name: Gemini AI Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get PR Diff
+        id: get_diff
+        run: |
+          # Get the diff between the base branch and the head branch
+          git diff origin/${{ github.base_ref }}...origin/${{ github.head_ref }} > pr_diff.txt
+          echo "diff_size=$(wc -c < pr_diff.txt)" >> $GITHUB_OUTPUT
+
+      - name: Gemini AI Review
+        if: steps.get_diff.outputs.diff_size > 0
+        uses: actions/github-script@v7
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        with:
+          script: |
+            const fs = require('fs');
+            const diff = fs.readFileSync('pr_diff.txt', 'utf8');
+            const instructions = fs.readFileSync('GEMINI.md', 'utf8');
+            const apiKey = process.env.GEMINI_API_KEY;
+
+            if (!apiKey) {
+              core.setFailed('GEMINI_API_KEY is not set in secrets.');
+              return;
+            }
+
+            const prompt = `
+            You are a Senior Software Engineer and Code Reviewer. 
+            Review the following Pull Request diff based on the instructions provided in GEMINI.md.
+            
+            ### Instructions from GEMINI.md:
+            ${instructions}
+            
+            ### Pull Request Diff:
+            ${diff}
+            
+            ### Guidelines for your response:
+            1. If there are no critical issues and the code is good to go, start your response with "LGTM".
+            2. Provide a summary of the changes and your feedback.
+            3. List any specific issues or suggestions for improvement.
+            4. Use English for your entire response.
+            `;
+
+            try {
+              const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  contents: [{ parts: [{ text: prompt }] }]
+                })
+              });
+
+              const data = await response.json();
+              
+              if (!data.candidates || data.candidates.length === 0) {
+                console.error('Gemini API response error:', JSON.stringify(data));
+                throw new Error('No candidates found in Gemini response.');
+              }
+
+              const reviewText = data.candidates[0].content.parts[0].text;
+
+              // Post a comment on the PR
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body: "## 🤖 Gemini AI Code Review\n\n" + reviewText
+              });
+
+              // If Gemini says LGTM, approve the PR
+              const isLGTM = reviewText.trim().toUpperCase().startsWith('LGTM');
+              if (isLGTM) {
+                await github.rest.pulls.createReview({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: context.payload.pull_request.number,
+                  event: 'APPROVE',
+                  body: 'Gemini AI approved this PR. LGTM!'
+                });
+                console.log('PR Approved by Gemini.');
+              } else {
+                console.log('Gemini suggested changes or did not approve.');
+              }
+
+            } catch (error) {
+              core.setFailed(`Gemini API call failed: ${error.message}`);
+            }
