@@ -58,15 +58,15 @@ class GlobalExceptionHandler {
     ): ResponseEntity<ErrorResponse> {
         val requestUri = (request as ServletWebRequest).request.requestURI
         val errorCode = ErrorCode.INVALID_INPUT_VALUE
-        val errorMessage = e.bindingResult.fieldErrors.firstOrNull()?.defaultMessage
-            ?: errorCode.message
+        val fieldErrors = e.bindingResult.fieldErrors.associate { it.field to (it.defaultMessage ?: "invalid") }
 
         val errorResponse = ErrorResponse(
             status = errorCode.status.value(),
             error = errorCode.status.reasonPhrase,
-            message = errorMessage,
+            message = errorCode.message,
             path = requestUri,
-            code = errorCode.code
+            code = errorCode.code,
+            details = fieldErrors
         )
         return ResponseEntity(errorResponse, errorCode.status)
     }
