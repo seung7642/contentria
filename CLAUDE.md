@@ -22,19 +22,27 @@ Always create a new branch from `main`. Use the following prefixes:
 - Example: `feat(api): add user authentication endpoint`
 
 ## 4. Collaboration Workflow
-1. **Claude (You):** Create a branch (`feature/*`, `fix/*`, etc.) -> Implement changes -> Submit a Pull Request (PR) to `main`.
+1. **Claude (You):** Create a branch (`feature/*`, `fix/*`, etc.) → Implement changes → Submit a Pull Request (PR) to `main`.
 2. **GitHub Actions:** Triggered automatically upon PR submission.
 3. **Gemini (Reviewer):** Reviews your PR based on `GEMINI.md`.
-4. **Outcome:** 
-   - If Gemini approves (LGTM), the PR may be merged automatically or by the user.
-   - If Gemini requests changes, you must address the feedback and push updates.
+4. **Outcome:**
+   - If Gemini approves (LGTM), wait for the **human maintainer** to merge. Do NOT auto-merge.
+   - If Gemini requests changes, follow the feedback process below.
 
-## 4. Technical Standards
+### Handling Reviewer Feedback
+When Gemini leaves review comments instead of approving:
+
+- **If you agree with the feedback:** Push additional commits to the same branch (do NOT amend or force-push — preserve the review history). The updated push will trigger Gemini to re-review automatically.
+- **If you disagree with the feedback:** Reply to the specific comment with your reasoning. The human maintainer will make the final decision.
+
+In either case, never close or abandon a PR due to reviewer feedback alone. The human maintainer has the final say.
+
+## 5. Technical Standards
 - **Backend (Kotlin/Spring):** Follow Kotlin coding conventions. Ensure proper error handling and use of `blog-common` modules.
 - **Frontend (Next.js/TS):** Use functional components, hooks, and Tailwind CSS. Ensure strict TypeScript typing.
 - **Infrastructure (K8s):** Keep manifests in `infrastructure/kubernetes/` updated.
 
-## 5. Pull Request Guidelines
+## 6. Pull Request Guidelines
 - Provide a clear summary of changes.
 - List any breaking changes.
 - Ensure the base branch is always `main`.
