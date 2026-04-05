@@ -52,7 +52,8 @@ class CredentialService(
         val credential = (credentialRepository.findByEmail(email)
             ?: throw ContentriaException(ErrorCode.INVALID_CREDENTIALS))
 
-        if (!passwordEncoder.matches(rawPassword, credential.password)) {
+        if (rawPassword == null || credential.password == null
+            || !passwordEncoder.matches(rawPassword, credential.password)) {
             throw ContentriaException(ErrorCode.INVALID_CREDENTIALS)
         }
 
