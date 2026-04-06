@@ -13,6 +13,7 @@ import java.time.Duration
 data class AppProperties(
     @field:Valid val auth: AuthProperties,
     @field:Valid val cors: CorsProperties,
+    @field:Valid val r2: R2Properties,
 )
 
 @Validated
@@ -55,6 +56,17 @@ data class VerificationCodeProperties(
 @Validated
 data class CorsProperties(
     val allowedOrigins: List<String>
+)
+
+@Validated
+data class R2Properties(
+    @field:NotBlank val accessKeyId: String,
+    @field:NotBlank val secretAccessKey: String,
+    @field:NotBlank val endpoint: String,
+    @field:NotBlank val bucketName: String,
+    @field:NotBlank val publicUrl: String,
+    val presignedUrlTtlMinutes: Long = 10L,
+    val maxFileSizeBytes: Long = 10 * 1024 * 1024, // 10MB
 )
 
 @Validated

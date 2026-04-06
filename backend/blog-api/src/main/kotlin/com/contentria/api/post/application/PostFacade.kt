@@ -2,6 +2,8 @@ package com.contentria.api.post.application
 
 import com.contentria.api.blog.application.BlogService
 import com.contentria.api.category.application.CategoryService
+import com.contentria.api.media.application.MediaImageUrlExtractor
+import com.contentria.api.media.application.MediaService
 import com.contentria.api.post.application.dto.CreateNewPostCommand
 import com.contentria.api.post.application.dto.CreateNewPostInfo
 import com.contentria.api.post.application.dto.PostDetailInfo
@@ -26,7 +28,9 @@ class PostFacade(
     private val blogService: BlogService,
     private val categoryService: CategoryService,
     private val userService: UserService,
-    private val markdownService: MarkdownService
+    private val markdownService: MarkdownService,
+    private val mediaService: MediaService,
+    private val mediaImageUrlExtractor: MediaImageUrlExtractor
 ) {
     @Transactional(readOnly = true)
     fun getPostDetail(blogSlug: String, postSlug: String): PostDetailInfo {
@@ -104,6 +108,9 @@ class PostFacade(
             status = command.status
         )
 
+        val imageUrls = mediaImageUrlExtractor.extractImageUrls(command.contentMarkdown)
+        mediaService.linkMediaToPost(savedPost.id!!, imageUrls)
+
         log.info { "Post created: postId=${savedPost.id}, blogId=${command.blogId}, userId=$userId" }
         return CreateNewPostInfo.from(savedPost)
     }
@@ -125,6 +132,16 @@ class PostFacade(
             summary = summary,
             status = command.status
         )
+
+        val currentImageUrls = mediaImageUrlExtractor.extractImageUrls(command.contentMarkdown)
+        val previousMedia = mediaService.findByPostId(command.postId)
+        val previousUrls = previousMedia.map { it.publicUrl }
+
+        val newUrls = currentImageUrls.filter { it !in previousUrls }
+        val removedUrls = previousUrls.filter { it !in currentImageUrls }
+
+        mediaService.linkMediaToPost(command.postId, newUrls)
+        mediaService.unlinkMediaFromPost(command.postId, removedUrls)
 
         log.info { "Post updated: postId=${updatedPost.id}, blogId=${command.blogId}, userId=$userId" }
         return UpdatePostInfo.from(updatedPost)

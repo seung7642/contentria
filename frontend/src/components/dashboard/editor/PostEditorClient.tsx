@@ -21,9 +21,11 @@ import {
   frontmatterPlugin,
   headingsPlugin,
   HighlightToggle,
+  imagePlugin,
   InsertAdmonition,
   InsertCodeBlock,
   InsertFrontmatter,
+  InsertImage,
   InsertTable,
   InsertThematicBreak,
   linkDialogPlugin,
@@ -43,6 +45,7 @@ import {
 } from '@mdxeditor/editor';
 import { ForwardRefEditor } from '@/components/dashboard/ForwardRefEditor';
 import { createNewPostAction, updatePostAction } from '@/actions/post';
+import { uploadImageToR2 } from '@/lib/uploadImage';
 import { PostDetail, PostDetailResponse, PostStatus } from '@/types/api/posts';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -268,6 +271,11 @@ function helloWorld() {
             linkPlugin(),
             linkDialogPlugin(),
             tablePlugin(),
+            imagePlugin({
+              imageUploadHandler: async (image: File) => {
+                return await uploadImageToR2(image);
+              },
+            }),
             markdownShortcutPlugin(),
             // the default code block language to insert when user clicks the "insert code block" button
             codeBlockPlugin({
@@ -329,6 +337,7 @@ function helloWorld() {
 
                             <Separator />
                             <CreateLink />
+                            <InsertImage />
                             <Separator />
                             <InsertTable />
                             <InsertThematicBreak />

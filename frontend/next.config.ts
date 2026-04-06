@@ -14,6 +14,11 @@ const nextConfig: NextConfig = {
         hostname: 'lh3.googleusercontent.com',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: new URL(process.env.NEXT_PUBLIC_CDN_BASE_URL || 'https://images.contentria.com').hostname,
+        pathname: '/media/**',
+      },
     ],
     // 주로 사용할 이미지 크기 설정
     imageSizes: [16, 32, 48, 96, 128, 256, 384],
