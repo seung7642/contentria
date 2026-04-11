@@ -92,9 +92,10 @@ PostFacade
 
 **Conventions:**
 - `*Facade` classes own the `@Transactional` boundary for write operations
-- `*Service` classes contain single-domain logic
-- `*InternalService` classes handle domain-internal write operations (e.g., slug generation + save)
-- Facades may depend on services from other domains; services should not
+- `*Service` classes contain single-domain logic and **must return DTOs only** (never entities)
+- `*InternalService` classes handle domain-internal write operations (e.g., slug generation + save). May return entities, but **only the Facade within the same bounded context** may depend on them
+- Facades may depend on **services (`*Service`) from other domains**; direct dependency on another domain's Facade or InternalService is not allowed. This prevents circular dependencies
+- Utility classes (e.g., `MarkdownService`) are allowed in the `application/` layer, but **only within the same bounded context**. They must not be depended on by other domains
 
 ### Authentication Flow
 

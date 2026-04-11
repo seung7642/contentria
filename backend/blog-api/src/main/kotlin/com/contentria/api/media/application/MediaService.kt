@@ -22,6 +22,8 @@ class MediaService(
     private val appProperties: AppProperties
 ) {
 
+    private val markdownImagePattern = Regex("""!\[.*?]\((.*?)\)""")
+
     @Transactional
     fun createPresignedUrl(userId: UUID, command: PresignedUrlCommand): PresignedUrlInfo {
         validateFileType(command.contentType)
@@ -67,29 +69,34 @@ class MediaService(
         log.info { "Media deleted: mediaId=$mediaId, userId=$userId" }
     }
 
-    @Transactional(readOnly = true)
-    fun findByPostId(postId: UUID): List<Media> {
-        return mediaRepository.findByPostId(postId)
+    @Transactional
+    fun syncMediaForPost(postId: UUID, markdown: String) {
+        val currentImageUrls = extractImageUrls(markdown)
+        val previousMedia = mediaRepository.findByPostId(postId)
+        val previousUrls = previousMedia.map { it.publicUrl }
+
+        val newUrls = currentImageUrls.filter { it !in previousUrls }
+        val removedUrls = previousUrls.filter { it !in currentImageUrls }
+
+        if (newUrls.isNotEmpty()) {
+            val mediaToLink = mediaRepository.findByPublicUrlIn(newUrls)
+            mediaToLink.forEach { it.linkToPost(postId) }
+            log.debug { "Linked ${mediaToLink.size} media to postId=$postId" }
+        }
+
+        if (removedUrls.isNotEmpty()) {
+            val mediaToUnlink = mediaRepository.findByPublicUrlIn(removedUrls)
+            mediaToUnlink.forEach { it.postId = null }
+            log.debug { "Unlinked ${mediaToUnlink.size} media from postId=$postId" }
+        }
     }
 
-    @Transactional
-    fun linkMediaToPost(postId: UUID, imageUrls: List<String>) {
-        if (imageUrls.isEmpty()) return
-
-        val mediaList = mediaRepository.findByPublicUrlIn(imageUrls)
-        mediaList.forEach { it.linkToPost(postId) }
-
-        log.debug { "Linked ${mediaList.size} media to postId=$postId" }
-    }
-
-    @Transactional
-    fun unlinkMediaFromPost(postId: UUID, removedUrls: List<String>) {
-        if (removedUrls.isEmpty()) return
-
-        val mediaList = mediaRepository.findByPublicUrlIn(removedUrls)
-        mediaList.forEach { it.postId = null }
-
-        log.debug { "Unlinked ${mediaList.size} media from postId=$postId" }
+    private fun extractImageUrls(markdown: String): List<String> {
+        val cdnBaseUrl = appProperties.r2.publicUrl
+        return markdownImagePattern.findAll(markdown)
+            .map { it.groupValues[1] }
+            .filter { it.startsWith(cdnBaseUrl) }
+            .toList()
     }
 
     private fun validateFileType(contentType: String) {
