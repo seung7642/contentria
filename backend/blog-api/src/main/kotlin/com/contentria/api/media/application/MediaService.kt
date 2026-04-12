@@ -21,6 +21,7 @@ private val log = KotlinLogging.logger {}
 class MediaService(
     private val mediaRepository: MediaRepository,
     private val r2StorageClient: R2StorageClient,
+    private val mediaValidator: MediaValidator,
     private val appProperties: AppProperties
 ) {
 
@@ -97,6 +98,8 @@ class MediaService(
 
         val urlReplacements = mutableMapOf<String, String>()
         for (media in temporaryMedia) {
+            validateMediaContent(media)
+
             val oldKey = media.storedKey
             val newKey = oldKey.replaceFirst("$TMP_PREFIX/", "$MEDIA_PREFIX/")
             val newPublicUrl = "${appProperties.r2.publicUrl}/$newKey"
@@ -177,6 +180,28 @@ class MediaService(
         if (usedBytes + fileSize > appProperties.r2.dailyUploadLimitBytes) {
             log.warn { "Daily upload quota exceeded: userId=$userId, usedBytes=$usedBytes, requestedBytes=$fileSize" }
             throw ContentriaException(ErrorCode.MEDIA_DAILY_UPLOAD_QUOTA_EXCEEDED)
+        }
+    }
+
+    private fun validateMediaContent(media: Media) {
+        val headerBytes = r2StorageClient.getObjectHeadBytes(
+            media.storedKey, MediaValidator.HEADER_BYTES_NEEDED
+        )
+
+        val isValid = if (media.contentType == "image/webp") {
+            MediaValidator.isValidWebP(headerBytes)
+        } else {
+            mediaValidator.validateMagicNumber(headerBytes, media.contentType)
+        }
+
+        if (!isValid) {
+            log.warn {
+                "Content-type mismatch: mediaId=${media.id}, declared=${media.contentType}, " +
+                    "header=${headerBytes.take(12).joinToString(" ") { "%02X".format(it) }}"
+            }
+            // Do not delete the R2 object here — the tmp/ lifecycle rule (24h) handles cleanup.
+            // Deleting immediately would leave a broken image URL in the editor with no way to recover.
+            throw ContentriaException(ErrorCode.MEDIA_CONTENT_TYPE_MISMATCH)
         }
     }
 
