@@ -103,19 +103,21 @@ class MediaService(
 
         val urlReplacements = mutableMapOf<String, String>()
         for (media in temporaryMedia) {
-            validateMediaContent(media)
-
             val oldKey = media.storedKey
             val newKey = oldKey.replaceFirst("$TMP_PREFIX/", "$MEDIA_PREFIX/")
             val newPublicUrl = "${appProperties.r2.publicUrl}/$newKey"
 
             if (media.contentType == "image/jpeg") {
+                // Single GetObject: download once, validate header, then strip EXIF
                 val originalBytes = r2StorageClient.getObjectBytes(oldKey)
+                validateMediaContent(media, originalBytes)
                 val strippedBytes = stripExifMetadata(originalBytes)
                 r2StorageClient.putObject(newKey, strippedBytes, media.contentType)
                 r2StorageClient.deleteObject(oldKey)
                 log.info { "EXIF stripped for JPEG: key=$newKey, before=${originalBytes.size}, after=${strippedBytes.size}" }
             } else {
+                // 12-byte Range GET is sufficient for non-JPEG validation
+                validateMediaContent(media)
                 r2StorageClient.copyObject(oldKey, newKey)
                 r2StorageClient.deleteObject(oldKey)
             }
@@ -196,10 +198,17 @@ class MediaService(
         }
     }
 
-    private fun validateMediaContent(media: Media) {
-        val headerBytes = r2StorageClient.getObjectHeadBytes(
-            media.storedKey, MediaValidator.HEADER_BYTES_NEEDED
-        )
+    /**
+     * Validates that the actual file content matches the declared content type.
+     *
+     * @param media the media record to validate
+     * @param prefetchedBytes if the full object bytes are already downloaded (e.g., for JPEG
+     *        EXIF stripping), pass them here to avoid a redundant R2 GetObject call.
+     *        When null, a 12-byte Range GET is performed instead.
+     */
+    private fun validateMediaContent(media: Media, prefetchedBytes: ByteArray? = null) {
+        val headerBytes = prefetchedBytes?.copyOfRange(0, MediaValidator.HEADER_BYTES_NEEDED)
+            ?: r2StorageClient.getObjectHeadBytes(media.storedKey, MediaValidator.HEADER_BYTES_NEEDED)
 
         val isValid = if (media.contentType == "image/webp") {
             MediaValidator.isValidWebP(headerBytes)
