@@ -59,6 +59,7 @@ enum class ErrorCode(
     MEDIA_DELETE_FORBIDDEN(HttpStatus.FORBIDDEN, "ME0003", "You do not have permission to delete this media."),
     MEDIA_DAILY_UPLOAD_QUOTA_EXCEEDED(HttpStatus.TOO_MANY_REQUESTS, "ME0004", "Daily upload quota exceeded. Please try again tomorrow."),
     MEDIA_POST_IMAGE_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "ME0005", "Maximum number of images per post exceeded."),
+    MEDIA_CONTENT_TYPE_MISMATCH(HttpStatus.BAD_REQUEST, "ME0006", "Uploaded file content does not match the declared content type."),
 
     // Markdown
     MARKDOWN_PROCESSING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MD0000", "An error occurred while processing the markdown content."),

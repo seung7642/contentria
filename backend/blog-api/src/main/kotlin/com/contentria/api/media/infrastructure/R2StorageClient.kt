@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.CopyObjectRequest
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
+import software.amazon.awssdk.services.s3.model.GetObjectRequest
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import software.amazon.awssdk.services.s3.presigner.S3Presigner
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest
@@ -50,6 +51,19 @@ class R2StorageClient(
 
         s3Client.deleteObject(deleteRequest)
         log.info { "Deleted R2 object: key=$storedKey" }
+    }
+
+    fun getObjectHeadBytes(storedKey: String, numBytes: Int): ByteArray {
+        val r2 = appProperties.r2
+
+        val getRequest = GetObjectRequest.builder()
+            .bucket(r2.bucketName)
+            .key(storedKey)
+            .range("bytes=0-${numBytes - 1}")
+            .build()
+
+        val response = s3Client.getObjectAsBytes(getRequest)
+        return response.asByteArray()
     }
 
     fun copyObject(sourceKey: String, destinationKey: String) {
