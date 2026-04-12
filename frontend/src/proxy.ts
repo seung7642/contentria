@@ -4,8 +4,8 @@ import { PATHS } from './constants/paths';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 const COOKIE_SECURE = process.env.COOKIE_SECURE === 'true';
 
-export async function middleware(request: NextRequest) {
-  console.log('[Middleware] executed for path:', request.nextUrl.pathname);
+export default async function proxy(request: NextRequest) {
+  console.log('[Proxy] executed for path:', request.nextUrl.pathname);
 
   const { pathname } = request.nextUrl;
 
@@ -19,11 +19,11 @@ export async function middleware(request: NextRequest) {
 
   if (isAuthPage) {
     console.log(
-      `[Middleware] Auth page. accessToken: ${accessToken?.substring(0, 10) ?? ''}, refreshToken: ${refreshToken?.substring(0, 10) ?? ''}`
+      `[Proxy] Auth page. accessToken: ${accessToken?.substring(0, 10) ?? ''}, refreshToken: ${refreshToken?.substring(0, 10) ?? ''}`
     );
 
     if (isSessionExpired) {
-      console.log('[Middleware] Session expired signal detected. Clearing cookies.');
+      console.log('[Proxy] Session expired signal detected. Clearing cookies.');
       const response = NextResponse.next();
       response.cookies.delete('accessToken');
       response.cookies.delete('refreshToken');
@@ -31,7 +31,7 @@ export async function middleware(request: NextRequest) {
     }
 
     if (accessToken || refreshToken) {
-      console.log('[Middleware] User already logged in. Redirecting to dashboard.');
+      console.log('[Proxy] User already logged in. Redirecting to dashboard.');
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
     return NextResponse.next();
@@ -49,16 +49,16 @@ export async function middleware(request: NextRequest) {
   }
 
   if (isProtectedPage && !accessToken) {
-    console.log('[Middleware] No access token for protected page. Redirecting to login.');
+    console.log('[Proxy] No access token for protected page. Redirecting to login.');
     return redirectToLogin(request, pathname);
   }
 
-  console.log('[Middleware] Completed checks. Proceeding to next middleware or route.');
+  console.log('[Proxy] Completed checks. Proceeding to route handler.');
   return NextResponse.next();
 }
 
 async function tryRefreshTokens(request: NextRequest, refreshToken: string): Promise<NextResponse> {
-  console.log('[Middleware] accessToken expired. Attempting refresh.');
+  console.log('[Proxy] accessToken expired. Attempting refresh.');
 
   try {
     const refreshResponse = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
@@ -73,7 +73,7 @@ async function tryRefreshTokens(request: NextRequest, refreshToken: string): Pro
       throw new Error('Refresh token invalid or expired');
     }
 
-    console.log('[Middleware] Refresh successful. Reloading...');
+    console.log('[Proxy] Refresh successful. Reloading...');
     const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
       await refreshResponse.json();
 
@@ -81,7 +81,7 @@ async function tryRefreshTokens(request: NextRequest, refreshToken: string): Pro
     setAuthCookies(response, newAccessToken, newRefreshToken);
     return response;
   } catch (error) {
-    console.error('[Middleware] Refresh failed. Clearing cookies.', error);
+    console.error('[Proxy] Refresh failed. Clearing cookies.', error);
     const response = NextResponse.next();
     response.cookies.delete('accessToken');
     response.cookies.delete('refreshToken');
