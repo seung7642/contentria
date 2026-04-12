@@ -107,8 +107,16 @@ class MediaService(
             val newKey = oldKey.replaceFirst("$TMP_PREFIX/", "$MEDIA_PREFIX/")
             val newPublicUrl = "${appProperties.r2.publicUrl}/$newKey"
 
+            // JPEG is the only format that requires re-encoding during promotion:
+            //  - EXIF metadata (GPS, camera info, timestamps) is a JPEG-specific concern.
+            //    PNG tEXt chunks rarely contain PII; GIF has no EXIF; WebP EXIF is already
+            //    stripped client-side by browser-image-compression, and JDK ImageIO cannot
+            //    decode WebP without a third-party plugin.
+            //  - Re-encoding GIF would destroy animation frames.
+            //  - For JPEG, a single full GetObject serves both magic-number validation
+            //    (first 12 bytes) and EXIF stripping, saving one R2 Class B operation.
+            //  - Non-JPEG formats use a 12-byte Range GET for validation, then CopyObject.
             if (media.contentType == "image/jpeg") {
-                // Single GetObject: download once, validate header, then strip EXIF
                 val originalBytes = r2StorageClient.getObjectBytes(oldKey)
                 validateMediaContent(media, originalBytes)
                 val strippedBytes = stripExifMetadata(originalBytes)
@@ -116,7 +124,6 @@ class MediaService(
                 r2StorageClient.deleteObject(oldKey)
                 log.info { "EXIF stripped for JPEG: key=$newKey, before=${originalBytes.size}, after=${strippedBytes.size}" }
             } else {
-                // 12-byte Range GET is sufficient for non-JPEG validation
                 validateMediaContent(media)
                 r2StorageClient.copyObject(oldKey, newKey)
                 r2StorageClient.deleteObject(oldKey)
