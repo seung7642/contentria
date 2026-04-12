@@ -54,6 +54,7 @@ spring:
       provider: com.github.benmanes.caffeine.jcache.spi.CaffeineCachingProvider # Cache Provider가 하나일 경우 생략 가능하지만, 명시성을 위해 기입
     cache-names:
       - rateLimiting
+      - mediaRateLimiting
       - verificationCode
     caffeine:
       spec: maximumSize=1000,expireAfterAccess=300s
@@ -93,6 +94,24 @@ bucket4j:
               initial-capacity: 10
               time: 1
               unit: minutes
+              refill-speed: interval
+    - id: mediaRateLimitingFilter
+      cache-name: mediaRateLimiting
+      url: "/api/media/presigned-url"
+      http-content-type: "application/json;charset=UTF-8"
+      http-status-code: TOO_MANY_REQUESTS
+      http-response-body: '{"status":429,"code":"C0008","error":"Too Many Requests","message":"Too many requests. Please try again later."}'
+      filter-order: 90
+      rate-limits:
+        - cache-key: "@userIdResolver.getUserId(#root)"
+          bandwidths:
+            - capacity: 30
+              time: 1
+              unit: minutes
+              refill-speed: interval
+            - capacity: 100
+              time: 1
+              unit: days
               refill-speed: interval
 
 app:
