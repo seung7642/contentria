@@ -52,6 +52,12 @@ enum class ErrorCode(
     DUPLICATE_CATEGORY_NAME(HttpStatus.CONFLICT, "CA0002", "Category name already exists under the same parent."),
     CANNOT_DELETE_CATEGORY(HttpStatus.BAD_REQUEST, "CA0003", "Cannot delete category that has associated posts."),
 
+    // Media
+    NOT_FOUND_MEDIA(HttpStatus.NOT_FOUND, "ME0000", "Media not found."),
+    UNSUPPORTED_MEDIA_TYPE(HttpStatus.BAD_REQUEST, "ME0001", "Unsupported file type. Allowed: JPEG, PNG, WebP, GIF."),
+    MEDIA_FILE_TOO_LARGE(HttpStatus.BAD_REQUEST, "ME0002", "File size exceeds the maximum allowed limit."),
+    MEDIA_DELETE_FORBIDDEN(HttpStatus.FORBIDDEN, "ME0003", "You do not have permission to delete this media."),
+
     // Markdown
     MARKDOWN_PROCESSING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MD0000", "An error occurred while processing the markdown content."),
     EMPTY_MARKDOWN_CONTENT(HttpStatus.BAD_REQUEST, "MD0001", "Markdown content cannot be empty."),

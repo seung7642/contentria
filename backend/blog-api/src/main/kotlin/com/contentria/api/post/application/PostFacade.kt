@@ -2,6 +2,7 @@ package com.contentria.api.post.application
 
 import com.contentria.api.blog.application.BlogService
 import com.contentria.api.category.application.CategoryService
+import com.contentria.api.media.application.MediaService
 import com.contentria.api.post.application.dto.CreateNewPostCommand
 import com.contentria.api.post.application.dto.CreateNewPostInfo
 import com.contentria.api.post.application.dto.PostDetailInfo
@@ -26,7 +27,8 @@ class PostFacade(
     private val blogService: BlogService,
     private val categoryService: CategoryService,
     private val userService: UserService,
-    private val markdownService: MarkdownService
+    private val markdownService: MarkdownService,
+    private val mediaService: MediaService
 ) {
     @Transactional(readOnly = true)
     fun getPostDetail(blogSlug: String, postSlug: String): PostDetailInfo {
@@ -92,17 +94,21 @@ class PostFacade(
 
         categoryService.validateCategoryBelongsToBlog(command.categoryId, command.blogId)
 
-        val summary = markdownService.extractSummary(command.contentMarkdown)
+        val finalMarkdown = mediaService.promoteTemporaryMedia(command.contentMarkdown)
+
+        val summary = markdownService.extractSummary(finalMarkdown)
 
         val savedPost = postInternalService.createPost(
             userId = userId,
             blogId = command.blogId,
             categoryId = command.categoryId,
             title = command.title,
-            content = command.contentMarkdown,
+            content = finalMarkdown,
             summary = summary,
             status = command.status
         )
+
+        mediaService.syncMediaForPost(savedPost.id!!, finalMarkdown)
 
         log.info { "Post created: postId=${savedPost.id}, blogId=${command.blogId}, userId=$userId" }
         return CreateNewPostInfo.from(savedPost)
@@ -114,17 +120,21 @@ class PostFacade(
 
         categoryService.validateCategoryBelongsToBlog(command.categoryId, command.blogId)
 
-        val summary = markdownService.extractSummary(command.contentMarkdown)
+        val finalMarkdown = mediaService.promoteTemporaryMedia(command.contentMarkdown)
+
+        val summary = markdownService.extractSummary(finalMarkdown)
 
         val updatedPost = postInternalService.updatePost(
             postId = command.postId,
             blogId = command.blogId,
             categoryId = command.categoryId,
             title = command.title,
-            content = command.contentMarkdown,
+            content = finalMarkdown,
             summary = summary,
             status = command.status
         )
+
+        mediaService.syncMediaForPost(command.postId, finalMarkdown)
 
         log.info { "Post updated: postId=${updatedPost.id}, blogId=${command.blogId}, userId=$userId" }
         return UpdatePostInfo.from(updatedPost)

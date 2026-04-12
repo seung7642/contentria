@@ -61,6 +61,14 @@ In either case, never close or abandon a PR due to reviewer feedback alone. The 
 - **Frontend (Next.js/TS):** Use functional components, hooks, and Tailwind CSS. Ensure strict TypeScript typing.
 - **Infrastructure (K8s):** Keep manifests in `infrastructure/kubernetes/` updated.
 
+### Backend Architecture Rules (see `backend/README.md` for full details)
+The `application/` layer allows up to 3 class types per domain:
+- `*Facade` — Cross-domain orchestration, owns `@Transactional` boundary. May depend on other domains' `*Service`.
+- `*Service` — Single-domain logic. **Must return DTOs only.** This is the only class other domains may depend on.
+- `*InternalService` — Domain-internal writes. May return entities, but only the same domain's Facade may use it.
+
+Utility classes (e.g., `MarkdownService`) are allowed in `application/` only if used within the same bounded context. Other domains must never depend on them.
+
 ## 7. Pull Request Guidelines
 - Reference the related issue with `closes #N` in the PR description.
 - Provide a clear summary of changes.

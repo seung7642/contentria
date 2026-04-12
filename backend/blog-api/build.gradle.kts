@@ -56,6 +56,10 @@ dependencies {
     implementation("org.commonmark:commonmark-ext-image-attributes:0.27.0")
     implementation("org.commonmark:commonmark-ext-task-list-items:0.27.0")
 
+    // AWS S3 SDK (Cloudflare R2 compatible)
+    implementation(platform("software.amazon.awssdk:bom:2.31.1"))
+    implementation("software.amazon.awssdk:s3")
+
     // 테스트 종속성 - 명시적으로 JUnit 프레임워크 지정
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
