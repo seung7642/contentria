@@ -176,7 +176,6 @@ CREATE TABLE media (
 
 CREATE INDEX idx_media_post_id ON media(post_id);
 CREATE INDEX idx_media_uploader_id ON media(uploader_id);
-CREATE INDEX idx_media_orphan ON media(post_id, created_at) WHERE post_id IS NULL;
 
 CREATE TABLE visit_logs (
     id UUID PRIMARY KEY,
