@@ -228,6 +228,19 @@ class MediaService(
         return fileName.substringAfterLast('.', "jpg").lowercase()
     }
 
+    /**
+     * Strips all EXIF metadata from a JPEG image by re-encoding pixel data only.
+     *
+     * [ImageIO.read] decodes the JPEG into a [java.awt.image.BufferedImage] (raw pixels),
+     * discarding every non-pixel segment (EXIF/APP1, IPTC/APP13, XMP, thumbnails, etc.).
+     * The pixel data is then re-encoded into a clean JPEG at [JPEG_REENCODING_QUALITY] (0.9),
+     * which is visually indistinguishable from the original for web-sized images.
+     *
+     * @param jpegBytes the original JPEG file bytes (may contain EXIF metadata)
+     * @return a new JPEG byte array with no metadata segments
+     * @throws ContentriaException with [ErrorCode.MEDIA_CONTENT_TYPE_MISMATCH]
+     *         if the bytes cannot be decoded as a valid image
+     */
     private fun stripExifMetadata(jpegBytes: ByteArray): ByteArray {
         val bufferedImage = ImageIO.read(ByteArrayInputStream(jpegBytes))
             ?: throw ContentriaException(ErrorCode.MEDIA_CONTENT_TYPE_MISMATCH)
