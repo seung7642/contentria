@@ -11,9 +11,14 @@ import com.contentria.common.global.error.ErrorCode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
+import javax.imageio.IIOImage
+import javax.imageio.ImageIO
+import javax.imageio.ImageWriteParam
 
 private val log = KotlinLogging.logger {}
 
@@ -98,14 +103,31 @@ class MediaService(
 
         val urlReplacements = mutableMapOf<String, String>()
         for (media in temporaryMedia) {
-            validateMediaContent(media)
-
             val oldKey = media.storedKey
             val newKey = oldKey.replaceFirst("$TMP_PREFIX/", "$MEDIA_PREFIX/")
             val newPublicUrl = "${appProperties.r2.publicUrl}/$newKey"
 
-            r2StorageClient.copyObject(oldKey, newKey)
-            r2StorageClient.deleteObject(oldKey)
+            // JPEG is the only format that requires re-encoding during promotion:
+            //  - EXIF metadata (GPS, camera info, timestamps) is a JPEG-specific concern.
+            //    PNG tEXt chunks rarely contain PII; GIF has no EXIF; WebP EXIF is already
+            //    stripped client-side by browser-image-compression, and JDK ImageIO cannot
+            //    decode WebP without a third-party plugin.
+            //  - Re-encoding GIF would destroy animation frames.
+            //  - For JPEG, a single full GetObject serves both magic-number validation
+            //    (first 12 bytes) and EXIF stripping, saving one R2 Class B operation.
+            //  - Non-JPEG formats use a 12-byte Range GET for validation, then CopyObject.
+            if (media.contentType == "image/jpeg") {
+                val originalBytes = r2StorageClient.getObjectBytes(oldKey)
+                validateMediaContent(media, originalBytes)
+                val strippedBytes = stripExifMetadata(originalBytes)
+                r2StorageClient.putObject(newKey, strippedBytes, media.contentType)
+                r2StorageClient.deleteObject(oldKey)
+                log.info { "EXIF stripped for JPEG: key=$newKey, before=${originalBytes.size}, after=${strippedBytes.size}" }
+            } else {
+                validateMediaContent(media)
+                r2StorageClient.copyObject(oldKey, newKey)
+                r2StorageClient.deleteObject(oldKey)
+            }
 
             val oldPublicUrl = media.publicUrl
             media.storedKey = newKey
@@ -183,10 +205,17 @@ class MediaService(
         }
     }
 
-    private fun validateMediaContent(media: Media) {
-        val headerBytes = r2StorageClient.getObjectHeadBytes(
-            media.storedKey, MediaValidator.HEADER_BYTES_NEEDED
-        )
+    /**
+     * Validates that the actual file content matches the declared content type.
+     *
+     * @param media the media record to validate
+     * @param prefetchedBytes if the full object bytes are already downloaded (e.g., for JPEG
+     *        EXIF stripping), pass them here to avoid a redundant R2 GetObject call.
+     *        When null, a 12-byte Range GET is performed instead.
+     */
+    private fun validateMediaContent(media: Media, prefetchedBytes: ByteArray? = null) {
+        val headerBytes = prefetchedBytes?.copyOfRange(0, MediaValidator.HEADER_BYTES_NEEDED)
+            ?: r2StorageClient.getObjectHeadBytes(media.storedKey, MediaValidator.HEADER_BYTES_NEEDED)
 
         val isValid = if (media.contentType == "image/webp") {
             MediaValidator.isValidWebP(headerBytes)
@@ -215,9 +244,41 @@ class MediaService(
         return fileName.substringAfterLast('.', "jpg").lowercase()
     }
 
+    /**
+     * Strips all EXIF metadata from a JPEG image by re-encoding pixel data only.
+     *
+     * [ImageIO.read] decodes the JPEG into a [java.awt.image.BufferedImage] (raw pixels),
+     * discarding every non-pixel segment (EXIF/APP1, IPTC/APP13, XMP, thumbnails, etc.).
+     * The pixel data is then re-encoded into a clean JPEG at [JPEG_REENCODING_QUALITY] (0.9),
+     * which is visually indistinguishable from the original for web-sized images.
+     *
+     * @param jpegBytes the original JPEG file bytes (may contain EXIF metadata)
+     * @return a new JPEG byte array with no metadata segments
+     * @throws ContentriaException with [ErrorCode.MEDIA_CONTENT_TYPE_MISMATCH]
+     *         if the bytes cannot be decoded as a valid image
+     */
+    private fun stripExifMetadata(jpegBytes: ByteArray): ByteArray {
+        val bufferedImage = ImageIO.read(ByteArrayInputStream(jpegBytes))
+            ?: throw ContentriaException(ErrorCode.MEDIA_CONTENT_TYPE_MISMATCH)
+
+        val output = ByteArrayOutputStream()
+        val writer = ImageIO.getImageWritersByFormatName("jpeg").next()
+        val param = writer.defaultWriteParam.apply {
+            compressionMode = ImageWriteParam.MODE_EXPLICIT
+            compressionQuality = JPEG_REENCODING_QUALITY
+        }
+
+        writer.output = ImageIO.createImageOutputStream(output)
+        writer.write(null, IIOImage(bufferedImage, null, null), param)
+        writer.dispose()
+
+        return output.toByteArray()
+    }
+
     companion object {
         const val TMP_PREFIX = "tmp"
         const val MEDIA_PREFIX = "media"
+        const val JPEG_REENCODING_QUALITY = 0.9f
 
         val ALLOWED_CONTENT_TYPES = setOf(
             "image/jpeg",
