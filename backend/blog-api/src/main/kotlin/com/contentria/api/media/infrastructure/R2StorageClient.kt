@@ -4,6 +4,7 @@ import com.contentria.api.global.properties.AppProperties
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
 import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.CopyObjectRequest
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import software.amazon.awssdk.services.s3.presigner.S3Presigner
@@ -49,5 +50,19 @@ class R2StorageClient(
 
         s3Client.deleteObject(deleteRequest)
         log.info { "Deleted R2 object: key=$storedKey" }
+    }
+
+    fun copyObject(sourceKey: String, destinationKey: String) {
+        val r2 = appProperties.r2
+
+        val copyRequest = CopyObjectRequest.builder()
+            .sourceBucket(r2.bucketName)
+            .sourceKey(sourceKey)
+            .destinationBucket(r2.bucketName)
+            .destinationKey(destinationKey)
+            .build()
+
+        s3Client.copyObject(copyRequest)
+        log.info { "Copied R2 object: sourceKey=$sourceKey, destinationKey=$destinationKey" }
     }
 }

@@ -94,19 +94,21 @@ class PostFacade(
 
         categoryService.validateCategoryBelongsToBlog(command.categoryId, command.blogId)
 
-        val summary = markdownService.extractSummary(command.contentMarkdown)
+        val finalMarkdown = mediaService.promoteTemporaryMedia(command.contentMarkdown)
+
+        val summary = markdownService.extractSummary(finalMarkdown)
 
         val savedPost = postInternalService.createPost(
             userId = userId,
             blogId = command.blogId,
             categoryId = command.categoryId,
             title = command.title,
-            content = command.contentMarkdown,
+            content = finalMarkdown,
             summary = summary,
             status = command.status
         )
 
-        mediaService.syncMediaForPost(savedPost.id!!, command.contentMarkdown)
+        mediaService.syncMediaForPost(savedPost.id!!, finalMarkdown)
 
         log.info { "Post created: postId=${savedPost.id}, blogId=${command.blogId}, userId=$userId" }
         return CreateNewPostInfo.from(savedPost)
@@ -118,19 +120,21 @@ class PostFacade(
 
         categoryService.validateCategoryBelongsToBlog(command.categoryId, command.blogId)
 
-        val summary = markdownService.extractSummary(command.contentMarkdown)
+        val finalMarkdown = mediaService.promoteTemporaryMedia(command.contentMarkdown)
+
+        val summary = markdownService.extractSummary(finalMarkdown)
 
         val updatedPost = postInternalService.updatePost(
             postId = command.postId,
             blogId = command.blogId,
             categoryId = command.categoryId,
             title = command.title,
-            content = command.contentMarkdown,
+            content = finalMarkdown,
             summary = summary,
             status = command.status
         )
 
-        mediaService.syncMediaForPost(command.postId, command.contentMarkdown)
+        mediaService.syncMediaForPost(command.postId, finalMarkdown)
 
         log.info { "Post updated: postId=${updatedPost.id}, blogId=${command.blogId}, userId=$userId" }
         return UpdatePostInfo.from(updatedPost)

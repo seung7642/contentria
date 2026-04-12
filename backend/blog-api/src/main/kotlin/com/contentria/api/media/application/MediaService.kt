@@ -30,7 +30,10 @@ class MediaService(
         validateFileSize(command.fileSize)
 
         val extension = extractExtension(command.fileName)
-        val storedKey = "media/$userId/${UUID.randomUUID()}.$extension"
+        // Upload to the temporary prefix. Objects are promoted to the permanent prefix
+        // when the post is saved (see promoteTemporaryMedia). Orphans in tmp/ are
+        // automatically removed by the R2 Object Lifecycle Rule (24h expiry).
+        val storedKey = "$TMP_PREFIX/$userId/${UUID.randomUUID()}.$extension"
         val publicUrl = "${appProperties.r2.publicUrl}/$storedKey"
 
         val media = Media(
@@ -69,6 +72,57 @@ class MediaService(
         log.info { "Media deleted: mediaId=$mediaId, userId=$userId" }
     }
 
+    /**
+     * Promotes all temporary media referenced in the markdown to the permanent prefix.
+     *
+     * For each image URL in the markdown whose media record still lives under `tmp/`,
+     * the object is copied from `tmp/` to `media/` in R2, the original `tmp/` object
+     * is deleted, and the media record's storedKey/publicUrl are updated. The markdown
+     * is rewritten so that references point to the new permanent URLs.
+     *
+     * Returns the rewritten markdown. If no temporary media is found, the original
+     * markdown is returned unchanged.
+     */
+    @Transactional
+    fun promoteTemporaryMedia(markdown: String): String {
+        val imageUrls = extractImageUrls(markdown)
+        if (imageUrls.isEmpty()) return markdown
+
+        val mediaList = mediaRepository.findByPublicUrlIn(imageUrls)
+        val temporaryMedia = mediaList.filter { it.storedKey.startsWith("$TMP_PREFIX/") }
+        if (temporaryMedia.isEmpty()) return markdown
+
+        val urlReplacements = mutableMapOf<String, String>()
+        for (media in temporaryMedia) {
+            val oldKey = media.storedKey
+            val newKey = oldKey.replaceFirst("$TMP_PREFIX/", "$MEDIA_PREFIX/")
+            val newPublicUrl = "${appProperties.r2.publicUrl}/$newKey"
+
+            r2StorageClient.copyObject(oldKey, newKey)
+            r2StorageClient.deleteObject(oldKey)
+
+            val oldPublicUrl = media.publicUrl
+            media.storedKey = newKey
+            media.publicUrl = newPublicUrl
+
+            urlReplacements[oldPublicUrl] = newPublicUrl
+        }
+
+        log.info { "Promoted ${temporaryMedia.size} temporary media to permanent storage" }
+
+        return urlReplacements.entries.fold(markdown) { acc, (old, new) -> acc.replace(old, new) }
+    }
+
+    /**
+     * Synchronizes media-post links for a saved post.
+     *
+     * - Links all media referenced in the markdown to the given postId (idempotent).
+     * - For media previously linked to this postId but no longer referenced, unlinks
+     *   them and deletes the underlying R2 object and DB record.
+     *
+     * This must be called after [promoteTemporaryMedia] so that the markdown contains
+     * only permanent (`media/`) URLs.
+     */
     @Transactional
     fun syncMediaForPost(postId: UUID, markdown: String) {
         val currentImageUrls = extractImageUrls(markdown)
@@ -85,9 +139,10 @@ class MediaService(
         }
 
         if (removedUrls.isNotEmpty()) {
-            val mediaToUnlink = mediaRepository.findByPublicUrlIn(removedUrls)
-            mediaToUnlink.forEach { it.postId = null }
-            log.debug { "Unlinked ${mediaToUnlink.size} media from postId=$postId" }
+            val mediaToDelete = previousMedia.filter { it.publicUrl in removedUrls }
+            mediaToDelete.forEach { r2StorageClient.deleteObject(it.storedKey) }
+            mediaRepository.deleteAll(mediaToDelete)
+            log.info { "Deleted ${mediaToDelete.size} unlinked media from postId=$postId" }
         }
     }
 
@@ -116,6 +171,9 @@ class MediaService(
     }
 
     companion object {
+        const val TMP_PREFIX = "tmp"
+        const val MEDIA_PREFIX = "media"
+
         val ALLOWED_CONTENT_TYPES = setOf(
             "image/jpeg",
             "image/png",
