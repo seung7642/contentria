@@ -11,9 +11,14 @@ import com.contentria.common.global.error.ErrorCode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
+import javax.imageio.IIOImage
+import javax.imageio.ImageIO
+import javax.imageio.ImageWriteParam
 
 private val log = KotlinLogging.logger {}
 
@@ -104,8 +109,16 @@ class MediaService(
             val newKey = oldKey.replaceFirst("$TMP_PREFIX/", "$MEDIA_PREFIX/")
             val newPublicUrl = "${appProperties.r2.publicUrl}/$newKey"
 
-            r2StorageClient.copyObject(oldKey, newKey)
-            r2StorageClient.deleteObject(oldKey)
+            if (media.contentType == "image/jpeg") {
+                val originalBytes = r2StorageClient.getObjectBytes(oldKey)
+                val strippedBytes = stripExifMetadata(originalBytes)
+                r2StorageClient.putObject(newKey, strippedBytes, media.contentType)
+                r2StorageClient.deleteObject(oldKey)
+                log.info { "EXIF stripped for JPEG: key=$newKey, before=${originalBytes.size}, after=${strippedBytes.size}" }
+            } else {
+                r2StorageClient.copyObject(oldKey, newKey)
+                r2StorageClient.deleteObject(oldKey)
+            }
 
             val oldPublicUrl = media.publicUrl
             media.storedKey = newKey
@@ -215,9 +228,28 @@ class MediaService(
         return fileName.substringAfterLast('.', "jpg").lowercase()
     }
 
+    private fun stripExifMetadata(jpegBytes: ByteArray): ByteArray {
+        val bufferedImage = ImageIO.read(ByteArrayInputStream(jpegBytes))
+            ?: throw ContentriaException(ErrorCode.MEDIA_CONTENT_TYPE_MISMATCH)
+
+        val output = ByteArrayOutputStream()
+        val writer = ImageIO.getImageWritersByFormatName("jpeg").next()
+        val param = writer.defaultWriteParam.apply {
+            compressionMode = ImageWriteParam.MODE_EXPLICIT
+            compressionQuality = JPEG_REENCODING_QUALITY
+        }
+
+        writer.output = ImageIO.createImageOutputStream(output)
+        writer.write(null, IIOImage(bufferedImage, null, null), param)
+        writer.dispose()
+
+        return output.toByteArray()
+    }
+
     companion object {
         const val TMP_PREFIX = "tmp"
         const val MEDIA_PREFIX = "media"
+        const val JPEG_REENCODING_QUALITY = 0.9f
 
         val ALLOWED_CONTENT_TYPES = setOf(
             "image/jpeg",

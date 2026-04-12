@@ -3,6 +3,7 @@ package com.contentria.api.media.infrastructure
 import com.contentria.api.global.properties.AppProperties
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
+import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.CopyObjectRequest
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
@@ -64,6 +65,32 @@ class R2StorageClient(
 
         val response = s3Client.getObjectAsBytes(getRequest)
         return response.asByteArray()
+    }
+
+    fun getObjectBytes(storedKey: String): ByteArray {
+        val r2 = appProperties.r2
+
+        val getRequest = GetObjectRequest.builder()
+            .bucket(r2.bucketName)
+            .key(storedKey)
+            .build()
+
+        val response = s3Client.getObjectAsBytes(getRequest)
+        return response.asByteArray()
+    }
+
+    fun putObject(storedKey: String, bytes: ByteArray, contentType: String) {
+        val r2 = appProperties.r2
+
+        val putRequest = PutObjectRequest.builder()
+            .bucket(r2.bucketName)
+            .key(storedKey)
+            .contentType(contentType)
+            .contentLength(bytes.size.toLong())
+            .build()
+
+        s3Client.putObject(putRequest, RequestBody.fromBytes(bytes))
+        log.info { "Uploaded R2 object: key=$storedKey, size=${bytes.size}" }
     }
 
     fun copyObject(sourceKey: String, destinationKey: String) {
