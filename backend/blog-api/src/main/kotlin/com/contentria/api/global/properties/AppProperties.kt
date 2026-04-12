@@ -67,6 +67,8 @@ data class R2Properties(
     @field:NotBlank val publicUrl: String,
     val presignedUrlTtlMinutes: Long = 10L,
     val maxFileSizeBytes: Long = 10 * 1024 * 1024, // 10MB
+    val dailyUploadLimitBytes: Long = 100 * 1024 * 1024, // 100MB per user per day
+    val maxImagesPerPost: Int = 20,
 )
 
 @Validated

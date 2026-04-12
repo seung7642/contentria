@@ -4,6 +4,7 @@ import com.contentria.api.media.domain.Media
 import com.contentria.api.media.domain.MediaRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Repository
+import java.time.ZonedDateTime
 import java.util.*
 
 @Repository
@@ -33,5 +34,13 @@ class MediaRepositoryImpl(
 
     override fun findByPostId(postId: UUID): List<Media> {
         return mediaJpaRepository.findByPostId(postId)
+    }
+
+    override fun sumFileSizeByUploaderIdAndCreatedAtAfter(uploaderId: UUID, since: ZonedDateTime): Long {
+        return mediaJpaRepository.sumFileSizeByUploaderIdAndCreatedAtAfter(uploaderId, since)
+    }
+
+    override fun countByPostId(postId: UUID): Int {
+        return mediaJpaRepository.countByPostId(postId)
     }
 }

@@ -11,6 +11,8 @@ import com.contentria.common.global.error.ErrorCode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 private val log = KotlinLogging.logger {}
@@ -28,6 +30,7 @@ class MediaService(
     fun createPresignedUrl(userId: UUID, command: PresignedUrlCommand): PresignedUrlInfo {
         validateFileType(command.contentType)
         validateFileSize(command.fileSize)
+        validateDailyUploadQuota(userId, command.fileSize)
 
         val extension = extractExtension(command.fileName)
         // Upload to the temporary prefix. Objects are promoted to the permanent prefix
@@ -126,6 +129,8 @@ class MediaService(
     @Transactional
     fun syncMediaForPost(postId: UUID, markdown: String) {
         val currentImageUrls = extractImageUrls(markdown)
+        validatePostImageLimit(currentImageUrls.size)
+
         val previousMedia = mediaRepository.findByPostId(postId)
         val previousUrls = previousMedia.map { it.publicUrl }
 
@@ -163,6 +168,21 @@ class MediaService(
     private fun validateFileSize(fileSize: Long) {
         if (fileSize > appProperties.r2.maxFileSizeBytes) {
             throw ContentriaException(ErrorCode.MEDIA_FILE_TOO_LARGE)
+        }
+    }
+
+    private fun validateDailyUploadQuota(userId: UUID, fileSize: Long) {
+        val startOfDay = ZonedDateTime.now().truncatedTo(ChronoUnit.DAYS)
+        val usedBytes = mediaRepository.sumFileSizeByUploaderIdAndCreatedAtAfter(userId, startOfDay)
+        if (usedBytes + fileSize > appProperties.r2.dailyUploadLimitBytes) {
+            log.warn { "Daily upload quota exceeded: userId=$userId, usedBytes=$usedBytes, requestedBytes=$fileSize" }
+            throw ContentriaException(ErrorCode.MEDIA_DAILY_UPLOAD_QUOTA_EXCEEDED)
+        }
+    }
+
+    private fun validatePostImageLimit(imageCount: Int) {
+        if (imageCount > appProperties.r2.maxImagesPerPost) {
+            throw ContentriaException(ErrorCode.MEDIA_POST_IMAGE_LIMIT_EXCEEDED)
         }
     }
 
