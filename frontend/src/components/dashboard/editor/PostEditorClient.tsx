@@ -204,7 +204,11 @@ function helloWorld() {
       } catch (error) {
         setSaveStatus('error');
         console.error('저장 실패', error);
-        alert('포스트 저장에 실패했습니다. 다시 시도해주세요.');
+        const message =
+          error instanceof Error && error.message
+            ? error.message
+            : '포스트 저장에 실패했습니다. 다시 시도해주세요.';
+        alert(message);
       } finally {
         setTimeout(() => setSaveStatus('idle'), 2000);
       }

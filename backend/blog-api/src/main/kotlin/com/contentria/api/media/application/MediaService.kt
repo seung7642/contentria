@@ -199,8 +199,8 @@ class MediaService(
                 "Content-type mismatch: mediaId=${media.id}, declared=${media.contentType}, " +
                     "header=${headerBytes.take(12).joinToString(" ") { "%02X".format(it) }}"
             }
-            r2StorageClient.deleteObject(media.storedKey)
-            mediaRepository.delete(media)
+            // Do not delete the R2 object here — the tmp/ lifecycle rule (24h) handles cleanup.
+            // Deleting immediately would leave a broken image URL in the editor with no way to recover.
             throw ContentriaException(ErrorCode.MEDIA_CONTENT_TYPE_MISMATCH)
         }
     }
