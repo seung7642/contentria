@@ -15,4 +15,11 @@ interface VisitLogRepository {
     fun countTodayVisitors(blogId: UUID, startOfToday: ZonedDateTime): Long
 
     fun countTodayViews(blogId: UUID, startOfDay: ZonedDateTime): Long
+
+    fun existsRecentVisit(
+        blogId: UUID,
+        postId: UUID?,
+        visitorIp: String,
+        since: ZonedDateTime
+    ): Boolean
 }

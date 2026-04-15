@@ -37,4 +37,13 @@ class VisitLogRepositoryImpl(
     override fun countTodayViews(blogId: UUID, startOfDay: ZonedDateTime): Long {
         return jpaRepository.countTodayViews(blogId, startOfDay)
     }
+
+    override fun existsRecentVisit(
+        blogId: UUID,
+        postId: UUID?,
+        visitorIp: String,
+        since: ZonedDateTime
+    ): Boolean {
+        return jpaRepository.existsRecentVisit(blogId, postId, visitorIp, since)
+    }
 }

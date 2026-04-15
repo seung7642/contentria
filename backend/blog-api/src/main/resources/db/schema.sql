@@ -190,6 +190,7 @@ CREATE TABLE visit_logs (
 );
 
 CREATE INDEX idx_visit_logs_date ON visit_logs (blog_id, visited_at);
+CREATE INDEX idx_visit_logs_dedup ON visit_logs (blog_id, post_id, visitor_ip, visited_at);
 
 CREATE TABLE daily_statistics (
     id UUID PRIMARY KEY,
