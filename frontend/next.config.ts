@@ -40,6 +40,20 @@ const nextConfig: NextConfig = {
             key: 'Content-Security-Policy',
             value: "frame-ancestors 'self' https://accounts.google.com",
           },
+          // Prevent MIME-sniffing. If a response is served with an incorrect Content-Type,
+          // the browser must not re-interpret it based on content (e.g. rendering a
+          // disguised HTML file as a script). Complements server-side magic number
+          // validation for uploaded images (see backend/docs/media-upload-hardening.md).
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          // Strip path/query from cross-origin Referer to avoid leaking post slugs or
+          // query parameters to third-party resources (images, analytics, etc.).
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
         ],
       },
     ];
