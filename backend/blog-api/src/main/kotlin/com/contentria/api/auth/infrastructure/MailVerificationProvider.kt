@@ -25,8 +25,9 @@ class MailVerificationProvider(
         val cache = getCacheOrThrow()
 
         if (cache.get(email) != null) {
-            log.warn { "Verification code requested too frequently" }
-            throw ContentriaException(ErrorCode.TOO_MANY_REQUESTS)
+            // Reuse the pending code so the email already in the inbox stays valid.
+            log.info { "Verification code already pending; skipping send." }
+            return
         }
 
         val code = generateRandomCode()
