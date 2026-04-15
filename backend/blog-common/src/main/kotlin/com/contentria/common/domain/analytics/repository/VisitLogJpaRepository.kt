@@ -23,4 +23,19 @@ interface VisitLogJpaRepository : JpaRepository<VisitLog, UUID> {
         AND v.visitedAt >= :startOfDay
     """)
     fun countTodayViews(blogId: UUID, startOfDay: ZonedDateTime): Long
+
+    @Query("""
+        SELECT CASE WHEN COUNT(v) > 0 THEN TRUE ELSE FALSE END
+        FROM VisitLog v
+        WHERE v.blogId = :blogId
+        AND ((:postId IS NULL AND v.postId IS NULL) OR v.postId = :postId)
+        AND v.visitorIp = :visitorIp
+        AND v.visitedAt >= :since
+    """)
+    fun existsRecentVisit(
+        blogId: UUID,
+        postId: UUID?,
+        visitorIp: String,
+        since: ZonedDateTime
+    ): Boolean
 }

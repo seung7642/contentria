@@ -8,10 +8,14 @@ import java.util.*
 @Entity
 @Table(
     name = "visit_logs",
-    schema = "contentria"
-//    indexes = [
-//        Index(name = "idx_visit_logs_blot_date", columnList = "blog_id, visited_at")
-//    ]
+    schema = "contentria",
+    indexes = [
+        Index(name = "idx_visit_logs_date", columnList = "blog_id, visited_at"),
+        Index(
+            name = "idx_visit_logs_dedup",
+            columnList = "blog_id, post_id, visitor_ip, visited_at"
+        )
+    ]
 )
 class VisitLog(
     @Id

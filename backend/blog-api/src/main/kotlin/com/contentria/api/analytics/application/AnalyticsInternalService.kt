@@ -7,6 +7,8 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.Duration
+import java.time.ZonedDateTime
 
 private val log = KotlinLogging.logger {  }
 
@@ -18,6 +20,10 @@ class AnalyticsInternalService(
     @Transactional
     fun logVisit(command: LogVisitCommand) {
         try {
+            if (shouldSkipAsDuplicate(command)) {
+                log.debug { "Skipping visit log within cooldown window." }
+                return
+            }
             val visitLog = VisitLog.create(
                 blogId = command.blogId,
                 postId = command.postId,
@@ -30,5 +36,20 @@ class AnalyticsInternalService(
         } catch (e: Exception) {
             log.error(e) { "Failed to save visit log async" }
         }
+    }
+
+    private fun shouldSkipAsDuplicate(command: LogVisitCommand): Boolean {
+        val ip = command.visitorIp ?: return false
+        val since = ZonedDateTime.now().minus(PV_COOLDOWN)
+        return visitLogRepository.existsRecentVisit(
+            blogId = command.blogId,
+            postId = command.postId,
+            visitorIp = ip,
+            since = since
+        )
+    }
+
+    companion object {
+        private val PV_COOLDOWN: Duration = Duration.ofMinutes(30)
     }
 }
