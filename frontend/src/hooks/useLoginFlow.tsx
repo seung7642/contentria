@@ -10,6 +10,7 @@ import {
   useVerifyOtpMutation,
 } from './mutations/useAuthMutations';
 import { RECAPTCHA_LOGIN_WITH_PASSWORD_ACTION, RECAPTCHA_SEND_OTP_ACTION } from '@/constants/auth';
+import { ERROR_CODES } from '@/constants/errorCodes';
 import { ApiError } from '@/types/api/errors';
 
 type LoginFlowContextType = ReturnType<typeof useLoginFlowLogic>;
@@ -50,6 +51,16 @@ function useLoginFlowLogic() {
       resetSendOtp();
     }
   }, [combinedError, resetLoginWithPassword, resetSendOtp]);
+
+  useEffect(() => {
+    if (
+      combinedError &&
+      combinedError.code === ERROR_CODES.INVALID_CREDENTIALS &&
+      step === 'recaptcha_v2_challenge'
+    ) {
+      setStep('password');
+    }
+  }, [combinedError, step]);
 
   function updateFormData(field: keyof LoginFormData, value: string) {
     setFormData((prev) => ({ ...prev, [field]: value }));
