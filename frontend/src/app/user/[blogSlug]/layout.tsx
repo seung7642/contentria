@@ -34,7 +34,7 @@ export default async function BlogLayout({ children, sidebar, params }: BlogLayo
   return (
     <>
       <div className="flex min-h-[100dvh] flex-col bg-white">
-        <BlogHeader blogTitle={layoutData?.blog.title} blogSlug={blogSlug} />
+        <BlogHeader blogSlug={blogSlug} />
 
         <div className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col px-4 py-8 sm:px-6 lg:flex-row lg:gap-12 lg:py-12">
           {sidebar}

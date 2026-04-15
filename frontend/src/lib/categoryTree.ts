@@ -2,7 +2,7 @@ import { CategoryResponse, CategoryTreeNode } from '@/types/api/category';
 
 export function buildCategoryTree(
   categories: CategoryResponse[],
-  blogSlug: string
+  _blogSlug: string
 ): CategoryTreeNode[] {
   const totalPostCount = categories.reduce((sum, category) => {
     if (!category.parentId) {

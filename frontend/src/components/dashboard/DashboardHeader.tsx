@@ -2,9 +2,8 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { Search, Bell, Home } from 'lucide-react';
+import { Search, Home } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import NotificationDropdown from './header/NotificationDropdown';
 import UserAvatar from './header/UserAvatar';
 import ProfileDropdown from './header/ProfileDropdown';
 import { useUserProfile } from '@/hooks/queries/useUserQuery';
@@ -24,28 +23,12 @@ export default function DashboardHeader({ blogSlug }: DashboardHeaderProps) {
   const router = useRouter();
 
   const [isSearchVisible, setIsSearchVisible] = useState(false);
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
-  const notificationRef = useRef(null);
   const profileRef = useRef(null);
 
-  // 알림 목록 - 실제로는 API에서 가져올 것
-  const notifications = [
-    { id: 1, text: '새 댓글이 달렸습니다.', time: '방금 전' },
-    { id: 2, text: '광고 수익이 입금되었습니다.', time: '3시간 전' },
-    { id: 3, text: '블로그 방문자가 증가했습니다.', time: '어제' },
-  ];
-
-  // 외부 클릭 감지 (알림, 프로필 드롭다운 닫기)
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        notificationRef.current &&
-        !(notificationRef.current as HTMLElement).contains(event.target as Node)
-      ) {
-        setIsNotificationOpen(false);
-      }
       if (
         profileRef.current &&
         !(profileRef.current as HTMLElement).contains(event.target as Node)

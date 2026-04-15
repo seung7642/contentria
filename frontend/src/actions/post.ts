@@ -1,6 +1,5 @@
 'use server';
 
-import { PATHS } from '@/constants/paths';
 import apiServer from '@/lib/apiServer';
 import { Page } from '@/types/api/common';
 import {

@@ -2,7 +2,6 @@
 
 import { useSortable } from '@dnd-kit/sortable';
 import { CategoryResponse } from '@/types/api/category';
-import { CSS } from '@dnd-kit/utilities';
 import CategoryItemCard from './CategoryItemCard';
 
 interface SortableItemProps {
@@ -28,7 +27,7 @@ export default function SortableItem({
   indicatorSide,
   ...props
 }: SortableItemProps) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+  const { attributes, listeners, setNodeRef, transition, isDragging } = useSortable({
     id: category.id,
     animateLayoutChanges: () => false,
   });

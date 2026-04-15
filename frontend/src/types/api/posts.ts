@@ -1,4 +1,4 @@
-import { AuthorResponse, UserSummaryResponse } from './user';
+import { AuthorResponse } from './user';
 
 export interface PostSummary {
   id: string;

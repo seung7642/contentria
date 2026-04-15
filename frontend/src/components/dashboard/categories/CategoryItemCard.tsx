@@ -1,6 +1,7 @@
 'use client';
 
 import { CategoryResponse } from '@/types/api/category';
+import type { DraggableSyntheticListeners } from '@dnd-kit/core';
 import {
   ChevronLeft,
   ChevronRight,
@@ -23,7 +24,7 @@ interface CategoryItemCardProps {
   onIndent?: (id: string) => void;
   onOutdent?: (id: string) => void;
   onAddSubCategory?: (parentId: string) => void;
-  dragHandleProps?: any;
+  dragHandleProps?: DraggableSyntheticListeners;
 }
 
 export default function CategoryItemCard({

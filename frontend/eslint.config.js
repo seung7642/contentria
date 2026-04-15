@@ -3,7 +3,7 @@ import reactPlugin from 'eslint-plugin-react';
 import hooksPlugin from 'eslint-plugin-react-hooks';
 import ts from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
-import eslintPluginPrettierRecommended, { ignores } from 'eslint-plugin-prettier/recommended';
+import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 
 export default [
   {
@@ -14,7 +14,6 @@ export default [
       '.next/**',
       'out/**',
       'public/**',
-      ...ignores,
     ],
   },
   {
@@ -61,6 +60,18 @@ export default [
     rules: {
       ...ts.configs['eslint-recommended'].rules,
       ...ts.configs['recommended'].rules,
+      // Allow underscore-prefixed identifiers to be intentionally unused.
+      // Standard convention for parameters/variables whose position is required
+      // but whose value is deliberately ignored (e.g., `(_, index) => ...`).
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          destructuredArrayIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
     },
   },
   eslintPluginPrettierRecommended, // eslint-config-prettier 기능을 포함한다.

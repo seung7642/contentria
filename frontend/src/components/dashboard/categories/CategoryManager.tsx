@@ -3,7 +3,6 @@
 import { Button } from '@/components/ui/button';
 import { CategoryResponse } from '@/types/api/category';
 import {
-  closestCenter,
   closestCorners,
   defaultDropAnimationSideEffects,
   DndContext,
@@ -18,7 +17,6 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import {
-  arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,

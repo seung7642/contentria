@@ -1,5 +1,4 @@
 import React from 'react';
-import OtpInput from 'react-otp-input';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '../ui/input-otp';
 import { Loader2 } from 'lucide-react';
 
@@ -18,7 +17,6 @@ export default function VerificationStep({
   isLoading,
   error,
   onCodeChange,
-  onResendCode,
 }: VerificationStepProps) {
   return (
     <>

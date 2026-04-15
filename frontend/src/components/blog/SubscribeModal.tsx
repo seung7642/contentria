@@ -1,6 +1,6 @@
 'use client';
 
-import { Smartphone, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { FormEvent, useEffect, useState } from 'react';
 
 interface SubscribeModalProps {
