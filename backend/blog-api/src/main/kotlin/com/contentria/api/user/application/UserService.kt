@@ -20,7 +20,7 @@ class UserService(
     @Transactional(readOnly = true)
     fun getActiveUserInfo(userId: UUID): UserInfo {
         val user = userRepository.findActiveById(userId)
-            ?: throw ContentriaException(ErrorCode.USER_NOT_FOUND)
+            ?: throw ContentriaException(ErrorCode.AUTHENTICATED_USER_NOT_FOUND)
 
         if (!user.status.isActive()) {
             throw ContentriaException(ErrorCode.USER_NOT_ACTIVATED)
@@ -47,6 +47,11 @@ class UserService(
             ?: throw ContentriaException(ErrorCode.USER_NOT_FOUND)
 
         return UserInfo.from(user)
+    }
+
+    @Transactional(readOnly = true)
+    fun findUserInfoByEmail(email: String): UserInfo? {
+        return userRepository.findByEmail(email)?.let(UserInfo::from)
     }
 
     @Transactional
@@ -129,7 +134,7 @@ class UserService(
     @Transactional
     fun updateNickname(userId: UUID, newNickname: String): UserInfo {
         val user = userRepository.findActiveById(userId)
-            ?: throw ContentriaException(ErrorCode.USER_NOT_FOUND)
+            ?: throw ContentriaException(ErrorCode.AUTHENTICATED_USER_NOT_FOUND)
 
         user.nickname = newNickname
 

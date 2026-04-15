@@ -92,7 +92,13 @@ class AuthFacade(
     fun sendOtp(command: SendOtpCommand) {
         captchaProvider.verify(command.captcha)
 
-        val user = userService.getUserInfo(command.email)
+        // Respond identically for registered and unregistered emails so callers cannot
+        // enumerate which accounts exist by observing the response.
+        val user = userService.findUserInfoByEmail(command.email)
+        if (user == null) {
+            log.info { "OTP requested for an unregistered email; skipping send." }
+            return
+        }
 
         verificationCodeProvider.sendVerificationCode(command.email, user.username)
     }

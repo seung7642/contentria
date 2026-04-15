@@ -30,12 +30,15 @@ enum class ErrorCode(
     OIDC_POST_PROCESSING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "AU0003", "An internal server error occurred after OIDC authentication."),
     REFRESH_TOKEN_NOT_FOUND(HttpStatus.UNAUTHORIZED, "AU0004", "Refresh token not found. Please log in again."),
     REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "AU0005", "Refresh token has expired. Please log in again."),
-    USER_NOT_FOUND(HttpStatus.UNAUTHORIZED, "AU0006", "User associated with the token not found. Please log in again."),
+    AUTHENTICATED_USER_NOT_FOUND(HttpStatus.UNAUTHORIZED, "AU0006", "User associated with the token not found. Please log in again."),
     AUTHENTICATION_REQUIRED(HttpStatus.UNAUTHORIZED, "AU0007", "Authentication is required to access this resource."),
     AUTHORIZATION_FAILED(HttpStatus.FORBIDDEN, "AU0008", "You do not have permission to access this resource."),
     INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "AU0009", "Invalid email or password."),
     USER_NOT_ACTIVATED(HttpStatus.FORBIDDEN, "AU0010", "User account is not active. Please verify your email or contact support."),
     REQUIRED_ROLE_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR, "AU0011", "Required role not found in the system. Please contact support."),
+
+    // User
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "US0000", "User not found."),
 
     // Blog
     DUPLICATE_BLOG_SLUG(HttpStatus.CONFLICT, "BL0000", "Blog slug already in use. Please choose a different one."),
