@@ -154,20 +154,30 @@ User-uploaded images are served from `images.contentria.com` (Cloudflare R2 cust
 | `Content-Security-Policy` on image pages | Restricts what scripts/styles can execute on pages rendering user images | Must be carefully scoped to avoid breaking legitimate functionality |
 | `Content-Disposition: attachment` | Forces download instead of inline rendering | Breaks `<img>` tags; only appropriate for non-image file types |
 
-**Decision:** Apply `X-Content-Type-Options: nosniff` via Cloudflare Transform Rules on all `images.contentria.com` responses. This is the browser-side complement to server-side magic number validation (#10) — even if a polyglot file slips through, the browser will not re-interpret `image/jpeg` as `text/html`.
+**Decision:** Apply `X-Content-Type-Options: nosniff` in two places:
 
-CSP tightening on the Next.js side can be done incrementally and is a broader concern than just media uploads.
+1. **Cloudflare Transform Rules** on `images.contentria.com` — covers all R2-served image responses.
+2. **Next.js `headers()` config** — covers all responses served from the Next.js app itself (pages, API routes, static assets).
+
+This is the browser-side complement to server-side magic number validation (#10). Even if a polyglot file bypasses server validation, the browser will not re-interpret `image/jpeg` as `text/html`.
+
+**Trust model note:** `nosniff` does not defend against network-layer MITM header tampering — that concern is already handled by HTTPS/TLS integrity guarantees. `nosniff` defends against the browser's own "helpful" MIME sniffing behavior when a server-declared `Content-Type` looks suspicious to the browser.
+
+`Referrer-Policy: strict-origin-when-cross-origin` was also added to prevent leaking post slugs and query parameters to third-party resources via the `Referer` header.
+
+CSP tightening on the Next.js side (beyond `frame-ancestors`) is deferred — it is a broader concern than media uploads and requires per-page evaluation to avoid breaking legitimate functionality.
 
 `Content-Disposition: attachment` is not applicable today since only image formats are served inline via `<img>` tags.
 
 ### Action
 
-- Configure Cloudflare Transform Rule: `X-Content-Type-Options: nosniff` on `images.contentria.com`.
-- No backend code changes required — this is purely a CDN configuration.
+- **Cloudflare Dashboard** (manual): Configure a Transform Rule adding `X-Content-Type-Options: nosniff` to all responses from `images.contentria.com`.
+- **`frontend/next.config.ts`**: Add `X-Content-Type-Options: nosniff` and `Referrer-Policy: strict-origin-when-cross-origin` to the global `headers()` configuration.
 
 ### Result
 
-- Browser MIME sniffing is disabled for all CDN-served assets.
+- Browser MIME sniffing is disabled for both CDN-served assets and Next.js app responses.
+- Cross-origin `Referer` leakage is limited to origin-only on cross-origin navigations.
 - Combined with magic number validation (#10), the attack surface for file-type spoofing is closed at both server and browser layers.
 
 ---
