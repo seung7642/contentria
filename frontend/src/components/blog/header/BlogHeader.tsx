@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation';
 
 import ProfileDropdown from '@/components/dashboard/header/ProfileDropdown';
 import UserAvatar from '@/components/dashboard/header/UserAvatar';
-import { useUiStore } from '@/store/uiStore';
 import { PATHS } from '@/constants/paths';
 import { logoutAction } from '@/actions/auth';
 import { useUserProfile } from '@/hooks/queries/useUserQuery';
@@ -15,17 +14,15 @@ import { useQueryClient } from '@tanstack/react-query';
 import { userKeys } from '@/hooks/queries/keys';
 
 interface BlogHeaderProps {
-  blogTitle?: string;
   blogSlug: string;
 }
 
-export default function BlogHeader({ blogTitle, blogSlug }: BlogHeaderProps) {
+export default function BlogHeader({ blogSlug }: BlogHeaderProps) {
   const { data: user } = useUserProfile();
 
   const queryClient = useQueryClient();
   const router = useRouter();
 
-  const openSubscribeModal = useUiStore((state) => state.openSubscribeModal);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
 

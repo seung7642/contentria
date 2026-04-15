@@ -2,7 +2,6 @@
 
 import {
   ColumnDef,
-  ColumnFiltersState,
   flexRender,
   getCoreRowModel,
   getPaginationRowModel,

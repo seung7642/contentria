@@ -1,6 +1,7 @@
 'use server';
 
 import apiServer from '@/lib/apiServer';
+import { ApiError } from '@/types/api/errors';
 import { User } from '@/types/api/user';
 import { revalidatePath } from 'next/cache';
 import { UpdateUserProfileRequest, updateUserProfileRequestSchema } from './schemas';
@@ -10,8 +11,8 @@ export async function getUserProfileAction(
 ): Promise<User | null> {
   try {
     return await apiServer.get<User>('/api/users/me', { requireAuth: true, shouldRedirectOn401 });
-  } catch (error: any) {
-    if (error.status === 401 && !shouldRedirectOn401) {
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401 && !shouldRedirectOn401) {
       return null;
     }
     throw error;

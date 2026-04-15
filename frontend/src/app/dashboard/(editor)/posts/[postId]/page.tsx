@@ -10,7 +10,7 @@ interface EditPostPageProps {
   }>;
 }
 
-export async function generateMetadata({ params }: EditPostPageProps): Promise<Metadata> {
+export async function generateMetadata(): Promise<Metadata> {
   return {
     title: '게시글 수정',
     description: '작성한 게시글을 수정합니다.',

@@ -8,7 +8,7 @@ import {
 import Link from 'next/link';
 import { useState } from 'react';
 import PopularPostList from './PopularPostList';
-import { ArrowRight, Eye, FileText, Loader2, MessageSquare, ThumbsUp } from 'lucide-react';
+import { ArrowRight, Eye, FileText, Loader2, MessageSquare } from 'lucide-react';
 import TrafficChart from './TrafficChart';
 import StatCard from './StatCard';
 import { TimeRange } from '@/types/api/dashboard';

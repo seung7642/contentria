@@ -83,11 +83,11 @@ let isRefreshing = false;
 // 갱신 동안 대기하는 요청들을 담을 큐
 let failedQueue: Array<{
   resolve: (value?: unknown) => void;
-  reject: (reason?: any) => void;
+  reject: (reason?: unknown) => void;
 }> = [];
 
 // 대기열 처리 함수
-const processQueue = (error: any, token: string | null | undefined = null) => {
+const processQueue = (error: unknown, token: string | null | undefined = null) => {
   failedQueue.forEach((promise) => {
     if (error) {
       promise.reject(error);

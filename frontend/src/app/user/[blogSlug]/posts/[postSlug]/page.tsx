@@ -111,7 +111,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
               ]}
               components={{
                 code(props) {
-                  const { children, className, node, ref, ...rest } = props;
+                  const { children, className, node: _node, ref: _ref, ...rest } = props;
                   const match = /language-(\w+)/.exec(className || '');
                   return match ? (
                     <SyntaxHighlighter

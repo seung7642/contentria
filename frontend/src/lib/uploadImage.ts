@@ -27,9 +27,7 @@ async function validateMagicNumber(file: File): Promise<boolean> {
 
   const header = new Uint8Array(await file.slice(0, 12).arrayBuffer());
 
-  return signatures.every(({ offset, bytes }) =>
-    bytes.every((b, i) => header[offset + i] === b)
-  );
+  return signatures.every(({ offset, bytes }) => bytes.every((b, i) => header[offset + i] === b));
 }
 
 /**
@@ -46,11 +44,14 @@ export async function uploadImageToR2(file: File): Promise<string> {
   }
 
   if (!(await validateMagicNumber(file))) {
-    throw new Error('파일 내용이 선언된 형식과 일치하지 않습니다. 유효한 이미지 파일을 업로드해주세요.');
+    throw new Error(
+      '파일 내용이 선언된 형식과 일치하지 않습니다. 유효한 이미지 파일을 업로드해주세요.'
+    );
   }
 
   // Compress the image (skip GIFs to preserve animation)
-  const compressedFile = file.type === 'image/gif' ? file : await imageCompression(file, COMPRESSION_OPTIONS);
+  const compressedFile =
+    file.type === 'image/gif' ? file : await imageCompression(file, COMPRESSION_OPTIONS);
 
   // Request presigned URL from backend via Server Action
   const { presignedUrl, publicUrl } = await requestPresignedUrlAction({

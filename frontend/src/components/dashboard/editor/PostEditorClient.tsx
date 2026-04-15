@@ -46,7 +46,7 @@ import {
 import { ForwardRefEditor } from '@/components/dashboard/ForwardRefEditor';
 import { createNewPostAction, updatePostAction } from '@/actions/post';
 import { uploadImageToR2 } from '@/lib/uploadImage';
-import { PostDetail, PostDetailResponse, PostStatus } from '@/types/api/posts';
+import { PostDetailResponse, PostStatus } from '@/types/api/posts';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { PATHS } from '@/constants/paths';
