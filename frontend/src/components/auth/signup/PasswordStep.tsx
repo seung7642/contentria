@@ -61,8 +61,7 @@ export default function PasswordStep() {
     submitPasswordStep(null);
   };
 
-  const displayError =
-    errors.password?.message || (submissionType === 'password' ? error?.message : null);
+  const displayError = errors.password?.message || error?.message;
 
   return (
     <>
