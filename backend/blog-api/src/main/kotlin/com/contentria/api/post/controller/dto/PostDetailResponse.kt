@@ -42,14 +42,14 @@ data class PostDetailResponse(
 
     data class AuthorResponse(
         val userId: UUID,
-        val username: String,
+        val nickname: String,
         val profileImageUrl: String?
     ) {
         companion object {
             fun from(info: UserInfo): AuthorResponse {
                 return AuthorResponse(
                     userId = info.userId,
-                    username = info.username,
+                    nickname = info.nickname,
                     profileImageUrl = info.pictureUrl
                 )
             }

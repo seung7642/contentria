@@ -14,7 +14,7 @@ export interface UserSummaryResponse {
 
 export interface AuthorResponse {
   userId: string;
-  username: string;
+  nickname: string;
   profileImageUrl: string | null;
 }
 

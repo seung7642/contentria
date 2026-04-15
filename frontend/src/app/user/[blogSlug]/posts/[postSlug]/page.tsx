@@ -91,7 +91,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
               {post.title}
             </h1>
             <div className="flex items-center space-x-3 text-sm text-gray-500">
-              <span className="font-semibold text-indigo-600">{author.username}</span>
+              <span className="font-semibold text-indigo-600">{author.nickname}</span>
               <span>•</span>
               <time dateTime={post.publishedAt}>
                 {new Date(post.publishedAt).toLocaleDateString('ko-KR')}
