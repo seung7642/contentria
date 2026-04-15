@@ -31,12 +31,11 @@ export default function CreateBlogWelcome() {
   const { mutate: createBlog, isPending, error } = useCreateBlogMutation();
 
   const onSubmit: SubmitHandler<FormValues> = (data) => {
-    try {
-      createBlog(data);
-      router.refresh(); // 블로그 생성 후 대시보드 새로고침
-    } catch (error) {
-      console.error('블로그 생성 실패:', error);
-    }
+    createBlog(data, {
+      onSuccess: () => {
+        router.refresh();
+      },
+    });
   };
 
   return (
