@@ -71,7 +71,7 @@ class AuthController(
 
         val command = request.toCommand(clientIp)
         authFacade.initiate(command)
-        return ResponseEntity.ok().build()
+        return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/verify-code")
