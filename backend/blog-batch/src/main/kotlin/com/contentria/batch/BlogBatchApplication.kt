@@ -23,7 +23,7 @@ class BlogBatchApplication
 
 fun main(args: Array<String>) {
     val context = runApplication<BlogBatchApplication>(*args) {
-        webApplicationType = WebApplicationType.NONE
+        setWebApplicationType(WebApplicationType.NONE)
     }
     val exitCode = SpringApplication.exit(context)
     exitProcess(exitCode)
@@ -35,7 +35,7 @@ class BatchRouteRunner(
     private val appProperties: AppProperties
 ) : CommandLineRunner {
 
-    override fun run(vararg args: String?) {
+    override fun run(vararg args: String) {
         val jobName = appProperties.batch.jobName
 
         val executor = executors.find { it.getJobName() == jobName }

@@ -8,7 +8,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.springframework.batch.core.JobParametersBuilder
+import org.springframework.batch.core.job.parameters.JobParametersBuilder
 import org.springframework.batch.test.JobLauncherTestUtils
 import org.springframework.batch.test.context.SpringBatchTest
 import org.springframework.beans.factory.annotation.Autowired

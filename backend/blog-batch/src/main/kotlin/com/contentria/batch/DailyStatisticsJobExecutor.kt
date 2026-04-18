@@ -1,8 +1,8 @@
 package com.contentria.batch
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.batch.core.Job
-import org.springframework.batch.core.JobParametersBuilder
+import org.springframework.batch.core.job.Job
+import org.springframework.batch.core.job.parameters.JobParametersBuilder
 import org.springframework.batch.core.launch.JobLauncher
 import org.springframework.stereotype.Component
 import java.time.LocalDate
