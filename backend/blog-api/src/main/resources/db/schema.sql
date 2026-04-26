@@ -202,6 +202,8 @@ CREATE TABLE daily_statistics (
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT uq_daily_stats UNIQUE (blog_id, post_id, stat_date),
+    -- NULLS NOT DISTINCT lets the blog-wide aggregation row (post_id IS NULL)
+    -- collide on re-run, which is required for idempotent upserts.
+    CONSTRAINT uq_daily_stats_blog_post_date UNIQUE NULLS NOT DISTINCT (blog_id, post_id, stat_date),
     CONSTRAINT fk_stats_blog FOREIGN KEY (blog_id) REFERENCES blogs(id) ON DELETE CASCADE
 );

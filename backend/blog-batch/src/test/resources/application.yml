@@ -14,6 +14,10 @@ spring:
     jdbc:
       initialize-schema: always
 
+app:
+  batch:
+    job-name: dailyStatisticsJob
+
 logging:
   level:
     org.springframework.batch: DEBUG
