@@ -1,6 +1,5 @@
 package com.contentria.batch.jobs.statistics
 
-import org.springframework.batch.core.configuration.annotation.JobScope
 import org.springframework.batch.core.configuration.annotation.StepScope
 import org.springframework.batch.core.job.Job
 import org.springframework.batch.core.job.builder.JobBuilder
@@ -8,6 +7,8 @@ import org.springframework.batch.core.repository.JobRepository
 import org.springframework.batch.core.step.Step
 import org.springframework.batch.core.step.builder.StepBuilder
 import org.springframework.batch.infrastructure.item.ItemProcessor
+import org.springframework.batch.infrastructure.item.ItemReader
+import org.springframework.batch.infrastructure.item.ItemWriter
 import org.springframework.batch.infrastructure.item.database.JdbcBatchItemWriter
 import org.springframework.batch.infrastructure.item.database.JdbcCursorItemReader
 import org.springframework.batch.infrastructure.item.database.builder.JdbcBatchItemWriterBuilder
@@ -16,8 +17,6 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.jdbc.core.DataClassRowMapper
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
-import org.springframework.jdbc.core.namedparam.SqlParameterSource
 import org.springframework.transaction.PlatformTransactionManager
 import java.sql.Timestamp
 import java.time.LocalDate
@@ -32,24 +31,27 @@ class DailyStatisticsJobConfig(
     @Bean
     fun dailyStatisticsJob(
         jobRepository: JobRepository,
-        transactionManager: PlatformTransactionManager
+        dailyStatisticsStep: Step
     ): Job {
         return JobBuilder(JOB_NAME, jobRepository)
-            .start(dailyStatisticsStep(jobRepository, transactionManager))
+            .start(dailyStatisticsStep)
             .build()
     }
 
-    @JobScope
     @Bean
     fun dailyStatisticsStep(
         jobRepository: JobRepository,
-        transactionManager: PlatformTransactionManager
+        transactionManager: PlatformTransactionManager,
+        dailyStatisticsReader: ItemReader<DailyStatisticsDto>,
+        dailyStatisticsProcessor: ItemProcessor<DailyStatisticsDto, DailyStatisticsWriteItem>,
+        dailyStatisticsWriter: ItemWriter<DailyStatisticsWriteItem>
     ): Step {
         return StepBuilder(STEP_NAME, jobRepository)
-            .chunk<DailyStatisticsDto, DailyStatisticsWriteItem>(CHUNK_SIZE, transactionManager)
-            .reader(dailyStatisticsReader(null))
-            .processor(dailyStatisticsProcessor(null))
-            .writer(dailyStatisticsWriter())
+            .chunk<DailyStatisticsDto, DailyStatisticsWriteItem>(CHUNK_SIZE)
+            .transactionManager(transactionManager)
+            .reader(dailyStatisticsReader)
+            .processor(dailyStatisticsProcessor)
+            .writer(dailyStatisticsWriter)
             .build()
     }
 
@@ -135,6 +137,8 @@ class DailyStatisticsJobConfig(
             .dataSource(dataSource)
             .sql(sql)
             .itemSqlParameterSourceProvider { item -> item.toParameterSource() }
+            // ON CONFLICT DO UPDATE may report 0 affected rows when values are unchanged;
+            // disable strict assertions to allow legitimate no-op updates.
             .assertUpdates(false)
             .build()
     }
@@ -148,20 +152,4 @@ class DailyStatisticsJobConfig(
         const val CHUNK_SIZE = 1000
         private val REPORTING_ZONE: ZoneId = ZoneId.of("Asia/Seoul")
     }
-}
-
-data class DailyStatisticsWriteItem(
-    val blogId: java.util.UUID,
-    val postId: java.util.UUID?,
-    val statDate: LocalDate,
-    val visitCount: Long,
-    val viewCount: Long
-) {
-    fun toParameterSource(): SqlParameterSource =
-        MapSqlParameterSource()
-            .addValue("blogId", blogId)
-            .addValue("postId", postId)
-            .addValue("statDate", statDate)
-            .addValue("visitCount", visitCount)
-            .addValue("viewCount", viewCount)
 }

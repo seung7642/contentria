@@ -2,10 +2,10 @@ spring:
   application:
     name: blog-batch
   datasource:
-    url: jdbc:postgresql://localhost:5432/postgres
     driver-class-name: org.postgresql.Driver
-    username: contentria_user
-    password: contentria
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/postgres}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: validate
@@ -16,13 +16,9 @@ spring:
         format_sql: true
   batch:
     jdbc:
-      initialize-schema: always
+      initialize-schema: never # The production database is managed using migration tools like Flyway.
     job:
-      enabled: false
-
-app:
-  batch:
-    job-name: dailyStatisticsJob
+      enabled: true # Prevent all jobs from starting automatically on startup.
 
 common:
   mail:
