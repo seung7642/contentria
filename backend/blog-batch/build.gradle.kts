@@ -25,3 +25,5 @@ dependencies {
     testImplementation("org.springframework.batch:spring-batch-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
+
+tasks.named<Jar>("jar") { enabled = false }
