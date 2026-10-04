@@ -18,8 +18,7 @@ backend/
 │
 ├── build-logic/          Gradle 컨벤션 플러그인
 ├── gradle/               의존성 버전 카탈로그(libs.versions.toml), Gradle wrapper
-└── docs/                 설계 문서
-    └── architecture/     모듈 구성, 헥사고날 규칙, 바운디드 컨텍스트
+└── docs/
 ```
 
 ### 모듈 의존 관계
