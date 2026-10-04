@@ -1,192 +1,121 @@
 # Contentria Backend
 
-A multi-user blog platform backend built with **Kotlin**, **Spring Boot 4.0**, and **Gradle** multi-module architecture.
+## 디렉토리 구조
 
-## Tech Stack
-
-| Category | Technology |
-|----------|-----------|
-| Language | Kotlin |
-| Framework | Spring Boot 4.0, Spring Security, Spring Batch |
-| Database | PostgreSQL, JPA/Hibernate |
-| Auth | JWT (Access Token) + Opaque Refresh Token + OAuth2 (Google OIDC) |
-| Caching | Caffeine (JCache) |
-| Rate Limiting | Bucket4j |
-| Email | Mailgun (SMTP) + Thymeleaf templates |
-| Build | Gradle (Kotlin DSL), multi-module |
-
-## Module Structure
+레이어드 아키텍처로 작성한 기존 모듈(`blog-*`)을 헥사고날 아키텍처 모듈(`core`, `app/*`)로 옮기는 중이다. 이전이 끝날 때까지 두 구조가 함께 있다. 현재 배포되는 모듈은 `blog-*`이다.
 
 ```
 backend/
-├── blog-api/          # Main API server
-├── blog-batch/        # Spring Batch jobs (scheduled statistics)
-├── blog-common/       # Shared domain, config, error codes
-├── buildSrc/          # Gradle build conventions
-└── infrastructure/    # Infrastructure config (reserved)
+├── blog-common/          [레이어드] 공용 라이브러리. 여러 모듈이 함께 쓰는 엔티티, 설정, 예외
+├── blog-api/             [레이어드] HTTP API 서버
+├── blog-batch/           [레이어드] 배치 잡
+├── blog-worker/          [레이어드] 메시지 컨슈머 (영상 변환)
+│
+├── core/                 [헥사고날] 도메인 로직 라이브러리. 실행 jar를 만들지 않는다
+├── app/                  [헥사고날] 배포 단위 모듈을 묶는 폴더. 코드와 빌드 스크립트가 없다
+│   ├── api/              HTTP API 서버
+│   └── batch/            배치 잡
+│
+├── build-logic/          Gradle 컨벤션 플러그인
+├── gradle/               의존성 버전 카탈로그(libs.versions.toml), Gradle wrapper
+└── docs/                 설계 문서
+    └── architecture/     모듈 구성, 헥사고날 규칙, 바운디드 컨텍스트
 ```
 
-### blog-api
+### 모듈 의존 관계
 
-The primary REST API module. Contains all business domains and serves HTTP requests.
+| 모듈        | 구조     | 종류            | 의존 모듈         |
+| ----------- | -------- | --------------- | ----------------- |
+| blog-common | 레이어드 | 라이브러리      | core              |
+| blog-api    | 레이어드 | 실행 (API 서버) | blog-common       |
+| blog-batch  | 레이어드 | 실행 (배치)     | blog-common, core |
+| blog-worker | 레이어드 | 실행 (컨슈머)   | blog-common       |
+| core        | 헥사고날 | 라이브러리      | 없음              |
+| app/api     | 헥사고날 | 실행 (API 서버) | core              |
+| app/batch   | 헥사고날 | 실행 (배치)     | core              |
 
-Database schema files are located at `blog-api/src/main/resources/db/`:
-- `schema.sql` — Full DDL (tables, indexes, constraints). Serves as the source of truth for the current database structure. Not auto-executed by Spring Boot (only `resources/schema.sql` is).
-- `data.sql` — Seed data (e.g., default roles).
+`core`는 다른 모듈을 의존하지 않는다. 의존 방향은 항상 실행 모듈에서 라이브러리 쪽이다.
 
-> **Note**: The project uses `ddl-auto: validate`, so Hibernate only validates that entities match the existing schema. All schema changes must be applied manually via these SQL files.
+### 레이어드 모듈 패키지
 
-### blog-batch
-
-Runs scheduled batch jobs. Currently contains:
-- **DailyStatisticsJob**: Aggregates visit logs into daily PV/UV statistics per blog and post. Runs daily via `BatchScheduler`.
-
-### blog-common
-
-Shared code across modules:
-- `BaseEntity` (JPA auditing: createdAt, updatedAt)
-- `ErrorCode` enum and `ContentriaException`
-- Analytics domain (VisitLog, DailyStatistics)
-- Email service (Thymeleaf-based HTML emails)
-- JPA config (UUIDv7 generator)
-- AOP logging (`@ApiLog`)
-
-## Architecture
-
-### Layered Architecture with DDD Influence
-
-Each domain in `blog-api` follows a consistent 4-layer structure:
+`blog-api`는 도메인별 패키지 안에 계층을 나눈다. 도메인마다 필요한 계층만 둔다.
 
 ```
-domain-name/
-├── controller/        # REST endpoints, request/response DTOs
-│   └── dto/           # Request/Response objects (API boundary)
-├── application/       # Business logic orchestration
-│   └── dto/           # Command/Info objects (service boundary)
-├── domain/            # Entities, value objects, repository interfaces
-│   └── query/         # Read-model projections
-└── infrastructure/    # Repository implementations, external service clients
+com.contentria.api.<도메인>/
+├── controller/           HTTP 요청, 응답 처리
+├── application/          서비스 (유스케이스)
+├── domain/               엔티티, 리포지토리 인터페이스
+└── infrastructure/       리포지토리 구현, 외부 연동
 ```
 
-**Key principles:**
-- **Controller** handles HTTP concerns only (validation, cookie setting, response mapping)
-- **Application** contains business logic. No direct JPA or HTTP dependencies
-- **Domain** defines entities and repository interfaces. No framework annotations except JPA
-- **Infrastructure** implements repository interfaces and external integrations
+### 헥사고날 모듈 패키지
 
-### Facade Pattern
-
-Cross-domain orchestration uses the **Facade** pattern to coordinate multiple services within a single transaction:
+최상위 패키지는 계층이 아니라 도메인(바운디드 컨텍스트)이다.
 
 ```
-PostFacade
-├── BlogService.validateBlogOwner()
-├── CategoryService.validateCategoryBelongsToBlog()
-├── MarkdownService.extractSummary()
-└── PostInternalService.createPost()
+com.contentria.core.<도메인>/
+├── domain/               도메인 모델, 비즈니스 규칙
+├── application/
+│   ├── provided/         인바운드 포트. 이 도메인이 외부에 제공하는 유스케이스
+│   └── required/         아웃바운드 포트. 이 도메인이 필요로 하는 외부 기능 (저장, 외부 API 등)
+└── adapter/
+    └── required/         아웃바운드 포트 구현 (JPA, 외부 API 클라이언트)
+
+com.contentria.core.shared/
+├── exception/            공통 예외
+├── id/                   식별자 생성
+└── persistence/          엔티티 공통 필드, JPA 설정
 ```
 
-**Why Facade?**
-- **Prevents circular dependencies** between bounded contexts. Services only know their own domain; cross-domain orchestration is lifted to the Facade layer. Without this, `PostService` ↔ `CategoryService` mutual dependencies become inevitable.
-- **Single transaction boundary** for operations spanning multiple domains.
+`app/*`는 모듈 전체가 인바운드 어댑터다. 컨트롤러와 배치 잡이 `core`의 인바운드 포트를 호출한다. 패키지는 `com.contentria.api.<도메인>`처럼 도메인 단위로 나눈다.
 
-**Conventions:**
-- `*Facade` classes own the `@Transactional` boundary for write operations
-- `*Service` classes contain single-domain logic and **must return DTOs only** (never entities)
-- `*InternalService` classes handle domain-internal write operations (e.g., slug generation + save). May return entities, but **only the Facade within the same bounded context** may depend on them
-- Facades may depend on **services (`*Service`) from other domains**; direct dependency on another domain's Facade or InternalService is not allowed. This prevents circular dependencies
-- Utility classes (e.g., `MarkdownService`) are allowed in the `application/` layer, but **only within the same bounded context**. They must not be depended on by other domains
-
-### Authentication Flow
-
-```
-Client Request
-  │
-  ├── JWT in Authorization header or accessToken cookie
-  │     └── JwtAuthenticationFilter validates and sets SecurityContext
-  │
-  ├── Email/Password Login
-  │     └── AuthController → AuthFacade → CredentialService.authenticate()
-  │         → generates JWT access token + opaque refresh token
-  │
-  ├── Google OAuth2 (OIDC)
-  │     └── Spring Security OAuth2 → CustomOidcAuthenticationSuccessHandler
-  │         → AuthFacade.loginWithSocial() → redirect to frontend
-  │
-  └── Token Refresh
-        └── AuthController.refreshToken() → validates opaque token in DB
-            → rotates refresh token (RTR) → issues new access + refresh tokens
-```
-
-**Token strategy:**
-- Access token: JWT, 15-minute expiry, stateless validation
-- Refresh token: Opaque UUID, 7-day expiry, stored in DB, rotated on each use (RTR)
-
-## Business Domains
-
-| Domain | Description |
-|--------|-------------|
-| `auth` | Authentication (email/password, OAuth2, OTP verification, reCAPTCHA) |
-| `user` | User management (profile, roles, nickname generation) |
-| `blog` | Blog CRUD (slug validation, sample content creation) |
-| `post` | Post CRUD (markdown content, slug generation, draft/published status) |
-| `category` | Category management (hierarchical, drag-and-drop sync, max 2 levels) |
-| `analytics` | Visit logging, daily statistics aggregation |
-
-## Developer Conventions
-
-See the `docs/` directory for detailed guidelines:
-
-- [Logging Conventions](docs/logging-conventions.md) - Log levels, PII rules, message format
-- [Security Conventions](docs/security-conventions.md) - Token handling, cookie security, auth rules
-
-## Build & Run
+## 빌드와 실행
 
 ```bash
-# Run API server
+# API 서버 실행
 ./gradlew :blog-api:bootRun
 
-# Run batch
+# 배치 실행
 ./gradlew :blog-batch:bootRun
 
-# Build all modules
+# 전체 모듈 빌드
 ./gradlew build
 ```
 
-## Docker Build & Deploy
+## Docker 빌드와 배포 (레거시)
 
-The Dockerfiles only package a prebuilt jar — they don't run Gradle. Build the jar on
-the host first, then build and deploy the image to a remote server:
+> GitOps 도입 전에 쓰던 방식이다. 이미지를 레지스트리를 거치지 않고 서버에 직접 옮긴다.
+
+Dockerfile은 미리 빌드된 jar를 이미지에 담기만 하고, Gradle을 실행하지 않는다. 호스트에서 jar를 먼저 빌드한 뒤 이미지를 만들어 원격 서버로 옮긴다.
 
 ```bash
-# 1. Navigate to backend root
+# 1. backend 루트로 이동
 cd backend/
 
-# 2. Build the jar
+# 2. jar 빌드
 ./gradlew :blog-api:bootJar
 
-# 3. Build Docker image
+# 3. Docker 이미지 빌드
 docker build -t contentria/blog-api:1.0 -f blog-api/Dockerfile .
 
-# 4. Save image to tar
+# 4. 이미지를 tar로 저장
 docker save -o blog-api.tar contentria/blog-api:1.0
 
-# 5. Transfer to remote server
+# 5. 원격 서버로 전송
 scp blog-api.tar <username>@<remote-host>:~
 ```
 
-> The same steps apply to `blog-batch` and `blog-worker` — swap the module name in
-> steps 2-4 (`:blog-batch:bootJar`, `-f blog-batch/Dockerfile`, `blog-batch.tar`, etc.).
+> `blog-batch`, `blog-worker`도 같은 순서로 진행한다. 2~4단계의 모듈 이름만 바꾼다(`:blog-batch:bootJar`, `-f blog-batch/Dockerfile`, `blog-batch.tar` 등).
 
-On the remote server:
+원격 서버에서 실행한다.
 
 ```bash
-# 1. SSH into the server
+# 1. 서버 접속
 ssh <username>@<remote-host>
 
-# 2. Load the Docker image
+# 2. 이미지 가져오기
 sudo ctr -n k8s.io images import blog-api.tar
 
-# 3. Verify
+# 3. 확인
 sudo crictl images
 ```
