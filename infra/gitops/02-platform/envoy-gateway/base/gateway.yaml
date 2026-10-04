@@ -1,0 +1,61 @@
+# Envoy Gateway 차트(CRD, 컨트롤러)가 먼저 설치된 뒤 적용한다.
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: eg
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+---
+# 외부 진입점. 서비스의 HTTPRoute가 이 Gateway에 연결된다.
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: public
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    # cert-manager가 https 리스너의 hostname으로 인증서를 발급해 contentria-tls에 저장한다.
+    cert-manager.io/cluster-issuer: letsencrypt
+spec:
+  gatewayClassName: eg
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: All
+    # hostname은 환경별 overlay에서 지정한다.
+    - name: https
+      protocol: HTTPS
+      port: 443
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: contentria-tls
+      allowedRoutes:
+        namespaces:
+          from: All
+---
+# HTTP 요청을 HTTPS로 리다이렉트한다.
+# 인증서 발급용 경로(/.well-known/acme-challenge/...)는 cert-manager가 더 구체적인 규칙을 만들어 처리한다.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: https-redirect
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  parentRefs:
+    - name: public
+      sectionName: http
+  rules:
+    - filters:
+        - type: RequestRedirect
+          requestRedirect:
+            scheme: https
+            statusCode: 301

@@ -1,0 +1,4 @@
+# https 리스너(listeners[1])에 dev 도메인을 지정한다.
+- op: add
+  path: /spec/listeners/1/hostname
+  value: dev.contentria.com

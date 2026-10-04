@@ -1,0 +1,38 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: contentria-api
+
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/contentria}
+    username: ${DATABASE_USERNAME:contentria}
+    password: ${DATABASE_PASSWORD:contentria}
+
+  jpa:
+    hibernate:
+      # `update` adds what is missing and never removes or alters what is already there.
+      # During the migration, entity fields and constraints change often, and a renamed
+      # column leaves the old one behind — still NOT NULL, so the next insert fails.
+      # Run locally with JPA_DDL_AUTO=create-drop so the schema always matches the entities.
+      # Once this reaches a real environment, switch to `validate` and manage the schema
+      # with Flyway.
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    # Releases the connection when the transaction ends instead of holding it for the whole
+    # request. Lazy associations must therefore be resolved inside the service layer.
+    open-in-view: false
+    show-sql: false
+    properties.hibernate:
+      format_sql: true
+      default_batch_fetch_size: 100
+      jdbc.batch_size: 100
+      order_inserts: true
+      order_updates: true
+
+logging:
+  level:
+    root: INFO
+    org.hibernate.SQL: DEBUG

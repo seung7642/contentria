@@ -1,0 +1,8 @@
+crds:
+  enabled: true
+
+# Gateway 리소스의 annotation을 보고 인증서를 발급하도록 Gateway API 연동을 켠다.
+config:
+  apiVersion: controller.config.cert-manager.io/v1alpha1
+  kind: ControllerConfiguration
+  enableGatewayAPI: true

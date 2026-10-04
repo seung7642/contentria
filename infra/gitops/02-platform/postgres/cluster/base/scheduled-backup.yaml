@@ -1,0 +1,19 @@
+# 아직 kustomization.yaml에 포함하지 않았다. 백업 저장소를 정한 뒤 추가한다.
+#
+# 사전 조건:
+#   1. Barman Cloud Plugin 설치 (CloudNativePG 백업 플러그인)
+#   2. ObjectStore 리소스와 저장소 접근 키 시크릿 (예: Cloudflare R2)
+#   3. cluster.yaml에 spec.plugins 설정 추가
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: postgres-daily
+spec:
+  # 초 단위를 포함한 6자리 cron, UTC 기준. 매일 03:00 KST.
+  schedule: "0 0 18 * * *"
+  backupOwnerReference: self
+  cluster:
+    name: postgres
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io

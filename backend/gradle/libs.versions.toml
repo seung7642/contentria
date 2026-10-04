@@ -1,0 +1,71 @@
+[versions]
+java = "25"
+kotlin = "2.4.10"
+spring-boot = "4.1.0"
+
+spring-dependency-management = "1.1.7"
+
+kotlin-logging = "7.0.3"
+aws-sdk = "2.31.1"
+jjwt = "0.12.6"
+java-jwt = "4.4.0"
+bucket4j = "0.14.0"
+caffeine-jcache = "3.2.2"
+commonmark = "0.27.0"
+uuid-creator = "6.1.0"
+slugify = "3.0.7"
+
+[libraries]
+kotlin-logging = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "kotlin-logging" }
+
+# AWS SDK (Cloudflare R2 호환). 개별 모듈(s3)의 버전은 BOM이 관리한다.
+aws-bom = { module = "software.amazon.awssdk:bom", version.ref = "aws-sdk" }
+aws-s3 = { module = "software.amazon.awssdk:s3" }
+
+# Security & JWT
+jjwt-api = { module = "io.jsonwebtoken:jjwt-api", version.ref = "jjwt" }
+jjwt-impl = { module = "io.jsonwebtoken:jjwt-impl", version.ref = "jjwt" }
+jjwt-jackson = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt" }
+java-jwt = { module = "com.auth0:java-jwt", version.ref = "java-jwt" }
+
+# Rate limiting
+bucket4j-starter = { module = "com.giffing.bucket4j.spring.boot.starter:bucket4j-spring-boot-starter", version.ref = "bucket4j" }
+caffeine-jcache = { module = "com.github.ben-manes.caffeine:jcache", version.ref = "caffeine-jcache" }
+
+# Markdown parser
+commonmark = { module = "org.commonmark:commonmark", version.ref = "commonmark" }
+commonmark-ext-gfm-tables = { module = "org.commonmark:commonmark-ext-gfm-tables", version.ref = "commonmark" }
+commonmark-ext-gfm-strikethrough = { module = "org.commonmark:commonmark-ext-gfm-strikethrough", version.ref = "commonmark" }
+commonmark-ext-autolink = { module = "org.commonmark:commonmark-ext-autolink", version.ref = "commonmark" }
+commonmark-ext-footnotes = { module = "org.commonmark:commonmark-ext-footnotes", version.ref = "commonmark" }
+commonmark-ext-heading-anchor = { module = "org.commonmark:commonmark-ext-heading-anchor", version.ref = "commonmark" }
+commonmark-ext-ins = { module = "org.commonmark:commonmark-ext-ins", version.ref = "commonmark" }
+commonmark-ext-yaml-front-matter = { module = "org.commonmark:commonmark-ext-yaml-front-matter", version.ref = "commonmark" }
+commonmark-ext-image-attributes = { module = "org.commonmark:commonmark-ext-image-attributes", version.ref = "commonmark" }
+commonmark-ext-task-list-items = { module = "org.commonmark:commonmark-ext-task-list-items", version.ref = "commonmark" }
+
+# Misc
+uuid-creator = { module = "com.github.f4b6a3:uuid-creator", version.ref = "uuid-creator" }
+slugify = { module = "com.github.slugify:slugify", version.ref = "slugify" }
+
+[bundles]
+commonmark = [
+    "commonmark",
+    "commonmark-ext-gfm-tables",
+    "commonmark-ext-gfm-strikethrough",
+    "commonmark-ext-autolink",
+    "commonmark-ext-footnotes",
+    "commonmark-ext-heading-anchor",
+    "commonmark-ext-ins",
+    "commonmark-ext-yaml-front-matter",
+    "commonmark-ext-image-attributes",
+    "commonmark-ext-task-list-items",
+]
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin" }
+kotlin-jpa = { id = "org.jetbrains.kotlin.plugin.jpa", version.ref = "kotlin" }
+
+spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
+spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }
